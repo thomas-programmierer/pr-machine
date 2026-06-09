@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # VHS Spandau — PR-Maschine v2
 ### Stand Mai 2026 · mit Foto-Editor
 
@@ -57,7 +56,3 @@ node server.js
 - Neuer Tab "🖼 Foto-Editor" in der Navigation
 - Neue Route /editor im Server
 - Kalender: Berliner Feiertage + Schulferien 2026/2027
-=======
-# pr-machine
-Für die VHS Spandau eine eigene Social Media Redaktionsplattform | VHS Spandau PR-Maschine — KI-gestützter Social Media Editor
->>>>>>> 0466ea1c948e319661c61dc0e2fc93d9012a0d5b
