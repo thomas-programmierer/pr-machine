@@ -61,7 +61,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .filter-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
 
 /* ERGEBNIS-LISTE */
-.ergebnis-liste{display:flex;flex-direction:column;gap:8px}
+.split-wrap{display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start}
+@media(max-width:900px){.split-wrap{grid-template-columns:1fr}.split-detail{display:none}}
+.split-list{min-width:0}
+.split-detail{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;position:sticky;top:16px;overflow:hidden;min-height:300px;display:flex;flex-direction:column}
+.detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;color:var(--blau60)}
+.detail-content{flex:1;display:flex;flex-direction:column;padding:0}
+.detail-header{background:var(--blau);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.detail-nr{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:rgba(255,255,255,.7)}
+.detail-pb-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.15);color:#fff}
+.detail-titel{font-size:15px;font-weight:700;color:var(--blau);padding:14px 16px 4px;line-height:1.4}
+.detail-meta{font-size:11px;color:var(--blau60);padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:8px}
+.detail-meta span{background:var(--blau10);border-radius:4px;padding:2px 7px}
+.detail-desc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blau60);padding:0 16px 6px;border-top:1px solid #f0f0f0;padding-top:12px}
+.detail-desc{font-size:12px;color:#333;line-height:1.7;padding:0 16px 16px;flex:1;overflow-y:auto;max-height:420px;white-space:pre-wrap}
+.detail-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0;background:#f8fafc}
+.detail-btn{padding:7px 12px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:11px;font-weight:600;color:var(--blau60);cursor:pointer;transition:all .15s}
+.detail-btn:hover{border-color:var(--blau);color:var(--blau)}
+.detail-btn-primary{background:var(--blau);color:#fff;border-color:var(--blau)}
+.detail-btn-primary:hover{background:#1A2943;border-color:#1A2943}
+.kurs-zeile.selected{border-color:var(--blau);background:#f0f5ff}
+.ergebnis-liste{display:flex;flex-direction:column;gap:6px}
 .kurs-zeile{background:#fff;border-radius:9px;border:1.5px solid #e2e7ef;padding:12px 15px;display:flex;align-items:center;gap:12px;transition:border-color .15s;cursor:pointer}
 .kurs-zeile:hover{border-color:var(--blau60)}
 .kurs-nr{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--blau60);flex-shrink:0;min-width:100px}
@@ -182,18 +202,47 @@ async function extLogout() {
     <div class="filter-chip" onclick="setFilter(this,'politik')">🏛 Politik</div>
   </div>
 
-  <!-- ERGEBNISSE -->
-  <div id="ergebnis-area">
-    <div class="hint">
-      <div class="hint-icon">📚</div>
-      <div class="hint-title">Kursliste wird geladen…</div>
-    </div>
-  </div>
+  <!-- SPLIT LAYOUT: LISTE + DETAIL -->
+  <div class="split-wrap">
 
-  <div class="paging" id="paging" style="display:none">
-    <button class="page-btn" id="btn-prev" onclick="changePage(-1)">← Zurück</button>
-    <span class="page-info" id="page-info"></span>
-    <button class="page-btn" id="btn-next" onclick="changePage(1)">Weiter →</button>
+    <!-- LINKE SEITE: Liste -->
+    <div class="split-list">
+      <div id="ergebnis-area">
+        <div class="hint">
+          <div class="hint-icon">📚</div>
+          <div class="hint-title">Kursliste wird geladen…</div>
+        </div>
+      </div>
+      <div class="paging" id="paging" style="display:none">
+        <button class="page-btn" id="btn-prev" onclick="changePage(-1)">← Zurück</button>
+        <span class="page-info" id="page-info"></span>
+        <button class="page-btn" id="btn-next" onclick="changePage(1)">Weiter →</button>
+      </div>
+    </div>
+
+    <!-- RECHTE SEITE: Detail -->
+    <div class="split-detail" id="split-detail">
+      <div class="detail-empty" id="detail-empty">
+        <div style="font-size:2.5rem;margin-bottom:12px">📖</div>
+        <div style="font-weight:600;color:var(--blau);margin-bottom:6px">Kurs auswählen</div>
+        <div style="font-size:12px;color:var(--blau60)">Klicke auf einen Kurs links,<br>um die vollständige Beschreibung zu sehen.</div>
+      </div>
+      <div class="detail-content" id="detail-content" style="display:none">
+        <div class="detail-header">
+          <div class="detail-nr" id="detail-nr"></div>
+          <div class="detail-pb-badge" id="detail-pb-badge"></div>
+        </div>
+        <div class="detail-titel" id="detail-titel"></div>
+        <div class="detail-meta" id="detail-meta"></div>
+        <div class="detail-desc-label">Kursbeschreibung</div>
+        <div class="detail-desc" id="detail-desc"></div>
+        <div class="detail-actions">
+          <button class="detail-btn" onclick="copyDetailKurs()">📋 Kursnummer + Titel kopieren</button>
+          <button class="detail-btn detail-btn-primary" onclick="useInRedaktion()">✏️ In Redaktion verwenden</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -256,8 +305,8 @@ function renderSeite() {
     return;
   }
 
-  area.innerHTML = `<div class="ergebnis-liste">${slice.map(k => `
-    <div class="kurs-zeile" onclick="inClipboard('${esc(k.nr)}','${esc(k.titel)}')">
+  area.innerHTML = `<div class="ergebnis-liste">${slice.map((k,idx) => `
+    <div class="kurs-zeile" id="krow-${esc(k.nr).replace(/[^a-zA-Z0-9]/g,'-')}" onclick="showDetail(${start+idx})">
       <div class="kurs-nr">${esc(k.nr)}</div>
       <div class="kurs-titel">${esc(k.titel)}</div>
       ${k.beginn ? `<div class="kurs-beginn">${k.beginn}</div>` : ''}
@@ -277,6 +326,101 @@ function renderSeite() {
   }
 
   document.getElementById('search-count').textContent = `${gefiltertKurse.length} von ${ALLE_KURSE.length} Kursen`;
+}
+
+function showDetail(globalIdx) {
+  const k = gefiltertKurse[globalIdx];
+  if (!k) return;
+
+  // Selektion markieren
+  document.querySelectorAll('.kurs-zeile').forEach(r => r.classList.remove('selected'));
+  const rowId = 'krow-' + k.nr.replace(/[^a-zA-Z0-9]/g,'-');
+  const row = document.getElementById(rowId);
+  if (row) row.classList.add('selected');
+
+  // Detail befüllen
+  document.getElementById('detail-empty').style.display = 'none';
+  document.getElementById('detail-content').style.display = 'flex';
+
+  document.getElementById('detail-nr').textContent = k.nr || '';
+  document.getElementById('detail-titel').textContent = k.titel || '';
+
+  const badge = document.getElementById('detail-pb-badge');
+  if (k.pbFilter && k.pbFilter !== 'andere') {
+    badge.textContent = PB_LABEL[k.pbFilter] || '';
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  // Meta-Infos (Felder aus kurse.json: nr, titel, beginn, pb, pbl)
+  const metaEl = document.getElementById('detail-meta');
+  const metaParts = [];
+  if (k.beginn) metaParts.push(`<span>📅 Start: ${esc(k.beginn)}</span>`);
+  if (k.pb)     metaParts.push(`<span>🏛 ${esc(k.pb)}</span>`);
+  if (k.pbl)    metaParts.push(`<span>👤 ${esc(k.pbl)}</span>`);
+  if (k.ende)      metaParts.push(`<span>bis ${esc(k.ende)}</span>`);
+  if (k.wochentag) metaParts.push(`<span>📆 ${esc(k.wochentag)}</span>`);
+  if (k.uhrzeit)   metaParts.push(`<span>🕐 ${esc(k.uhrzeit)}</span>`);
+  if (k.ort)       metaParts.push(`<span>📍 ${esc(k.ort)}</span>`);
+  if (k.preis)     metaParts.push(`<span>💶 ${esc(String(k.preis))}</span>`);
+  metaEl.innerHTML = metaParts.join('');
+
+  // Beschreibung
+  const desc = k.beschreibung || k.text || k.beschr || k.info || k.kurztext || '';
+  const descEl = document.getElementById('detail-desc');
+  if (desc) {
+    descEl.textContent = desc;
+    descEl.style.display = 'block';
+    document.querySelector('.detail-desc-label').style.display = 'block';
+  } else {
+    descEl.textContent = 'Keine Beschreibung vorhanden.';
+    descEl.style.color = '#aaa';
+    descEl.style.display = 'block';
+    document.querySelector('.detail-desc-label').style.display = 'block';
+  }
+
+  // Auf mobil nach oben scrollen zum Detail
+  if (window.innerWidth < 900) {
+    document.getElementById('split-detail').scrollIntoView({behavior:'smooth'});
+  }
+
+  // Merke aktuellen Kurs für Actions
+  window._selectedKurs = k;
+}
+
+function copyDetailKurs() {
+  const k = window._selectedKurs;
+  if (!k) return;
+  const text = k.nr + ' · ' + k.titel;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Kopiert: ' + text);
+  });
+}
+
+function useInRedaktion() {
+  const k = window._selectedKurs;
+  if (!k) return;
+  // Zur Hauptapp navigieren mit Kurs-Kontext
+  const params = new URLSearchParams({
+    screen: 'redakteur',
+    kursNr: k.nr,
+    kursTitel: k.titel
+  });
+  window.location.href = '/?' + params.toString();
+}
+
+function showToast(msg) {
+  let t = document.getElementById('kurs-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'kurs-toast';
+    t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1A2943;color:#fff;padding:.65rem 1.1rem;border-radius:8px;font-size:12px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2500);
 }
 
 function changePage(dir) {

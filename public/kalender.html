@@ -105,9 +105,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .woche-day-name{font-size:9px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px}
 .woche-day-nr{font-size:18px;font-weight:700;color:#fff;line-height:1}
 .woche-day-nr.heute-nr{background:var(--gelb);color:var(--blau);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.woche-slot{height:50px;border-top:1px solid #f0f0f0;padding:2px 3px;position:relative;cursor:pointer;transition:background .1s}
-.woche-slot:hover{background:#f8fafc}
+.woche-slot{height:50px;border-top:1px solid #f0f0f0;padding:2px 3px;position:relative;cursor:pointer;transition:background .1s;background:#fff}
+.woche-slot.col-odd{background:#faf6ee}
+.woche-slot:hover{background:#f0f5ff !important}
 .woche-slot.hat-hooks{background:#fffbf0}
+.woche-day-header.col-odd{filter:brightness(1.08) sepia(0.12)}
 .woche-post-pill{background:var(--blau10);border-left:3px solid var(--blau);border-radius:0 4px 4px 0;padding:2px 5px;font-size:9px;font-weight:600;color:var(--blau);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px;transition:background .1s}
 .woche-post-pill:hover{background:var(--blau20)}
 .woche-post-pill.pill-ig{border-color:#E1306C;color:#E1306C;background:#fce4ee}
@@ -1000,9 +1002,7 @@ function renderWoche(wocheMo, allePosts) {
   html += '<div class="woche-time-header">Zeit</div>';
 
   // Ungerade Spalten (Di=1, Do=3, Sa=5) leicht beige einfärben
-  const COL_BEIGE = 'rgba(245,238,220,0.45)';
-
-  // Tag-Headers
+  // Tag-Headers (ungerade Spalten Di=1,Do=3,Sa=5 leicht beige)
   tage.forEach((d, i) => {
     const istHeute = d.getTime() === heute.getTime();
     const datStr = d.toISOString().split('T')[0];
@@ -1011,8 +1011,8 @@ function renderWoche(wocheMo, allePosts) {
       ? `<div class="woche-day-nr heute-nr">${d.getDate()}</div>`
       : `<div class="woche-day-nr">${d.getDate()}</div>`;
     const ftBadge = feiertagInfo ? `<div style="font-size:8px;color:var(--gelb);margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${feiertagInfo.label}</div>` : '';
-    const beigeStyle = (i % 2 === 1 && !istHeute) ? ` style="background:linear-gradient(to bottom, var(--blau) 0%, var(--blau) 100%);box-shadow:inset 0 0 0 999px rgba(245,238,220,0.10)"` : '';
-    html += `<div class="woche-day-header${istHeute?' heute-col':''}"${beigeStyle}>
+    const oddCls = (i % 2 === 1 && !istHeute) ? ' col-odd' : '';
+    html += `<div class="woche-day-header${istHeute?' heute-col':''}${oddCls}">
       <div class="woche-day-name">${KURZTAGE[i]}</div>
       ${nrHtml}
       ${ftBadge}
@@ -1021,9 +1021,7 @@ function renderWoche(wocheMo, allePosts) {
 
   // Zeit-Slots + Events
   STUNDEN.forEach(std => {
-    // Zeit-Label
     html += `<div class="woche-time-slot">${std}:00</div>`;
-
     tage.forEach((d, i) => {
       const datStr = d.toISOString().split('T')[0];
       const hook = showHooks && HOOKS[datStr];
@@ -1032,11 +1030,9 @@ function renderWoche(wocheMo, allePosts) {
         p.datum === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
       );
       const hatContent = tagPosts.length > 0;
-      const beigeBg = (i % 2 === 1 && !feiertagInfo) ? `style="background:${COL_BEIGE}"` : '';
-      html += `<div class="woche-slot${hatContent?' hat-post':''}${feiertagInfo?' feiertag-slot':''}"
-        ${beigeBg}
+      const oddCls = (i % 2 === 1 && !feiertagInfo) ? ' col-odd' : '';
+      html += `<div class="woche-slot${hatContent?' hat-post':''}${feiertagInfo?' feiertag-slot':''}${oddCls}"
         onclick="wocheSlotKlick('${datStr}','${std}:00')">`;
-
       if (std === '08' && hook) {
         html += `<div style="font-size:8px;color:var(--orange);background:#FEF3DA;border-radius:3px;padding:1px 4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 ${esc(hook)}</div>`;
       }
