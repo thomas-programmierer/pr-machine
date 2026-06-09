@@ -999,6 +999,9 @@ function renderWoche(wocheMo, allePosts) {
   // Zeiten-Spalte Header
   html += '<div class="woche-time-header">Zeit</div>';
 
+  // Ungerade Spalten (Di=1, Do=3, Sa=5) leicht beige einfärben
+  const COL_BEIGE = 'rgba(245,238,220,0.45)';
+
   // Tag-Headers
   tage.forEach((d, i) => {
     const istHeute = d.getTime() === heute.getTime();
@@ -1008,7 +1011,8 @@ function renderWoche(wocheMo, allePosts) {
       ? `<div class="woche-day-nr heute-nr">${d.getDate()}</div>`
       : `<div class="woche-day-nr">${d.getDate()}</div>`;
     const ftBadge = feiertagInfo ? `<div style="font-size:8px;color:var(--gelb);margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${feiertagInfo.label}</div>` : '';
-    html += `<div class="woche-day-header${istHeute?' heute-col':''}">
+    const beigeStyle = (i % 2 === 1 && !istHeute) ? ` style="background:linear-gradient(to bottom, var(--blau) 0%, var(--blau) 100%);box-shadow:inset 0 0 0 999px rgba(245,238,220,0.10)"` : '';
+    html += `<div class="woche-day-header${istHeute?' heute-col':''}"${beigeStyle}>
       <div class="woche-day-name">${KURZTAGE[i]}</div>
       ${nrHtml}
       ${ftBadge}
@@ -1020,7 +1024,7 @@ function renderWoche(wocheMo, allePosts) {
     // Zeit-Label
     html += `<div class="woche-time-slot">${std}:00</div>`;
 
-    tage.forEach(d => {
+    tage.forEach((d, i) => {
       const datStr = d.toISOString().split('T')[0];
       const hook = showHooks && HOOKS[datStr];
       const feiertagInfo = FEIERTAGE[datStr];
@@ -1028,7 +1032,9 @@ function renderWoche(wocheMo, allePosts) {
         p.datum === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
       );
       const hatContent = tagPosts.length > 0;
+      const beigeBg = (i % 2 === 1 && !feiertagInfo) ? `style="background:${COL_BEIGE}"` : '';
       html += `<div class="woche-slot${hatContent?' hat-post':''}${feiertagInfo?' feiertag-slot':''}"
+        ${beigeBg}
         onclick="wocheSlotKlick('${datStr}','${std}:00')">`;
 
       if (std === '08' && hook) {
