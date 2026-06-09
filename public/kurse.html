@@ -25,7 +25,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 
 /* SEARCH HERO */
 .search-hero{background:var(--blau);padding:0 22px 28px}
-.search-wrap{max-width:700px;margin:0 auto}
+.search-wrap{max-width:1280px;margin:0 auto}
 .search-title{color:#fff;font-size:20px;font-weight:700;margin-bottom:4px;padding-top:20px}
 .search-sub{color:var(--blau60);font-size:13px;margin-bottom:16px}
 .search-box{position:relative}
@@ -35,7 +35,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .search-count{color:rgba(255,255,255,.5);font-size:11px;margin-top:8px;font-family:'DM Mono',monospace}
 
 /* MAIN */
-.main{max-width:700px;margin:0 auto;padding:20px 22px}
+.main{max-width:1280px;margin:0 auto;padding:20px 22px}
 
 /* LOOKUP WIDGET */
 .lookup-widget{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:20px;margin-bottom:20px}
@@ -61,10 +61,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .filter-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
 
 /* ERGEBNIS-LISTE */
-.split-wrap{display:grid;grid-template-columns:1fr 420px;gap:16px;align-items:start}
+.split-wrap{display:grid;grid-template-columns:1fr 440px;gap:20px;align-items:start}
 @media(max-width:900px){.split-wrap{grid-template-columns:1fr}.split-detail{display:none}}
 .split-list{min-width:0}
-.split-detail{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;position:sticky;top:16px;overflow:hidden;min-height:300px;display:flex;flex-direction:column}
+.split-detail{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;position:sticky;top:80px;overflow:hidden;min-height:400px;max-height:calc(100vh - 100px);display:flex;flex-direction:column}
 .detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;color:var(--blau60)}
 .detail-content{flex:1;display:flex;flex-direction:column;padding:0}
 .detail-header{background:var(--blau);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
