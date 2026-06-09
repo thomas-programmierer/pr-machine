@@ -305,14 +305,27 @@ function renderSeite() {
     return;
   }
 
-  area.innerHTML = `<div class="ergebnis-liste">${slice.map((k,idx) => `
-    <div class="kurs-zeile" id="krow-${esc(k.nr).replace(/[^a-zA-Z0-9]/g,'-')}" onclick="showDetail(${start+idx})">
+  // Liste rendern — data-idx trägt den globalen Index
+  const rows = slice.map((k, idx) => {
+    const globalIdx = start + idx;
+    const pbBadge = k.pbFilter !== 'andere' ? `<div class="kurs-pb ${PB_CSS[k.pbFilter]}">${PB_LABEL[k.pbFilter]}</div>` : '';
+    const beginnBadge = k.beginn ? `<div class="kurs-beginn">${esc(k.beginn)}</div>` : '';
+    return `<div class="kurs-zeile" data-idx="${globalIdx}" data-nr="${esc(k.nr)}">
       <div class="kurs-nr">${esc(k.nr)}</div>
       <div class="kurs-titel">${esc(k.titel)}</div>
-      ${k.beginn ? `<div class="kurs-beginn">${k.beginn}</div>` : ''}
-      ${k.pbFilter !== 'andere' ? `<div class="kurs-pb ${PB_CSS[k.pbFilter]}">${PB_LABEL[k.pbFilter]}</div>` : ''}
-    </div>`).join('')}
-  </div>`;
+      ${beginnBadge}
+      ${pbBadge}
+    </div>`;
+  }).join('');
+  area.innerHTML = `<div class="ergebnis-liste">${rows}</div>`;
+
+  // Event-Delegation auf die Liste
+  area.querySelectorAll('.kurs-zeile').forEach(row => {
+    row.addEventListener('click', () => {
+      const idx = parseInt(row.getAttribute('data-idx'), 10);
+      showDetail(idx);
+    });
+  });
 
   // Paginierung
   const totalPages = Math.ceil(gefiltertKurse.length / PRO_SEITE);
@@ -334,8 +347,7 @@ function showDetail(globalIdx) {
 
   // Selektion markieren
   document.querySelectorAll('.kurs-zeile').forEach(r => r.classList.remove('selected'));
-  const rowId = 'krow-' + k.nr.replace(/[^a-zA-Z0-9]/g,'-');
-  const row = document.getElementById(rowId);
+  const row = document.querySelector(`.kurs-zeile[data-nr="${k.nr}"]`);
   if (row) row.classList.add('selected');
 
   // Detail befüllen
