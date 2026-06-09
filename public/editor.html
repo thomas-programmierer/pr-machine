@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Foto-Editor — VHS Spandau</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau80:#375578;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
+  --lila:#5B2D8E;--panel:#1a2744;--border:rgba(255,255,255,.09);
+}
+body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+
+.topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
+.tb-logo svg{width:36px;height:22px}
+.tb-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.2px}
+.tb-tag{font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px}
+.tb-right{margin-left:auto;display:flex;gap:7px;align-items:center}
+.tb-btn{padding:5px 13px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb-prim{background:var(--gelb);color:var(--blau)}.tb-prim:hover{background:#e0a70e}
+.tb-sec{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.tb-sec:hover{background:rgba(255,255,255,.2)}
+.tb-back{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px}.tb-back:hover{color:#fff}
+
+.ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 16px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
+.ext-nav-tab{padding:9px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}.ext-nav-tab:hover{color:#fff}.ext-nav-tab.active{color:#fff;border-bottom-color:var(--gelb)}
+.ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.45);padding:0 6px;flex-shrink:0}
+.ext-logout-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:4px 10px;color:rgba(255,255,255,.65);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;flex-shrink:0}.ext-logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+
+.editor-wrap{flex:1;display:grid;grid-template-columns:220px 1fr 250px;overflow:hidden;min-height:0}
+
+.panel{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.panel-r{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;border-right:none}
+.p-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.p-label{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tpl-card{border-radius:6px;border:2px solid transparent;cursor:pointer;overflow:hidden;aspect-ratio:9/16;padding:7px 6px;position:relative;transition:border-color .15s}.tpl-card:hover,.tpl-card.on{border-color:var(--gelb)}
+.tpl-active-badge{position:absolute;top:4px;right:4px;font-size:6px;font-weight:700;padding:1px 4px;border-radius:3px;background:var(--gelb);color:var(--blau)}
+.tpl-name{font-size:9px;font-weight:600;color:var(--blau60);text-align:center;margin-top:3px}
+
+.upload-zone{border:2px dashed rgba(255,255,255,.2);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.03)}.upload-zone:hover,.upload-zone.drag{border-color:var(--gelb);background:rgba(250,185,15,.06)}
+.uz-icon{font-size:22px;margin-bottom:5px}
+.uz-text{font-size:10px;color:rgba(255,255,255,.6);line-height:1.5}
+.uz-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px}
+.upload-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.upload-btn{padding:7px 4px;border-radius:6px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);cursor:pointer;text-align:center;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}.upload-btn:hover{background:rgba(250,185,15,.15);border-color:var(--gelb);color:var(--gelb)}
+.upload-btn.cam{border-color:var(--hellblau);color:var(--hellblau)}.upload-btn.cam:hover{background:rgba(100,185,230,.15)}
+.foto-vorschau{display:none;position:relative;border-radius:6px;overflow:hidden;margin-top:6px}
+.foto-vorschau img{width:100%;height:60px;object-fit:cover;display:block}
+.foto-del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(225,0,15,.85);border:none;cursor:pointer;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center}
+
+.format-btns{display:flex;flex-direction:column;gap:5px}
+.fmt-btn{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}.fmt-btn.on{border-color:var(--gelb);background:rgba(250,185,15,.08)}
+.fmt-icon{width:18px;height:12px;border-radius:2px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:5px;font-weight:700;color:rgba(255,255,255,.6);flex-shrink:0}
+.fmt-name{font-size:10px;font-weight:600;color:rgba(255,255,255,.8)}
+.fmt-dim{font-size:8px;color:rgba(255,255,255,.4);margin-left:auto}
+
+/* ── CANVAS ── */
+.canvas-area{background:#0d1117;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.canvas-toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.65);padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);z-index:20}
+.ct-btn{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.7);transition:all .15s}.ct-btn:hover{background:rgba(255,255,255,.18);color:#fff}.ct-btn.on{background:rgba(250,185,15,.2);border-color:var(--gelb);color:var(--gelb)}
+.ct-sep{width:1px;height:18px;background:rgba(255,255,255,.15)}
+.zoom-lbl{font-size:10px;color:rgba(255,255,255,.5);min-width:34px;text-align:center}
+
+.canvas-outer{position:relative}
+.canvas-frame{position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.55)}
+
+/* ── LAYERS ── */
+.cl-foto{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat}
+.cl-color{position:absolute;inset:0;pointer-events:none}
+
+/* ── SAFE ZONE OVERLAY (SVG, pointer-events:none) ── */
+#safe-zone-svg{position:absolute;inset:0;pointer-events:none;z-index:10;display:none}
+
+/* ── DRAGGABLE TEXT BLOCK ── */
+#text-block{
+  position:absolute;
+  cursor:grab;
+  user-select:none;
+  z-index:8;
+  padding:10px 14px;
+  /* outline shown when selected */
+  outline:none;
+  border-radius:3px;
+}
+#text-block.selected{
+  outline:1.5px dashed rgba(250,185,15,.9);
+  outline-offset:3px;
+  cursor:grab;
+}
+#text-block:active,#text-block.dragging{cursor:grabbing}
+
+/* ── BADGE BLOCK ── */
+#badge-block{
+  position:absolute;
+  cursor:grab;
+  user-select:none;
+  z-index:9;
+  display:none;
+}
+#badge-block.selected{outline:1.5px dashed rgba(250,185,15,.9);outline-offset:3px}
+
+/* LOGO fixed */
+#canvas-logo{position:absolute;top:12px;right:12px;pointer-events:none;z-index:9}
+#layer-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(250,185,15,.9);color:var(--blau);pointer-events:none;z-index:11;font-family:'DM Sans',sans-serif}
+
+/* FOOTER fixed-bottom */
+#footer-block{position:absolute;bottom:0;left:0;right:0;z-index:8;pointer-events:none;padding:0 14px 10px}
+
+/* COORD READOUT */
+.coord-readout{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px;pointer-events:none;font-family:monospace;z-index:20;white-space:nowrap}
+
+/* ── RIGHT PANEL ── */
+.dvv-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.dvv-sw{aspect-ratio:1;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;position:relative}.dvv-sw:hover,.dvv-sw.on{border-color:var(--gelb)}
+.dvv-sw[title]:hover::after{content:attr(title);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--blau);color:#fff;font-size:8px;padding:2px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;font-family:'DM Sans',sans-serif}
+.sl-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sl-lbl{font-size:9px;color:rgba(255,255,255,.55);min-width:78px}
+.sl-track{flex:1;height:18px;display:flex;align-items:center}
+input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
+.sl-val{font-size:10px;font-weight:700;min-width:36px;text-align:right}
+.sv-blue{color:var(--hellblau)}.sv-gelb{color:var(--gelb)}.sv-grn{color:var(--gruen)}
+.txt-field{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;outline:none;transition:border-color .15s;resize:none}.txt-field:focus{border-color:var(--gelb)}.txt-field::placeholder{color:rgba(255,255,255,.3)}
+.badge-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.badge-sw{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .15s}.badge-sw.on,.badge-sw:hover{border-color:var(--gelb)}
+.exp-btn{padding:8px 4px;border-radius:6px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;text-align:center;transition:all .15s;font-family:'DM Sans',sans-serif;display:block;width:100%;margin-bottom:5px}.exp-btn:hover{border-color:var(--gelb);color:var(--gelb);background:rgba(250,185,15,.08)}
+.exp-main{background:var(--gelb);color:var(--blau);border-color:var(--gelb)}.exp-main:hover{background:#e0a70e;color:var(--blau)}
+
+/* SAFE ZONE LEGEND */
+.sz-legend{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.sz-item{display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.55)}
+.sz-dot{width:18px;height:2px;border-radius:1px;flex-shrink:0}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid var(--gelb)}.toast.show{transform:translateX(-50%) translateY(0)}
+.t-dot{width:14px;height:14px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-logo">
+    <svg viewBox="0 0 36 22"><circle cx="8" cy="11" r="6" fill="#00285A" opacity=".8"/><circle cx="18" cy="6" r="7" fill="#FAB90F"/><circle cx="7" cy="17" r="4.5" fill="#EB640F"/><circle cx="28" cy="13" r="5.5" fill="#64B9E6"/><circle cx="18" cy="17" r="3.5" fill="#E1000F"/><circle cx="28" cy="5" r="3" fill="#69829B"/></svg>
+  </div>
+  <span class="tb-title">Foto-Editor</span>
+  <span class="tb-tag" id="format-tag">Story · 9:16</span>
+  <div class="tb-right">
+    <a href="/" class="tb-back">← Redaktion</a>
+    <button class="tb-btn tb-sec" onclick="resetEditor()">↺ Reset</button>
+    <button class="tb-btn tb-prim" onclick="exportPNG()">⬇ PNG exportieren</button>
+  </div>
+</div>
+
+<div class="ext-nav-bar" id="ext-nav-bar">
+  <a href="/" class="ext-nav-tab">Redaktion</a>
+  <a href="/kalender" class="ext-nav-tab">📅 Redaktionsplan</a>
+  <a href="/editor" class="ext-nav-tab active">🖼 Foto-Editor</a>
+  <a href="/freigabe" class="ext-nav-tab">✅ Freigabe</a>
+  <a href="/performance" class="ext-nav-tab">📊 Performance</a>
+</div>
+
+<input type="file" id="file-upload" accept="image/*" style="display:none" onchange="handleFile(this)">
+<input type="file" id="cam-upload" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+
+<div class="editor-wrap">
+
+  <!-- ══ LINKES PANEL ══ -->
+  <div class="panel">
+
+    <div class="p-section">
+      <div class="p-label">Templates</div>
+      <div class="tpl-grid">
+        <div>
+          <div class="tpl-card on" id="tpl-0" style="background:#00285A" onclick="loadTemplate(0)">
+            <div style="position:absolute;top:4px;right:4px"><svg width="14" height="9" viewBox="0 0 36 22"><circle cx="8" cy="11" r="5" fill="#00285A" opacity=".7"/><circle cx="18" cy="6" r="6" fill="#FAB90F"/><circle cx="7" cy="17" r="4" fill="#EB640F"/><circle cx="28" cy="13" r="5" fill="#64B9E6"/><circle cx="18" cy="17" r="3" fill="#E1000F"/></svg></div>
+            <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
+            <div class="tpl-active-badge">Aktiv</div>
+          </div>
+          <div class="tpl-name">Zitat</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-1" style="background:#AFC805" onclick="loadTemplate(1)">
+            <div style="margin-top:20px;font-size:7px;font-weight:700;color:#fff;line-height:1.25">Sommer 2026</div>
+            <div style="margin-top:3px;font-size:5px;color:#fff;font-weight:700">Vollfarbe · kein Foto</div>
+          </div>
+          <div class="tpl-name">Vollfarbe</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-2" style="background:#00285A" onclick="loadTemplate(2)">
+            <div style="margin-top:14px;font-size:6px;font-weight:700;color:#fff;line-height:1.25">Recruiting · Coach</div>
+            <div style="position:absolute;bottom:14px;right:5px;width:22px;height:22px;border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-size:4.5px;font-weight:700;color:#fff;text-align:center">Wir such. Dich!</div>
+          </div>
+          <div class="tpl-name">Recruiting</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-3" style="background:#00285A" onclick="loadTemplate(3)">
+            <div style="margin-top:14px;font-size:5.5px;font-weight:700;color:#fff;line-height:1.25">Wie stellst Du Dir die Zukunft vor?</div>
+            <div style="position:absolute;bottom:10px;right:5px;width:20px;height:2px;background:#EB640F"></div>
+          </div>
+          <div class="tpl-name">Frage</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Hintergrundfoto</div>
+      <div class="upload-zone" id="upload-zone"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)"
+        onclick="document.getElementById('file-upload').click()">
+        <div class="uz-icon">🖼</div>
+        <div class="uz-text">Ziehen oder klicken</div>
+        <div class="uz-sub">JPG, PNG, WebP</div>
+      </div>
+      <div class="upload-btns">
+        <div class="upload-btn" onclick="document.getElementById('file-upload').click()">📁 Datei</div>
+        <div class="upload-btn cam" onclick="document.getElementById('cam-upload').click()">📷 Kamera</div>
+      </div>
+      <div class="foto-vorschau" id="foto-vorschau">
+        <img id="foto-preview-img" src="" alt="">
+        <button class="foto-del" onclick="removeFoto()">✕</button>
+      </div>
+      <div id="no-foto-hint" style="margin-top:6px;font-size:9px;color:rgba(255,255,255,.3);text-align:center">Kein Foto → Vollfarbe</div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Format</div>
+      <div class="format-btns">
+        <div class="fmt-btn on" id="fmt-0" onclick="setFormat(0,270,480,'Story / Reel','1080×1920')">
+          <div class="fmt-icon" style="width:12px;height:18px">9:16</div>
+          <span class="fmt-name">Story</span><span class="fmt-dim">1080×1920</span>
+        </div>
+        <div class="fmt-btn" id="fmt-1" onclick="setFormat(1,280,280,'Feed Quadrat','1080×1080')">
+          <div class="fmt-icon" style="width:18px;height:18px">1:1</div>
+          <span class="fmt-name">Feed</span><span class="fmt-dim">1080×1080</span>
+        </div>
+        <div class="fmt-btn" id="fmt-2" onclick="setFormat(2,320,180,'Querformat','1920×1080')">
+          <div class="fmt-icon" style="width:20px;height:11px">16:9</div>
+          <span class="fmt-name">Quer</span><span class="fmt-dim">1920×1080</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ CANVAS ══ -->
+  <div class="canvas-area">
+    <div class="canvas-outer" id="canvas-outer">
+
+      <div class="canvas-toolbar">
+        <div class="ct-btn" onclick="zoom(-10)">−</div>
+        <span class="zoom-lbl" id="zoom-lbl">100%</span>
+        <div class="ct-btn" onclick="zoom(+10)">+</div>
+        <div class="ct-sep"></div>
+        <div class="ct-btn" onclick="fitZoom()" title="Anpassen">⊡</div>
+        <div class="ct-sep"></div>
+        <div class="ct-btn" id="sz-toggle-btn" onclick="toggleSafeZones()" title="Safe-Zonen ein/aus" style="font-size:9px;width:auto;padding:0 6px;gap:3px">
+          ⊞ Safe-Zonen
+        </div>
+      </div>
+
+      <div class="canvas-frame" id="canvas-frame" style="width:270px;height:480px;border-radius:4px">
+
+        <!-- L1 Foto -->
+        <div class="cl-foto" id="cl-foto"></div>
+        <!-- L2 Farbe -->
+        <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
+        <!-- L3 DVV Logo -->
+        <div id="canvas-logo">
+          <svg width="40" height="25" viewBox="0 0 40 25"><circle cx="8" cy="12" r="7" fill="#00285A" opacity=".85"/><circle cx="19" cy="7" r="8" fill="#FAB90F"/><circle cx="7" cy="19" r="5.5" fill="#EB640F"/><circle cx="31" cy="14" r="6.5" fill="#64B9E6"/><circle cx="19" cy="19" r="4.5" fill="#E1000F"/><circle cx="31" cy="6" r="3.5" fill="#69829B"/></svg>
+        </div>
+        <!-- L4 Text-Block (draggable) -->
+        <div id="text-block" class="selected">
+          <div id="tb-headline" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:15px;line-height:1.28;word-break:break-word;margin-bottom:8px"></div>
+          <div id="tb-sub" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.8);font-size:11px;line-height:1.5;word-break:break-word"></div>
+          <div id="tb-author" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;text-decoration:underline;margin-top:8px"></div>
+          <div id="tb-role" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.75);font-size:9px;text-align:right;line-height:1.4;margin-top:1px"></div>
+        </div>
+        <!-- L5 Badge (draggable) -->
+        <div id="badge-block">
+          <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
+        </div>
+        <!-- L6 Footer -->
+        <div id="footer-block">
+          <div style="height:1px;background:rgba(255,255,255,.18);margin-bottom:5px"></div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+            <div id="tb-footer" style="font-family:Arial,sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
+          </div>
+          <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
+        </div>
+        <!-- L7 Safe-Zone SVG -->
+        <svg id="safe-zone-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <!-- L8 Overlay Badge -->
+        <div class="layer-badge" id="layer-badge">72% Blau</div>
+        <!-- Coordinate Readout -->
+        <div class="coord-readout" id="coord-readout" style="display:none">x: 0  y: 0</div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RECHTES PANEL ══ -->
+  <div class="panel-r panel">
+
+    <div style="display:flex;border-bottom:1px solid var(--border)">
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">Export</div>
+    </div>
+
+    <!-- TAB BILD -->
+    <div id="rtab-0">
+      <div class="p-section">
+        <div class="p-label">DVV-Farben (CI-konform)</div>
+        <div class="dvv-palette">
+          <div class="dvv-sw on" id="dvvsw-0" style="background:#00285A" title="DVV Primärblau" onclick="setOverlayColor(0,'#00285A','Blau')"></div>
+          <div class="dvv-sw" id="dvvsw-1" style="background:#AFC805" title="DVV Grün" onclick="setOverlayColor(1,'#AFC805','Grün')"></div>
+          <div class="dvv-sw" id="dvvsw-2" style="background:#E1000F" title="DVV Rot" onclick="setOverlayColor(2,'#E1000F','Rot')"></div>
+          <div class="dvv-sw" id="dvvsw-3" style="background:#64B9E6" title="Hellblau" onclick="setOverlayColor(3,'#64B9E6','Hellblau')"></div>
+          <div class="dvv-sw" id="dvvsw-4" style="background:#EB640F" title="DVV Orange" onclick="setOverlayColor(4,'#EB640F','Orange')"></div>
+          <div class="dvv-sw" id="dvvsw-5" style="background:#1A2943" title="Nachtblau" onclick="setOverlayColor(5,'#1A2943','Nacht')"></div>
+          <div class="dvv-sw" id="dvvsw-6" style="background:#5B2D8E" title="Lila" onclick="setOverlayColor(6,'#5B2D8E','Lila')"></div>
+          <div class="dvv-sw" id="dvvsw-7" style="background:#FAB90F" title="DVV Gelb" onclick="setOverlayColor(7,'#FAB90F','Gelb')"></div>
+          <div class="dvv-sw" id="dvvsw-8" style="background:#69829B" title="Blau 60%" onclick="setOverlayColor(8,'#69829B','Blau60')"></div>
+          <div class="dvv-sw" id="dvvsw-9" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" title="Blau 10%" onclick="setOverlayColor(9,'#E6EBF0','Blau10')"></div>
+        </div>
+        <div style="margin-top:7px;font-size:8px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--gruen);display:inline-block"></span>Nur DVV Corporate-Design-Farben
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Transparenz-Steuerung</div>
+        <div class="sl-row">
+          <span class="sl-lbl">Farbüberlagerung</span>
+          <div class="sl-track"><input type="range" min="0" max="100" value="72" step="1" id="sl-opacity" oninput="updateOpacity(this.value)"></div>
+          <span class="sl-val sv-blue" id="sv-opacity">72%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Helligkeit</span>
+          <div class="sl-track"><input type="range" min="20" max="130" value="75" step="1" id="sl-bright" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val sv-gelb" id="sv-bright">75%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Sättigung</span>
+          <div class="sl-track"><input type="range" min="0" max="200" value="70" step="1" id="sl-sat" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val sv-grn" id="sv-sat">70%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Kontrast</span>
+          <div class="sl-track"><input type="range" min="50" max="150" value="105" step="1" id="sl-contrast" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val" style="color:rgba(255,255,255,.6)" id="sv-contrast">105%</span>
+        </div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(25)">25%</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid var(--gelb);background:rgba(250,185,15,.1);color:var(--gelb);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(72)">72% · Vigdís</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(85)">85%</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(100)">100%</button>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Akzentlinie</div>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="linesw-0" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')"></div>
+          <div class="badge-sw" id="linesw-1" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')"></div>
+          <div class="badge-sw" id="linesw-2" style="background:#AFC805" onclick="setLineColor(2,'#AFC805')"></div>
+          <div class="badge-sw" id="linesw-3" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')"></div>
+          <div class="badge-sw" id="linesw-4" style="background:#fff" onclick="setLineColor(4,'#fff')"></div>
+          <div class="badge-sw" id="linesw-5" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')"></div>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Safe-Zonen (Meta-Standards)</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,.7);cursor:pointer">
+            <input type="checkbox" id="sz-toggle" onchange="toggleSafeZones()">Hilfslinien einblenden
+          </label>
+        </div>
+        <div class="sz-legend">
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(250,185,15,.8)"></div>Außenrand · 5 % (allg. Sicherheit)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone oben · 14 % (Story UI)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone unten · 20 % (Story UI)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(175,200,5,.8);border:none"></div>Text-Safe-Zone · zentrierter Innenbereich</div>
+        </div>
+        <div style="margin-top:8px;font-size:8px;color:rgba(255,255,255,.3);line-height:1.6">
+          Meta-Richtwerte: Profilbild-Überlagerung oben links ~14%, Story-Interaktionsleiste unten ~20%, Feed-Bildunterschrift ~10%. Hilfslinien erscheinen nur im Editor, nicht im Export.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB TEXT -->
+    <div id="rtab-1" style="display:none">
+      <div class="p-section">
+        <div class="p-label">Haupttext / Headline</div>
+        <textarea class="txt-field" id="tf-headline" rows="3" oninput="updateText()" placeholder="Hauptschlagzeile …"></textarea>
+        <div class="sl-row" style="margin-top:6px">
+          <span class="sl-lbl">Größe</span>
+          <div class="sl-track"><input type="range" min="10" max="36" value="15" step="1" id="sl-hlsize" oninput="updateText()"></div>
+          <span class="sl-val sv-blue" id="sv-hlsize">15px</span>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Unterzeile / Subtext</div>
+        <textarea class="txt-field" id="tf-sub" rows="2" oninput="updateText()" placeholder="Ergänzender Text …"></textarea>
+        <div class="sl-row" style="margin-top:6px">
+          <span class="sl-lbl">Größe</span>
+          <div class="sl-track"><input type="range" min="8" max="22" value="11" step="1" id="sl-subsize" oninput="updateText()"></div>
+          <span class="sl-val sv-blue" id="sv-subsize">11px</span>
+        </div>
+      </div>
+      <div class="p-section" id="fulltext-preview-section" style="display:none">
+        <div class="p-label" style="color:var(--orange)">📋 Text aus Redaktion</div>
+        <textarea class="txt-field" id="tf-fulltext-preview" rows="6" readonly
+          style="font-size:9px;color:rgba(255,255,255,.7);line-height:1.6;cursor:default;resize:none"
+          placeholder="Volltext aus Schritt 4 …"></textarea>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Textblock-Breite</div>
+        <div class="sl-row">
+          <span class="sl-lbl">Breite</span>
+          <div class="sl-track"><input type="range" min="50" max="100" value="88" step="1" id="sl-tbwidth" oninput="updateText()"></div>
+          <span class="sl-val sv-grn" id="sv-tbwidth">88%</span>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Autorin / Quelle</div>
+        <input class="txt-field" id="tf-author" type="text" oninput="updateText()" placeholder="Name …" style="margin-bottom:6px">
+        <input class="txt-field" id="tf-role" type="text" oninput="updateText()" placeholder="Titel / Funktion …">
+      </div>
+      <div class="p-section">
+        <div class="p-label">Footer-Text</div>
+        <input class="txt-field" id="tf-footer" type="text" oninput="updateText()" value="vhs Spandau">
+      </div>
+      <div class="p-section">
+        <div class="p-label">Textfarbe</div>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="txtsw-0" style="background:#fff;border:1px solid rgba(255,255,255,.3)" onclick="setTextColor(0,'#fff')"></div>
+          <div class="badge-sw" id="txtsw-1" style="background:#00285A" onclick="setTextColor(1,'#00285A')"></div>
+          <div class="badge-sw" id="txtsw-2" style="background:#FAB90F" onclick="setTextColor(2,'#FAB90F')"></div>
+          <div class="badge-sw" id="txtsw-3" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" onclick="setTextColor(3,'#E6EBF0')"></div>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Badge / Call-to-Action</div>
+        <input class="txt-field" id="tf-badge" type="text" oninput="updateText()" placeholder="z. B. Jetzt anmelden!" style="margin-bottom:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="badge-vis" onchange="updateText()"> Badge einblenden
+        </label>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="bgsw-0" style="background:#5B2D8E" onclick="setBadgeColor(0,'#5B2D8E')"></div>
+          <div class="badge-sw" id="bgsw-1" style="background:#E1000F" onclick="setBadgeColor(1,'#E1000F')"></div>
+          <div class="badge-sw" id="bgsw-2" style="background:#FAB90F" onclick="setBadgeColor(2,'#FAB90F')"></div>
+          <div class="badge-sw" id="bgsw-3" style="background:#AFC805" onclick="setBadgeColor(3,'#AFC805')"></div>
+          <div class="badge-sw" id="bgsw-4" style="background:#00285A" onclick="setBadgeColor(4,'#00285A')"></div>
+        </div>
+      </div>
+      <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
+        <div class="p-label" style="color:var(--gelb)">Position Textblock</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:6px">Textblock auf dem Canvas direkt ziehen (Drag & Drop). Snap zu Safe-Zonen aktiv.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">X px</div>
+            <input class="txt-field" id="pos-x" type="number" value="14" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
+          </div>
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">Y px</div>
+            <input class="txt-field" id="pos-y" type="number" value="200" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB EXPORT -->
+    <div id="rtab-2" style="display:none">
+      <div class="p-section">
+        <div class="p-label">PNG exportieren</div>
+        <button class="exp-btn exp-main" onclick="exportPNG()">⬇ Als PNG herunterladen</button>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Exportiert ohne Hilfslinien · Safe-Zonen werden automatisch ausgeblendet.</div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">In Redaktionsplan</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select class="txt-field" id="exp-kanal" style="font-size:10px">
+            <option value="ig">📸 Instagram</option>
+            <option value="fb">👥 Facebook</option>
+            <option value="beide">📸👥 Beide</option>
+          </select>
+          <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
+          <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Hook …" style="font-size:10px">
+          <button class="exp-btn" onclick="saveToRedaktionsplan()">📅 Im Redaktionsplan speichern</button>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Auflösung</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let activeColor='#00285A', activeColorName='Blau';
+let lineColor='#FAB90F', badgeColor='#5B2D8E', textColor='#fff';
+let fotoDataUrl=null, zoomLevel=100;
+let currentFormatIdx=0;
+let safeZonesVisible=false;
+
+// Textblock position (in canvas-frame px)
+let tbX=14, tbY=200;
+
+const FORMATS=[
+  {w:270,h:480,label:'Story / Reel',exp:'1080×1920'},
+  {w:280,h:280,label:'Feed Quadrat',exp:'1080×1080'},
+  {w:320,h:180,label:'Querformat',  exp:'1920×1080'},
+];
+const EXPORT_RES=[{w:1080,h:1920},{w:1080,h:1080},{w:1920,h:1080}];
+
+// Safe-Zone-Definitionen (als Anteil 0..1 der Canvas-Größe)
+// Basierend auf Meta/Instagram Story Guidelines
+const SAFE_ZONES=[
+  // Typ, Beschreibung, Farbe, [x,y,w,h] als Anteil
+  {id:'outer',  label:'Außenrand (5%)',           color:'rgba(250,185,15,.55)', dash:'4,3',
+   rect: f=>({x:f.w*.05, y:f.h*.05, w:f.w*.90, h:f.h*.90})},
+  {id:'top',    label:'Profilbild/UI oben (14%)', color:'rgba(100,185,230,.6)', dash:'6,3',
+   rect: f=>({x:0, y:0, w:f.w, h:f.h*.14})},
+  {id:'bottom', label:'Story-UI unten (20%)',     color:'rgba(100,185,230,.6)', dash:'6,3',
+   rect: f=>({x:0, y:f.h*.80, w:f.w, h:f.h*.20})},
+  {id:'text',   label:'Text-Safe-Bereich',        color:'rgba(175,200,5,.45)', dash:'3,3',
+   rect: f=>({x:f.w*.08, y:f.h*.16, w:f.w*.84, h:f.h*.62})},
+  // Mittellinie horizontal
+  {id:'hcenter',label:'Horizontale Mitte',        color:'rgba(255,255,255,.18)', dash:'2,4',
+   line: f=>({x1:0, y1:f.h/2, x2:f.w, y2:f.h/2})},
+  // Mittellinie vertikal
+  {id:'vcenter',label:'Vertikale Mitte',          color:'rgba(255,255,255,.18)', dash:'2,4',
+   line: f=>({x1:f.w/2, y1:0, x2:f.w/2, y2:f.h})},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATES=[
+  {bg:'#00285A',opacity:72,bright:75,sat:70,contrast:105,
+   headline:'Ich wollte immer die Welt sehen. Wenn mich jemand fragte, was ich mal werden möchte, antwortete ich: Kapitänin auf einem Schiff.',
+   hlsize:15,sub:'',subsize:11,tbWidth:88,
+   author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
+   footer:'vhs Spandau',badge:'',badgeVis:false,
+   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:140},
+  {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
+   author:'',role:'',footer:'vhs Spandau',badge:'',badgeVis:false,
+   lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
+   tbX:14,tbY:160},
+  {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Baskisch vom Sofa \u2013 mit Dir als Coach.',hlsize:19,
+   sub:'Starte ab September 2026 als Online-Kursleitung an der VHS Spandau.',subsize:12,tbWidth:88,
+   author:'',role:'',footer:'vhs Fremdsprachen',badge:'Wir suchen Dich!',badgeVis:true,
+   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:120},
+  {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
+   sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
+   author:'',role:'',footer:'vhs Politik | Gesellschaft | Umwelt',badge:'',badgeVis:false,
+   lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:130},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+// ── Iframe-Erkennung ──────────────────────────────────────────
+const isInIframe = window.self !== window.top;
+
+// ── Redaktion-Payload (global, bleibt bei Template-Wechsel erhalten) ─────────
+let redaktionPayload = null;
+
+function applyRedaktionPayload() {
+  if (!redaktionPayload) return;
+  const p = redaktionPayload;
+  if (p.hl)     { document.getElementById('tf-headline').value = p.hl; }
+  if (p.sub)    { document.getElementById('tf-sub').value      = p.sub; }
+  if (p.anlass) { document.getElementById('exp-anlass').value  = p.anlass; }
+  if (p.hlsize) { document.getElementById('sl-hlsize').value   = p.hlsize; }
+  if (p.full)   {
+    const ft  = document.getElementById('tf-fulltext-preview');
+    const sec = document.getElementById('fulltext-preview-section');
+    if (ft)  ft.value = p.full;
+    if (sec) sec.style.display = 'block';
+  }
+  updateText();
+  setRTab(1); // Text-Tab öffnen damit User den Text sieht
+}
+
+// ── postMessage-Empfänger: Payload aus Redaktion (index.html → iframe) ────────
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'REDAKTION_PAYLOAD') return;
+  const p = e.data;
+  const hlLen = (p.hl || '').length;
+  redaktionPayload = {
+    hl:     p.hl       || '',
+    sub:    p.sub      || '',
+    anlass: p.anlass   || '',
+    kurs:   p.kurs     || '',
+    full:   p.fulltext || '',
+    hlsize: hlLen > 100 ? 12 : hlLen > 70 ? 14 : hlLen > 40 ? 16 : 18,
+  };
+  applyRedaktionPayload();
+  showStudioBanner(p.anlass, p.kurs, p.fulltext);
+});
+
+// ── App-Init ──────────────────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  // Wenn in iframe: topbar + ext-nav ausblenden
+  if (isInIframe) {
+    document.body.style.setProperty('--topbar-h', '0px');
+    const topbar = document.querySelector('.topbar');
+    const nav    = document.getElementById('ext-nav-bar');
+    if (topbar) topbar.style.display = 'none';
+    if (nav)    nav.style.display    = 'none';
+  }
+
+  // URL-Parameter (Fallback für direkten /editor?… Aufruf)
+  const qp       = new URLSearchParams(window.location.search);
+  const inHL     = qp.get('hl')       || '';
+  const inSub    = qp.get('sub')      || '';
+  const inAnlass = qp.get('anlass')   || '';
+  const inKurs   = qp.get('kurs')     || '';
+  const inFull   = qp.get('fulltext') || '';
+  const hasURLPayload = !!(inHL || inFull);
+
+  // Auth
+  try {
+    const r = await fetch('/api/me', { credentials: 'include' });
+    if (!r.ok) { if (!isInIframe) window.location.href = '/'; return; }
+    const d = await r.json();
+    if (!isInIframe) {
+      // Kanonische Nav nur im Standalone-Modus aufbauen
+      const role = d.user.role;
+      const PAGES = [
+        { label:'📅 Redaktionsplan', url:'/kalender',          roles:['admin','redakteur','pbl'] },
+        { label:'📬 Kursvorschläge', url:'/?screen=pbl',       roles:['admin','pbl'] },
+        { label:'📚 Kursliste',       url:'/?screen=kurse',     roles:['admin','redakteur','pbl'] },
+        { label:'✏️ Redaktion',       url:'/?screen=redakteur', roles:['admin','redakteur'] },
+        { label:'🎨 Grafik-Studio',   url:'/editor',            roles:['admin','redakteur'] },
+        { label:'✅ Freigabe',         url:'/freigabe',          roles:['admin','redakteur'] },
+        { label:'📊 Dashboard',       url:'/?screen=direktion', roles:['admin','redakteur','direktion'] },
+        { label:'📈 Performance',     url:'/performance',       roles:['admin','redakteur','direktion'] },
+        { label:'⚙️ Admin',           url:'/?screen=admin',     roles:['admin'] },
+      ];
+      const nav = PAGES
+        .filter(p => p.roles.includes(role))
+        .map(p => {
+          const active = !p.url.startsWith('/?') && window.location.pathname === p.url;
+          return `<a href="${p.url}" class="ext-nav-tab${active?' active':''}">${p.label}</a>`;
+        }).join('');
+      document.getElementById('ext-nav-bar').innerHTML = nav +
+        `<span class="ext-nav-user">👤 ${d.user.name.split(' ')[0]}</span>` +
+        `<button class="ext-logout-btn" onclick="doLogout()">Abmelden</button>`;
+    }
+  } catch(e) { if (!isInIframe) window.location.href = '/'; return; }
+
+  document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
+  loadTemplate(0);
+  initDrag();
+
+  // URL-Payload anwenden (direkter Aufruf)
+  if (hasURLPayload) {
+    const hlLen = inHL.length;
+    redaktionPayload = {
+      hl: inHL, sub: inSub, anlass: inAnlass, kurs: inKurs, full: inFull,
+      hlsize: hlLen > 100 ? 12 : hlLen > 70 ? 14 : hlLen > 40 ? 16 : 18,
+    };
+    applyRedaktionPayload();
+    showStudioBanner(inAnlass, inKurs, inFull);
+    window.history.replaceState({}, '', '/editor');
+  }
+});
+
+async function doLogout() {
+  await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+  window.location.href = '/';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// DRAG & DROP — Textblock
+// ═══════════════════════════════════════════════════════════════
+function initDrag(){
+  makeDraggable(document.getElementById('text-block'), (x,y)=>{
+    tbX=x; tbY=y;
+    document.getElementById('pos-x').value=Math.round(x);
+    document.getElementById('pos-y').value=Math.round(y);
+    document.getElementById('coord-readout').textContent='x: '+Math.round(x)+'  y: '+Math.round(y);
+  });
+  makeDraggable(document.getElementById('badge-block'), ()=>{});
+}
+
+function makeDraggable(el, onMove){
+  let startX,startY,startLeft,startTop,dragging=false;
+  const frame=document.getElementById('canvas-frame');
+
+  function getCanvasScale(){return zoomLevel/100;}
+
+  function pointerDown(e){
+    e.preventDefault();
+    dragging=true;
+    el.classList.add('dragging');
+    document.getElementById('coord-readout').style.display='block';
+    const scale=getCanvasScale();
+    const clientX=e.touches?e.touches[0].clientX:e.clientX;
+    const clientY=e.touches?e.touches[0].clientY:e.clientY;
+    startX=clientX/scale;
+    startY=clientY/scale;
+    startLeft=parseInt(el.style.left)||0;
+    startTop=parseInt(el.style.top)||0;
+    document.addEventListener('mousemove',pointerMove,{passive:false});
+    document.addEventListener('mouseup',pointerUp);
+    document.addEventListener('touchmove',pointerMove,{passive:false});
+    document.addEventListener('touchend',pointerUp);
+  }
+
+  function pointerMove(e){
+    if(!dragging)return;
+    e.preventDefault();
+    const scale=getCanvasScale();
+    const clientX=e.touches?e.touches[0].clientX:e.clientX;
+    const clientY=e.touches?e.touches[0].clientY:e.clientY;
+    const dx=(clientX/scale)-startX;
+    const dy=(clientY/scale)-startY;
+    const fw=frame.offsetWidth, fh=frame.offsetHeight;
+    const ew=el.offsetWidth, eh=el.offsetHeight;
+    let nx=Math.max(0,Math.min(fw-ew, startLeft+dx));
+    let ny=Math.max(0,Math.min(fh-eh, startTop+dy));
+    // Snap to safe-zone edges (5px threshold)
+    const f=FORMATS[currentFormatIdx];
+    const scaleF=fw/f.w;
+    const snap=5;
+    const snapPoints=[
+      f.w*.05*scaleF, f.w*.08*scaleF,
+      (f.w*.05+f.w*.90)*scaleF-ew,
+    ];
+    const snapY=[
+      f.h*.14*scaleF, f.h*.16*scaleF,
+      (f.h*.80)*scaleF-eh,
+    ];
+    snapPoints.forEach(s=>{ if(Math.abs(nx-s)<snap) nx=s; });
+    snapY.forEach(s=>{ if(Math.abs(ny-s)<snap) ny=s; });
+
+    el.style.left=Math.round(nx)+'px';
+    el.style.top=Math.round(ny)+'px';
+    onMove(Math.round(nx), Math.round(ny));
+  }
+
+  function pointerUp(){
+    dragging=false;
+    el.classList.remove('dragging');
+    setTimeout(()=>{ document.getElementById('coord-readout').style.display='none'; },1200);
+    document.removeEventListener('mousemove',pointerMove);
+    document.removeEventListener('mouseup',pointerUp);
+    document.removeEventListener('touchmove',pointerMove);
+    document.removeEventListener('touchend',pointerUp);
+  }
+
+  el.addEventListener('mousedown',pointerDown);
+  el.addEventListener('touchstart',pointerDown,{passive:false});
+}
+
+function setPosByInput(){
+  const x=parseInt(document.getElementById('pos-x').value)||0;
+  const y=parseInt(document.getElementById('pos-y').value)||0;
+  const tb=document.getElementById('text-block');
+  tb.style.left=x+'px'; tb.style.top=y+'px';
+  tbX=x; tbY=y;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAFE ZONES
+// ═══════════════════════════════════════════════════════════════
+function drawSafeZones(){
+  const svg=document.getElementById('safe-zone-svg');
+  const frame=document.getElementById('canvas-frame');
+  const fw=frame.offsetWidth, fh=frame.offsetHeight;
+  const f=FORMATS[currentFormatIdx];
+  // Scale factor canvas display px → logical %
+  const sx=fw/f.w, sy=fh/f.h;
+  svg.setAttribute('viewBox',`0 0 ${fw} ${fh}`);
+  svg.setAttribute('width',fw);
+  svg.setAttribute('height',fh);
+
+  let content='';
+  // Label definitions
+  const LABELS=[
+    {id:'outer', text:'5% Außenrand'},
+    {id:'top',   text:'Story-UI oben 14%'},
+    {id:'bottom',text:'Story-UI unten 20%'},
+    {id:'text',  text:'Text-Safe-Zone'},
+  ];
+
+  SAFE_ZONES.forEach(z=>{
+    if(z.rect){
+      const r=z.rect({w:f.w*sx,h:f.h*sy});
+      content+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"
+        fill="none" stroke="${z.color}" stroke-width="1"
+        stroke-dasharray="${z.dash}" rx="2"/>`;
+      // Label im Strich
+      const lbl=LABELS.find(l=>l.id===z.id);
+      if(lbl){
+        const lx=r.x+4, ly=r.y+(z.id==='bottom'?12:10);
+        content+=`<rect x="${lx-2}" y="${ly-9}" width="${lbl.text.length*4.8+4}" height="12" rx="2" fill="rgba(0,0,0,.55)"/>`;
+        content+=`<text x="${lx}" y="${ly}" font-family="Arial,sans-serif" font-size="8" fill="${z.color}" font-weight="700">${lbl.text}</text>`;
+      }
+    }
+    if(z.line){
+      const l=z.line({w:fw,h:fh});
+      content+=`<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}"
+        stroke="${z.color}" stroke-width="0.75" stroke-dasharray="${z.dash}"/>`;
+    }
+  });
+  svg.innerHTML=content;
+}
+
+function toggleSafeZones(){
+  safeZonesVisible=!safeZonesVisible;
+  const svg=document.getElementById('safe-zone-svg');
+  const cb=document.getElementById('sz-toggle');
+  const btn=document.getElementById('sz-toggle-btn');
+  svg.style.display=safeZonesVisible?'block':'none';
+  if(cb) cb.checked=safeZonesVisible;
+  btn.classList.toggle('on',safeZonesVisible);
+  if(safeZonesVisible) drawSafeZones();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE LADEN
+// ═══════════════════════════════════════════════════════════════
+// keepText=true → nur Farbe/Transparenz/Position laden, Text-Felder unangetastet lassen
+function loadTemplate(idx){
+  document.querySelectorAll('.tpl-card').forEach((c,i)=>{
+    c.classList.toggle('on',i===idx);
+    c.querySelectorAll('.tpl-active-badge').forEach(b=>b.remove());
+  });
+  const b2=document.createElement('div');
+  b2.className='tpl-active-badge';b2.textContent='Aktiv';
+  document.getElementById('tpl-'+idx).appendChild(b2);
+
+  const t=TEMPLATES[idx];
+  setOverlayColorDirect(t.colorIdx,t.bg,
+    {0:'Blau',1:'Grün',2:'Rot',3:'Hellblau',4:'Orange',5:'Nacht',6:'Lila',7:'Gelb',8:'Blau60',9:'Blau10'}[t.colorIdx]||'Farbe');
+  document.getElementById('sl-opacity').value=t.opacity;
+  updateOpacity(t.opacity);
+  document.getElementById('sl-bright').value=t.bright;
+  document.getElementById('sl-sat').value=t.sat;
+  document.getElementById('sl-contrast').value=t.contrast;
+  updatePhotoFilter();
+
+  // Text-Defaults aus Template laden
+  document.getElementById('tf-headline').value=t.headline;
+  document.getElementById('tf-sub').value=t.sub;
+  document.getElementById('tf-author').value=t.author;
+  document.getElementById('tf-role').value=t.role;
+  document.getElementById('tf-footer').value=t.footer;
+  document.getElementById('tf-badge').value=t.badge;
+  document.getElementById('badge-vis').checked=t.badgeVis;
+  document.getElementById('sl-hlsize').value=t.hlsize;
+  document.getElementById('sl-subsize').value=t.subsize;
+  document.getElementById('sl-tbwidth').value=t.tbWidth||88;
+
+  lineColor=t.lineColor; badgeColor=t.badgeColor; textColor=t.textColor;
+  syncLineSwatches(t.lineColor); syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
+
+  // Textblock platzieren
+  tbX=t.tbX||14; tbY=t.tbY||160;
+  const tb=document.getElementById('text-block');
+  tb.style.left=tbX+'px'; tb.style.top=tbY+'px';
+  document.getElementById('pos-x').value=tbX;
+  document.getElementById('pos-y').value=tbY;
+
+  if(idx===1) removeFoto();
+  // Wenn Redaktions-Payload vorhanden: überschreibt Template-Defaults
+  if (redaktionPayload) {
+    setTimeout(applyRedaktionPayload, 30);
+  } else {
+    updateText();
+  }
+  if(safeZonesVisible) drawSafeZones();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// OVERLAY FARBE
+// ═══════════════════════════════════════════════════════════════
+function setOverlayColorDirect(idx,hex,name){
+  activeColor=hex; activeColorName=name||hex;
+  document.querySelectorAll('.dvv-sw').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  document.getElementById('cl-color').style.background=hex;
+  updateBadgeLabel();
+}
+function setOverlayColor(idx,hex,name){setOverlayColorDirect(idx,hex,name);}
+
+// ═══════════════════════════════════════════════════════════════
+// TRANSPARENZ
+// ═══════════════════════════════════════════════════════════════
+function updateOpacity(v){
+  v=Math.round(v);
+  document.getElementById('cl-color').style.opacity=v/100;
+  document.getElementById('sv-opacity').textContent=v+'%';
+  updateBadgeLabel();
+}
+function updateBadgeLabel(){
+  const v=Math.round(document.getElementById('sl-opacity').value);
+  document.getElementById('layer-badge').textContent=v+'% '+activeColorName;
+}
+function applyPreset(v){document.getElementById('sl-opacity').value=v;updateOpacity(v);}
+function updatePhotoFilter(){
+  const b=Math.round(document.getElementById('sl-bright').value);
+  const s=Math.round(document.getElementById('sl-sat').value);
+  const c=Math.round(document.getElementById('sl-contrast').value);
+  document.getElementById('sv-bright').textContent=b+'%';
+  document.getElementById('sv-sat').textContent=s+'%';
+  document.getElementById('sv-contrast').textContent=c+'%';
+  document.getElementById('cl-foto').style.filter=`brightness(${b}%) saturate(${s}%) contrast(${c}%)`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEXT UPDATE (DOM direkt, kein innerHTML rebuild)
+// ═══════════════════════════════════════════════════════════════
+function updateText(){
+  const hl=document.getElementById('tf-headline').value;
+  const sub=document.getElementById('tf-sub').value;
+  const author=document.getElementById('tf-author').value;
+  const role=document.getElementById('tf-role').value;
+  const footer=document.getElementById('tf-footer').value;
+  const badge=document.getElementById('tf-badge').value;
+  const badgeOn=document.getElementById('badge-vis').checked;
+  const hlsize=Math.round(document.getElementById('sl-hlsize').value);
+  const subsize=Math.round(document.getElementById('sl-subsize').value);
+  const tbw=Math.round(document.getElementById('sl-tbwidth').value);
+
+  document.getElementById('sv-hlsize').textContent=hlsize+'px';
+  document.getElementById('sv-subsize').textContent=subsize+'px';
+  document.getElementById('sv-tbwidth').textContent=tbw+'%';
+
+  const tc=textColor;
+  const tc75=tc==='#fff'?'rgba(255,255,255,.78)':'rgba(0,40,90,.7)';
+
+  // Text block width
+  const frame=document.getElementById('canvas-frame');
+  const tbEl=document.getElementById('text-block');
+  tbEl.style.width=(frame.offsetWidth*tbw/100)+'px';
+
+  // Content
+  document.getElementById('tb-headline').innerHTML=escHtml(hl);
+  document.getElementById('tb-headline').style.fontSize=hlsize+'px';
+  document.getElementById('tb-headline').style.color=tc;
+  document.getElementById('tb-headline').style.display=hl?'block':'none';
+
+  document.getElementById('tb-sub').innerHTML=escHtml(sub);
+  document.getElementById('tb-sub').style.fontSize=subsize+'px';
+  document.getElementById('tb-sub').style.color=tc75;
+  document.getElementById('tb-sub').style.display=sub?'block':'none';
+
+  document.getElementById('tb-author').textContent=author;
+  document.getElementById('tb-author').style.fontSize=Math.round(hlsize*.72)+'px';
+  document.getElementById('tb-author').style.color=tc;
+  document.getElementById('tb-author').style.display=author?'block':'none';
+
+  document.getElementById('tb-role').innerHTML=escHtml(role);
+  document.getElementById('tb-role').style.fontSize=Math.max(8,subsize-2)+'px';
+  document.getElementById('tb-role').style.color=tc75;
+  document.getElementById('tb-role').style.display=role?'block':'none';
+
+  // Footer
+  document.getElementById('tb-footer').textContent=footer;
+  document.getElementById('tb-footer').style.color=tc75;
+  document.getElementById('footer-line').style.background=lineColor;
+
+  // Badge
+  const bb=document.getElementById('badge-block');
+  const bi=document.getElementById('badge-inner');
+  if(badgeOn && badge){
+    bb.style.display='block';
+    bi.textContent=badge;
+    bi.style.background=badgeColor;
+    const bsz=Math.round(hlsize*3.8);
+    bi.style.width=bsz+'px'; bi.style.height=bsz+'px';
+    bi.style.fontSize=Math.round(hlsize*.6)+'px';
+    // Default badge position if not yet placed
+    if(!bb.style.left){
+      bb.style.right='14px';
+      bb.style.bottom='60px';
+      bb.style.left='';
+      bb.style.top='';
+    }
+  } else {
+    bb.style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FARB-SWATCHES SYNC
+// ═══════════════════════════════════════════════════════════════
+function setLineColor(idx,col){
+  lineColor=col; syncLineSwatches(col); updateText();
+}
+function syncLineSwatches(col){
+  const cols=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
+  document.querySelectorAll('[id^="linesw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+function setBadgeColor(idx,col){
+  badgeColor=col;
+  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  updateText();
+}
+function syncBadgeSwatches(col){
+  const cols=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A'];
+  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+function setTextColor(idx,col){
+  textColor=col;
+  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  updateText();
+}
+function syncTextSwatches(col){
+  const cols=['#fff','#00285A','#FAB90F','#E6EBF0'];
+  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════════════════════
+function setFormat(idx,w,h,label,dim){
+  currentFormatIdx=idx;
+  document.querySelectorAll('.fmt-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
+  const frame=document.getElementById('canvas-frame');
+  frame.style.width=w+'px'; frame.style.height=h+'px';
+  document.getElementById('format-tag').textContent=label;
+  document.getElementById('exp-info').innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
+  updateText();
+  if(safeZonesVisible) setTimeout(drawSafeZones,50);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ZOOM
+// ═══════════════════════════════════════════════════════════════
+function zoom(d){
+  zoomLevel=Math.min(200,Math.max(30,zoomLevel+d));
+  document.getElementById('canvas-frame').style.transform=`scale(${zoomLevel/100})`;
+  document.getElementById('canvas-frame').style.transformOrigin='center center';
+  document.getElementById('zoom-lbl').textContent=zoomLevel+'%';
+}
+function fitZoom(){zoomLevel=100;zoom(0);}
+
+// ═══════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════
+function setRTab(n){
+  [0,1,2].forEach(i=>{
+    document.getElementById('rtab-'+i).style.display=i===n?'block':'none';
+    const btn=document.getElementById('rtab-btn-'+i);
+    btn.style.color=i===n?'rgba(255,255,255,.9)':'rgba(255,255,255,.4)';
+    btn.style.borderBottom=i===n?'2px solid var(--gelb)':'2px solid transparent';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FOTO
+// ═══════════════════════════════════════════════════════════════
+function handleFile(input){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    fotoDataUrl=e.target.result;
+    document.getElementById('cl-foto').style.backgroundImage=`url(${fotoDataUrl})`;
+    document.getElementById('foto-preview-img').src=fotoDataUrl;
+    document.getElementById('foto-vorschau').style.display='block';
+    document.getElementById('no-foto-hint').style.display='none';
+    document.getElementById('upload-zone').style.display='none';
+    showToast('📷 Foto geladen');
+  };
+  reader.readAsDataURL(file); input.value='';
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(!file||!file.type.startsWith('image/'))return;
+  handleFile({files:[file]});
+}
+function removeFoto(){
+  fotoDataUrl=null;
+  document.getElementById('cl-foto').style.backgroundImage='';
+  document.getElementById('foto-vorschau').style.display='none';
+  document.getElementById('upload-zone').style.display='block';
+  document.getElementById('no-foto-hint').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT PNG
+// ═══════════════════════════════════════════════════════════════
+async function exportPNG(){
+  showToast('🖼 Wird erstellt …');
+  const svgEl=document.getElementById('safe-zone-svg');
+  const wasVisible=safeZonesVisible;
+  if(wasVisible){ svgEl.style.display='none'; }// Safe Zones ausblenden
+  // Outline temporär entfernen
+  const tb=document.getElementById('text-block');
+  tb.classList.remove('selected');
+  const frame=document.getElementById('canvas-frame');
+  const origT=frame.style.transform;
+  frame.style.transform='scale(1)';
+  const res=EXPORT_RES[currentFormatIdx]||{w:1080,h:1920};
+  const f=FORMATS[currentFormatIdx];
+  try{
+    const canvas=await html2canvas(frame,{
+      scale:res.w/f.w, useCORS:true, allowTaint:true,
+      backgroundColor:null, logging:false, width:f.w, height:f.h,
+    });
+    frame.style.transform=origT;
+    tb.classList.add('selected');
+    if(wasVisible){ svgEl.style.display='block'; }
+    const link=document.createElement('a');
+    link.download='vhs-spandau-'+Date.now()+'.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ PNG gespeichert');
+  }catch(err){
+    frame.style.transform=origT;
+    tb.classList.add('selected');
+    if(wasVisible){ svgEl.style.display='block'; }
+    showToast('❌ Export fehlgeschlagen');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REDAKTIONSPLAN
+// ═══════════════════════════════════════════════════════════════
+async function saveToRedaktionsplan(){
+  const datum=document.getElementById('exp-datum').value;
+  if(!datum){showToast('⚠️ Bitte Datum wählen');return;}
+  const post={
+    id:'ed'+Date.now(), datum,uhrzeit:'17:00',
+    kanal:document.getElementById('exp-kanal').value,
+    anlass:document.getElementById('exp-anlass').value.trim()||'Visueller Post',
+    text:document.getElementById('tf-headline').value||'',
+    tags:'#vhsspandau #spandau',status:'geplant',freigabe:'',paid:'nein',url:'',ziel:'Reichweite',
+  };
+  try{
+    const r=await fetch('/api/posts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});
+    showToast(r.ok?'📅 Im Redaktionsplan gespeichert':'❌ Fehler beim Speichern');
+  }catch{showToast('❌ Server nicht erreichbar');}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════════
+function resetEditor(){removeFoto();loadTemplate(0);showToast('↺ Editor zurückgesetzt');}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+// ═══════════════════════════════════════════════════════════════
+// STUDIO BANNER — Eingang aus Schritt 4 Redaktion
+// ═══════════════════════════════════════════════════════════════
+function showStudioBanner(anlass, kurs, fulltext) {
+  // Workflow-Banner oben im Canvas-Bereich einblenden
+  const area = document.querySelector('.canvas-area');
+  const banner = document.createElement('div');
+  banner.id = 'studio-banner';
+  banner.style.cssText = `
+    position:absolute;top:56px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,#00285A,#1a3a60);
+    border:1.5px solid var(--orange);border-radius:10px;
+    padding:10px 16px;display:flex;align-items:center;gap:12px;
+    z-index:30;max-width:480px;width:calc(100% - 32px);
+    box-shadow:0 4px 20px rgba(0,0,0,.4);
+  `;
+  banner.innerHTML = `
+    <div style="font-size:22px;flex-shrink:0">🎨</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:700;color:#FAB90F;margin-bottom:1px">Schritt 5 · Grafik-Studio</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        Text aus Redaktion geladen${anlass?' · '+anlass:''}
+      </div>
+    </div>
+    <button onclick="document.getElementById('studio-banner').remove()"
+      style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;
+             color:rgba(255,255,255,.6);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;flex-shrink:0">
+      ✕
+    </button>
+  `;
+  area.style.position = 'relative';
+  area.appendChild(banner);
+  setTimeout(() => { if(banner.parentNode) banner.remove(); }, 8000);
+
+  // Volltext in ein Panel-Element schreiben falls vorhanden
+  if (fulltext) {
+    const ft = document.getElementById('tf-fulltext-preview');
+    if (ft) { ft.value = fulltext; ft.closest('.p-section').style.display='block'; }
+  }
+
+  // Freigabe-CTA in Export-Tab einblenden
+  injectFreigabeCTA(anlass);
+  showToast('🎨 Text aus Redaktion geladen · Schritt 5 aktiv');
+}
+
+function injectFreigabeCTA(anlass) {
+  const expTab = document.getElementById('rtab-2');
+  if (!expTab) return;
+  const existing = document.getElementById('freigabe-cta');
+  if (existing) existing.remove();
+  const cta = document.createElement('div');
+  cta.id = 'freigabe-cta';
+  cta.style.cssText = 'border-top:1px solid var(--border);';
+  cta.innerHTML = `
+    <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
+      <div class="p-label" style="color:var(--gelb)">Schritt 6 — Freigabe</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:10px">
+        Grafik fertig? PNG exportieren, dann direkt zur Freigabe weiterleiten.
+      </div>
+      <button class="exp-btn exp-main" onclick="exportPNG()">⬇ PNG exportieren</button>
+      <a href="/freigabe" target="_blank"
+         style="display:block;text-align:center;padding:8px;border-radius:6px;font-size:11px;font-weight:700;
+                border:1.5px solid var(--orange);color:var(--orange);text-decoration:none;
+                background:rgba(235,100,15,.08);margin-top:5px;transition:all .15s"
+         onmouseover="this.style.background='rgba(235,100,15,.18)'"
+         onmouseout="this.style.background='rgba(235,100,15,.08)'">
+        ✅ Weiter zur Freigabe ↗
+      </a>
+    </div>
+  `;
+  expTab.prepend(cta);
+  // Export-Tab aktiv schalten damit CTA sichtbar
+  setRTab(2);
+  setTimeout(() => setRTab(0), 200);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>

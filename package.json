@@ -1,0 +1,10 @@
+{
+  "name": "vhs-pr-maschine",
+  "version": "1.0.0",
+  "description": "VHS Spandau PR-Maschine — KI-Post-Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

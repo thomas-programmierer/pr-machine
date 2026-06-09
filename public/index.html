@@ -1,0 +1,2651 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VHS Spandau — PR-Maschine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau80:#375578;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
+  --grau:#f4f5f7;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--blau);
+  background-image:radial-gradient(circle at 80% 20%, #375578 0%, transparent 50%),
+                   radial-gradient(circle at 20% 80%, #1a3550 0%, transparent 40%);
+}
+.login-box{
+  background:#fff;border-radius:16px;padding:40px 36px;
+  width:100%;max-width:380px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-mark{display:flex;align-items:center}
+.login-title{font-size:17px;font-weight:700;color:var(--blau);line-height:1.2}
+.login-sub{font-size:11px;color:var(--blau60)}
+.login-heading{font-size:22px;font-weight:700;color:var(--blau);margin-bottom:6px}
+.login-desc{font-size:13px;color:var(--blau60);margin-bottom:24px}
+.lf-label{font-size:11px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.lf-input{width:100%;border:1.5px solid #dde2e9;border-radius:9px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--blau);outline:none;transition:border-color .15s;margin-bottom:14px}
+.lf-input:focus{border-color:var(--blau)}
+.lf-btn{width:100%;padding:13px;border-radius:9px;font-size:14px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;transition:background .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.lf-btn:hover{background:#001f47}
+.lf-error{background:#FCEBEB;border:1px solid var(--rot);border-radius:7px;padding:9px 12px;font-size:12px;color:#791F1F;margin-bottom:14px;display:none}
+.login-hint{margin-top:20px;padding-top:16px;border-top:1px solid #eef1f6;font-size:11px;color:var(--blau60);line-height:1.6}
+.login-hint strong{color:var(--blau)}
+
+/* ── APP ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.header{background:var(--blau);padding:0 22px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{display:flex;align-items:center}
+.logo-text{color:#fff;font-size:13px;font-weight:600;line-height:1.2}
+.logo-sub{color:var(--blau60);font-size:10px}
+.header-right{display:flex;align-items:center;gap:10px}
+.user-badge{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:4px 12px 4px 6px}
+.user-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0}
+.av-admin{background:var(--rot)}
+.av-redakteur{background:var(--hellblau)}
+.av-pbl{background:var(--gruen)}
+.av-direktion{background:var(--gelb)}
+.user-name{color:#fff;font-size:12px;font-weight:500}
+.user-role{color:rgba(255,255,255,.55);font-size:10px}
+.logout-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 10px;color:rgba(255,255,255,.7);font-size:11px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
+.logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid #dde2e9;display:flex;padding:0 0 0 8px;overflow-x:auto;flex-shrink:0;align-items:stretch}
+.nav-tab{padding:0 14px;font-size:11.5px;font-weight:500;color:var(--blau60);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:color .15s;position:relative;min-height:44px}
+.nav-tab:hover{color:var(--blau)}
+.nav-tab.active{color:var(--blau);border-bottom-color:var(--gelb)}
+.nav-tab.hidden{display:none}
+.nbadge{background:var(--blau10);color:var(--blau);border-radius:9px;padding:1px 6px;font-size:10px}
+.nav-tab.active .nbadge{background:var(--gelb)}
+/* Workflow Nummerierung */
+.nav-step{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--blau10);color:var(--blau60);font-size:9px;font-weight:700;flex-shrink:0;transition:all .15s}
+.nav-tab.active .nav-step{background:var(--gelb);color:var(--blau)}
+.nav-tab:hover .nav-step{background:var(--blau20)}
+/* Workflow-Trenner */
+.nav-sep{width:1px;background:#e8edf2;flex-shrink:0;margin:8px 2px}
+.nav-sep.major{width:2px;background:#c8d4dc;margin:6px 4px}
+/* Studio-Highlight */
+.nav-tab.studio{background:linear-gradient(to bottom,#fff 0%,#fdf6e3 100%)}
+.nav-tab.studio.active{border-bottom-color:var(--orange)}
+.nav-tab.studio .nav-step{background:rgba(250,185,15,.2);color:var(--orange)}
+.nav-tab.studio.active .nav-step{background:var(--orange);color:#fff}
+
+/* MAIN */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.screen{display:none;flex:1;overflow:hidden}
+.screen.active{display:flex}
+
+/* ── SCREEN: PBL ── */
+#screen-pbl{flex-direction:column;overflow-y:auto;padding:20px 22px;gap:16px}
+.pbl-welcome{background:var(--blau);border-radius:12px;padding:20px 22px;color:#fff;display:flex;align-items:center;gap:16px}
+.pbl-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.pbl-welcome-text h2{font-size:16px;font-weight:600;margin-bottom:3px}
+.pbl-welcome-text p{font-size:12px;color:rgba(255,255,255,.7)}
+.pbl-pb-badge{background:var(--gelb);color:var(--blau);border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700;margin-top:6px;display:inline-block}
+
+.section-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.karten-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.karte{background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;overflow:hidden;cursor:pointer;transition:all .15s}
+.karte:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,40,90,.1);border-color:var(--blau60)}
+.karte.eingereicht{border-color:var(--gruen);background:#f9fce8}
+.karte-top{padding:13px 15px 9px;display:flex;gap:11px;align-items:flex-start}
+.karte-icon{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.karte-meta{flex:1;min-width:0}
+.karte-datum{font-size:10px;font-weight:500;color:var(--blau60);font-family:'DM Mono',monospace;margin-bottom:2px}
+.karte-titel{font-size:13px;font-weight:600;color:var(--blau);line-height:1.3}
+.karte-typ{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+.t-jt{background:#E6F1FB;color:#185FA5}
+.t-ve{background:#FEF3DA;color:#996B00}
+.t-ks{background:#EAF3DE;color:#3B6D11}
+.t-an{background:#FCF0FA;color:#7A2A8C}
+.karte-body{padding:0 15px 11px;font-size:11px;color:var(--blau60);line-height:1.5}
+.karte-footer{padding:9px 15px;border-top:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.karte-cta{flex:1;padding:7px;border-radius:7px;font-size:11px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.karte-cta:hover{background:#001f47}
+.karte.eingereicht .karte-cta{background:var(--gruen)}
+.einr-badge{display:none;align-items:center;gap:3px;font-size:10px;font-weight:700;color:#3B6D11;padding:3px 8px;background:#e8f7b0;border-radius:8px}
+.karte.eingereicht .einr-badge{display:flex}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:460px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid #eef1f6;display:flex;gap:13px;align-items:flex-start}
+.modal-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:600;color:var(--blau);line-height:1.3}
+.modal-datum{font-size:11px;color:var(--blau60);margin-top:2px;font-family:'DM Mono',monospace}
+.modal-body{padding:18px 22px}
+.mf-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.mf-input,.mf-textarea,.mf-select{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff;margin-bottom:12px}
+.mf-input:focus,.mf-textarea:focus,.mf-select:focus{border-color:var(--blau)}
+.mf-textarea{resize:vertical;min-height:70px;line-height:1.5}
+.mf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-foot{padding:14px 22px 18px;border-top:1px solid #eef1f6;display:flex;gap:9px;justify-content:flex-end}
+.btn-cancel{padding:8px 16px;border-radius:7px;font-size:12px;font-weight:500;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer}
+.btn-submit{padding:8px 20px;border-radius:7px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-submit:hover{background:#001f47}
+
+/* ── SCREEN: REDAKTEUR ── */
+#screen-redakteur{flex-direction:row;overflow:hidden}
+.red-left{width:350px;background:#fff;border-right:1px solid #dde2e9;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;flex-shrink:0}
+.red-right{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:13px}
+.sl{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.inbox-item{padding:10px 12px;border-radius:9px;border:1.5px solid #e2e7ef;cursor:pointer;transition:all .15s;display:flex;gap:10px;align-items:center}
+.inbox-item:hover{border-color:var(--blau60)}
+.inbox-item.sel{border-color:var(--blau);background:var(--blau10)}
+.ii-icon{font-size:20px;width:30px;text-align:center;flex-shrink:0}
+.ii-info{flex:1;min-width:0}
+.ii-anlass{font-size:12px;font-weight:600;color:var(--blau);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ii-kurs{font-size:10px;color:var(--blau60);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ii-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;flex-shrink:0;text-transform:uppercase}
+.p-neu{background:#FEF3DA;color:#996B00}.p-ok{background:#EAF3DE;color:#3B6D11}
+.fi,.ft{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff}
+.fi:focus,.ft:focus{border-color:var(--blau)}
+.ft{resize:vertical;min-height:60px;line-height:1.5}
+.chip-row{display:flex;gap:5px;flex-wrap:wrap}
+.chip{padding:4px 11px;border-radius:16px;font-size:11px;font-weight:500;border:1.5px solid #dde2e9;cursor:pointer;transition:all .15s;background:#fff;color:var(--blau60)}
+.chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
+.chip.ig-on{background:#E1306C;border-color:#E1306C;color:#fff}
+.chip.fb-on{background:#1877F2;border-color:#1877F2;color:#fff}
+.regel{background:#FEF9EC;border:1px solid var(--gelb);border-radius:7px;padding:9px 12px;font-size:11px;color:#6B4800;line-height:1.5}
+.gen-btn{width:100%;padding:11px;border-radius:9px;font-size:13px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s}
+.gen-btn:hover:not(:disabled){background:#001f47}
+.gen-btn:disabled{background:var(--blau60);cursor:not-allowed}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px;text-align:center;color:var(--blau60)}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--blau);margin-bottom:4px}
+.post-karte{background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;overflow:hidden;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.pk-head{padding:10px 14px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between}
+.pk-kanal{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
+.c-ig{color:#E1306C}.c-fb{color:#1877F2}
+.pk-acts{display:flex;gap:5px}
+.pk-btn{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;border:1.5px solid #dde2e9;background:#fff;cursor:pointer;color:var(--blau60);transition:all .15s}
+.pk-btn:hover{border-color:var(--blau);color:var(--blau)}
+.pk-btn.copied{background:var(--gruen);border-color:var(--gruen);color:#fff}
+.pk-body{padding:14px}
+.post-text{font-size:12px;line-height:1.7;color:var(--blau);white-space:pre-wrap;outline:none;border-radius:5px;padding:4px;margin:-4px;transition:background .15s}
+.post-text:focus{background:var(--blau10)}
+.char-info{font-size:10px;color:var(--blau60);margin-top:5px;font-family:'DM Mono',monospace}
+.char-warn{color:var(--orange)}
+.pk-foot{padding:8px 14px;border-top:1px solid #eef1f6;display:flex;align-items:flex-start;gap:8px}
+.pk-tags{font-size:10px;color:var(--hellblau);font-family:'DM Mono',monospace;line-height:1.4;flex:1}
+.pk-ziel{font-size:9px;font-weight:700;padding:3px 7px;border-radius:7px;background:var(--blau10);color:var(--blau);flex-shrink:0}
+.freigabe{background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:14px}
+.fg-title{font-size:12px;font-weight:600;color:var(--blau);margin-bottom:10px}
+.fg-row{display:flex;gap:7px}
+.fg-btn{flex:1;padding:8px;border-radius:7px;font-size:11px;font-weight:600;border:1.5px solid;cursor:pointer;transition:all .15s;background:#fff;display:flex;align-items:center;justify-content:center;gap:4px}
+.fg-plan{color:#185FA5;border-color:var(--hellblau)}.fg-plan:hover{background:#E6F1FB}
+.fg-ok{color:#3B6D11;border-color:var(--gruen)}.fg-ok:hover{background:#EAF3DE}
+
+/* ── SCREEN: ADMIN ── */
+#screen-admin{flex-direction:column;overflow-y:auto;padding:20px 22px;gap:16px}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.user-card{background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:13px 15px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.user-card.inaktiv{opacity:.5;background:#f8f8f8}
+.uc-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+.uc-info{flex:1;min-width:0}
+.uc-name{font-size:13px;font-weight:600;color:var(--blau)}
+.uc-pb{font-size:10px;color:var(--blau60);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uc-role{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;margin-top:4px;display:inline-block;text-transform:uppercase;letter-spacing:.3px}
+.role-admin{background:#FCEBEB;color:var(--rot)}
+.role-redakteur{background:#E6F1FB;color:#185FA5}
+.role-pbl{background:#EAF3DE;color:#3B6D11}
+.role-direktion{background:#FEF3DA;color:#996B00}
+.uc-actions{display:flex;gap:4px;flex-shrink:0}
+.uc-btn{padding:4px 9px;border-radius:6px;font-size:10px;font-weight:600;border:1.5px solid;cursor:pointer;background:#fff;transition:all .15s;font-family:'DM Sans',sans-serif}
+.uc-btn.edit{color:#185FA5;border-color:var(--hellblau)}.uc-btn.edit:hover{background:#E6F1FB}
+.uc-btn.toggle-on{color:#3B6D11;border-color:var(--gruen)}.uc-btn.toggle-on:hover{background:#EAF3DE}
+.uc-btn.toggle-off{color:#996B00;border-color:var(--orange)}.uc-btn.toggle-off:hover{background:#FEF3DA}
+.uc-btn.del{color:var(--rot);border-color:var(--rot)}.uc-btn.del:hover{background:#FCEBEB}
+.add-user-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:9px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.add-user-btn:hover{background:#001f47}
+/* USER MODAL */
+.umodal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+.umodal-overlay.open{display:flex}
+.umodal{background:#fff;border-radius:14px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+.umodal-head{padding:16px 20px 12px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between}
+.umodal-title{font-size:14px;font-weight:700;color:var(--blau)}
+.umodal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--blau60)}
+.umodal-body{padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.uf-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.uf-input,.uf-select{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff}
+.uf-input:focus,.uf-select:focus{border-color:var(--blau)}
+.uf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.uf-hint{font-size:11px;color:var(--blau60);margin-top:2px}
+.umodal-foot{padding:12px 20px 16px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
+.uf-cancel{padding:8px 14px;border-radius:7px;font-size:12px;font-weight:500;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif}
+.uf-save{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.uf-save:hover{background:#001f47}
+.uf-error{background:#FCEBEB;border:1px solid var(--rot);border-radius:6px;padding:8px 12px;font-size:12px;color:#791F1F;display:none;margin-bottom:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.stat-card{background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;padding:14px}
+.stat-n{font-size:28px;font-weight:700;color:var(--blau);line-height:1}
+.stat-label{font-size:11px;color:var(--blau60);margin-top:3px}
+.stat-icon{font-size:20px;margin-bottom:6px}
+
+
+/* ── MODUS-SCHALTER ── */
+.modus-wrap{background:var(--blau10);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.modus-title{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px}
+.modus-row{display:flex;gap:6px}
+.modus-chip{flex:1;padding:8px 6px;border-radius:8px;font-size:11px;font-weight:600;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);text-align:center;transition:all .15s;line-height:1.4}
+.modus-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
+.modus-chip .modus-sub{font-size:9px;font-weight:400;display:block;margin-top:1px;opacity:.8}
+/* ── MINI-TOGGLE-ZEILE ── */
+.mini-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;border:1.5px solid #e2e7ef}
+.mt-label{font-size:11px;font-weight:600;color:var(--blau);display:flex;align-items:center;gap:5px}
+.mt-sub{font-size:10px;color:var(--blau60);font-weight:400}
+/* iOS switch klein */
+.sw{position:relative;display:inline-block;width:32px;height:18px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw .sl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#dde2e9;transition:.2s;border-radius:18px}
+.sw .sl:before{position:absolute;content:"";height:12px;width:12px;left:3px;bottom:3px;background:#fff;transition:.2s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw input:checked+.sl{background:var(--gelb)}
+.sw input:checked+.sl.gruen{background:var(--gruen)}
+.sw input:checked+.sl:before{transform:translateX(14px)}
+/* Regel-Box dynamisch */
+.regel.modus-r7{background:#FEF9EC;border-color:var(--gelb)}
+.regel.modus-direkt{background:#E6F1FB;border-color:var(--hellblau)}
+
+/* ── SCREEN: DIREKTION ── */
+#screen-direktion{flex-direction:column;overflow-y:auto;padding:20px 22px;gap:16px}
+
+/* ── SCREEN: GRAFIK-STUDIO ── */
+
+/* ── SCREEN: KURSLISTE ── */
+#screen-kurse{flex-direction:column;overflow:hidden}
+.kurse-hero{background:var(--blau);padding:16px 22px 20px;flex-shrink:0}
+.kurse-hero-title{color:#fff;font-size:17px;font-weight:700;margin-bottom:3px}
+.kurse-hero-sub{color:var(--blau60);font-size:12px;margin-bottom:12px}
+.kurse-search-box{position:relative;max-width:600px}
+.kurse-search-input{width:100%;padding:11px 44px 11px 14px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.kurse-search-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+.kurse-count{color:rgba(255,255,255,.45);font-size:10px;margin-top:6px;font-family:'DM Mono',monospace}
+.kurse-body{flex:1;overflow-y:auto;padding:14px 22px}
+.kurse-filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.kurse-chip{padding:4px 11px;border-radius:14px;font-size:11px;font-weight:500;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);transition:all .15s}
+.kurse-chip:hover{border-color:var(--blau60)}
+.kurse-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
+.kurse-lookup{background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;padding:14px 16px;margin-bottom:12px}
+.kurse-lookup-title{font-size:11px;font-weight:700;color:var(--blau);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.kurse-lookup-row{display:flex;gap:8px}
+.kurse-lookup-input{flex:1;padding:8px 11px;border-radius:7px;border:1.5px solid #dde2e9;font-family:'DM Mono',monospace;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s}
+.kurse-lookup-input:focus{border-color:var(--blau)}
+.kurse-lookup-btn{padding:8px 14px;border-radius:7px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer}
+.kurse-lookup-result{margin-top:10px;padding:10px 12px;border-radius:7px;font-size:12px;display:none}
+.kurse-lookup-result.found{background:#EAF3DE;border:1px solid var(--gruen);display:block}
+.kurse-lookup-result.notfound{background:#FCEBEB;border:1px solid var(--rot);display:block}
+.kurse-liste{display:flex;flex-direction:column;gap:6px}
+.kurse-zeile{background:#fff;border-radius:8px;border:1.5px solid #e2e7ef;padding:10px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s}
+.kurse-zeile:hover{border-color:var(--blau60)}
+.kurse-nr{font-family:'DM Mono',monospace;font-size:10px;color:var(--blau60);flex-shrink:0;min-width:90px}
+.kurse-titel{font-size:12px;font-weight:500;color:var(--blau);flex:1}
+.kurse-beginn{font-size:10px;color:var(--blau60);font-family:'DM Mono',monospace;flex-shrink:0}
+.kurse-pb-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:6px;flex-shrink:0}
+.kurse-paging{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding-bottom:12px}
+.kurse-page-btn{padding:5px 11px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:11px;font-weight:500;cursor:pointer;color:var(--blau60)}
+.kurse-page-btn:hover:not(:disabled){border-color:var(--blau);color:var(--blau)}
+.kurse-page-btn:disabled{opacity:.4;cursor:not-allowed}
+.kurse-page-info{font-size:11px;color:var(--blau60);font-family:'DM Mono',monospace}
+/* PB Badge Farben */
+.pb-deutsch{background:#E6F1FB;color:#185FA5}
+.pb-fremd{background:#D6EAF8;color:#0D4B8C}
+.pb-gesundheit{background:#EAF3DE;color:#3B6D11}
+.pb-kultur{background:#FCF0FA;color:#7A2A8C}
+.pb-beruf{background:#FEF3DA;color:#996B00}
+.pb-grundbildung{background:#FFF0E6;color:#8B4000}
+.pb-politik{background:#E6EBF0;color:#375578}
+.pb-andere{background:#F0F0F0;color:#666}
+
+/* SKELETON */
+.sk{background:linear-gradient(90deg,#eef1f6 25%,#e2e7ef 50%,#eef1f6 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:5px;height:12px;margin-bottom:7px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.t-dot{width:16px;height:16px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+
+/* ══ GRAFIK-STUDIO (eingebettet) ══ */
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau80:#375578;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
+  --lila:#5B2D8E;--panel:#1a2744;--border:rgba(255,255,255,.09);
+}
+body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+
+.topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
+.tb-logo svg{width:36px;height:22px}
+.tb-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:.2px}
+.tb-tag{font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px}
+.tb-right{margin-left:auto;display:flex;gap:7px;align-items:center}
+.tb-btn{padding:5px 13px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb-prim{background:var(--gelb);color:var(--blau)}.tb-prim:hover{background:#e0a70e}
+.tb-sec{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.tb-sec:hover{background:rgba(255,255,255,.2)}
+.tb-back{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px}.tb-back:hover{color:#fff}
+
+.ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 16px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
+.ext-nav-tab{padding:9px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}.ext-nav-tab:hover{color:#fff}.ext-nav-tab.active{color:#fff;border-bottom-color:var(--gelb)}
+.ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.45);padding:0 6px;flex-shrink:0}
+.ext-logout-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:4px 10px;color:rgba(255,255,255,.65);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;flex-shrink:0}.ext-logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+
+.editor-wrap{flex:1;display:grid;grid-template-columns:220px 1fr 250px;overflow:hidden;min-height:0}
+
+.panel{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.panel-r{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;border-right:none}
+.p-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.p-label{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tpl-card{border-radius:6px;border:2px solid transparent;cursor:pointer;overflow:hidden;aspect-ratio:9/16;padding:7px 6px;position:relative;transition:border-color .15s}.tpl-card:hover,.tpl-card.on{border-color:var(--gelb)}
+.tpl-active-badge{position:absolute;top:4px;right:4px;font-size:6px;font-weight:700;padding:1px 4px;border-radius:3px;background:var(--gelb);color:var(--blau)}
+.tpl-name{font-size:9px;font-weight:600;color:var(--blau60);text-align:center;margin-top:3px}
+
+.upload-zone{border:2px dashed rgba(255,255,255,.2);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.03)}.upload-zone:hover,.upload-zone.drag{border-color:var(--gelb);background:rgba(250,185,15,.06)}
+.uz-icon{font-size:22px;margin-bottom:5px}
+.uz-text{font-size:10px;color:rgba(255,255,255,.6);line-height:1.5}
+.uz-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px}
+.upload-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.upload-btn{padding:7px 4px;border-radius:6px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);cursor:pointer;text-align:center;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}.upload-btn:hover{background:rgba(250,185,15,.15);border-color:var(--gelb);color:var(--gelb)}
+.upload-btn.cam{border-color:var(--hellblau);color:var(--hellblau)}.upload-btn.cam:hover{background:rgba(100,185,230,.15)}
+.foto-vorschau{display:none;position:relative;border-radius:6px;overflow:hidden;margin-top:6px}
+.foto-vorschau img{width:100%;height:60px;object-fit:cover;display:block}
+.foto-del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(225,0,15,.85);border:none;cursor:pointer;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center}
+
+.format-btns{display:flex;flex-direction:column;gap:5px}
+.fmt-btn{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}.fmt-btn.on{border-color:var(--gelb);background:rgba(250,185,15,.08)}
+.fmt-icon{width:18px;height:12px;border-radius:2px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:5px;font-weight:700;color:rgba(255,255,255,.6);flex-shrink:0}
+.fmt-name{font-size:10px;font-weight:600;color:rgba(255,255,255,.8)}
+.fmt-dim{font-size:8px;color:rgba(255,255,255,.4);margin-left:auto}
+
+/* ── CANVAS ── */
+.canvas-area{background:#0d1117;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.canvas-toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.65);padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);z-index:20}
+.ct-btn{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.7);transition:all .15s}.ct-btn:hover{background:rgba(255,255,255,.18);color:#fff}.ct-btn.on{background:rgba(250,185,15,.2);border-color:var(--gelb);color:var(--gelb)}
+.ct-sep{width:1px;height:18px;background:rgba(255,255,255,.15)}
+.zoom-lbl{font-size:10px;color:rgba(255,255,255,.5);min-width:34px;text-align:center}
+
+.canvas-outer{position:relative}
+.canvas-frame{position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.55)}
+
+/* ── LAYERS ── */
+.cl-foto{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat}
+.cl-color{position:absolute;inset:0;pointer-events:none}
+
+/* ── SAFE ZONE OVERLAY (SVG, pointer-events:none) ── */
+#safe-zone-svg{position:absolute;inset:0;pointer-events:none;z-index:10;display:none}
+
+/* ── DRAGGABLE TEXT BLOCK ── */
+#text-block{
+  position:absolute;
+  cursor:grab;
+  user-select:none;
+  z-index:8;
+  padding:10px 14px;
+  /* outline shown when selected */
+  outline:none;
+  border-radius:3px;
+}
+#text-block.selected{
+  outline:1.5px dashed rgba(250,185,15,.9);
+  outline-offset:3px;
+  cursor:grab;
+}
+#text-block:active,#text-block.dragging{cursor:grabbing}
+
+/* ── BADGE BLOCK ── */
+#badge-block{
+  position:absolute;
+  cursor:grab;
+  user-select:none;
+  z-index:9;
+  display:none;
+}
+#badge-block.selected{outline:1.5px dashed rgba(250,185,15,.9);outline-offset:3px}
+
+/* LOGO fixed */
+#canvas-logo{position:absolute;top:12px;right:12px;pointer-events:none;z-index:9}
+#layer-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(250,185,15,.9);color:var(--blau);pointer-events:none;z-index:11;font-family:'DM Sans',sans-serif}
+
+/* FOOTER fixed-bottom */
+#footer-block{position:absolute;bottom:0;left:0;right:0;z-index:8;pointer-events:none;padding:0 14px 10px}
+
+/* COORD READOUT */
+.coord-readout{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px;pointer-events:none;font-family:monospace;z-index:20;white-space:nowrap}
+
+/* ── RIGHT PANEL ── */
+.dvv-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.dvv-sw{aspect-ratio:1;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;position:relative}.dvv-sw:hover,.dvv-sw.on{border-color:var(--gelb)}
+.dvv-sw[title]:hover::after{content:attr(title);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--blau);color:#fff;font-size:8px;padding:2px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;font-family:'DM Sans',sans-serif}
+.sl-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sl-lbl{font-size:9px;color:rgba(255,255,255,.55);min-width:78px}
+.sl-track{flex:1;height:18px;display:flex;align-items:center}
+input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
+.sl-val{font-size:10px;font-weight:700;min-width:36px;text-align:right}
+.sv-blue{color:var(--hellblau)}.sv-gelb{color:var(--gelb)}.sv-grn{color:var(--gruen)}
+.txt-field{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;outline:none;transition:border-color .15s;resize:none}.txt-field:focus{border-color:var(--gelb)}.txt-field::placeholder{color:rgba(255,255,255,.3)}
+.badge-swatches{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.badge-sw{width:22px;height:22px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color .15s}.badge-sw.on,.badge-sw:hover{border-color:var(--gelb)}
+.exp-btn{padding:8px 4px;border-radius:6px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;text-align:center;transition:all .15s;font-family:'DM Sans',sans-serif;display:block;width:100%;margin-bottom:5px}.exp-btn:hover{border-color:var(--gelb);color:var(--gelb);background:rgba(250,185,15,.08)}
+.exp-main{background:var(--gelb);color:var(--blau);border-color:var(--gelb)}.exp-main:hover{background:#e0a70e;color:var(--blau)}
+
+/* SAFE ZONE LEGEND */
+.sz-legend{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.sz-item{display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.55)}
+.sz-dot{width:18px;height:2px;border-radius:1px;flex-shrink:0}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid var(--gelb)}.toast.show{transform:translateX(-50%) translateY(0)}
+.t-dot{width:14px;height:14px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
+
+/* ── Studio Screen-Container ── */
+#screen-editor{flex-direction:column;overflow:hidden;padding:0;background:#111827}
+#screen-editor .editor-wrap{flex:1;min-height:0}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="44" viewBox="0 0 200 44"><text x="0" y="30" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#00285A">vhs</text><circle cx="70" cy="13" r="5" fill="#9BAAB8"/><circle cx="80" cy="9" r="6" fill="#FAB90F"/><circle cx="91" cy="14" r="5" fill="#64B9E6"/><circle cx="72" cy="25" r="6" fill="#E1000F"/><circle cx="85" cy="28" r="4" fill="#9BAAB8"/><text x="102" y="19" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#586481">Volkshochschule</text><text x="102" y="35" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#1A2943">Spandau</text></svg></div>
+    </div>
+    <div class="login-heading">Willkommen</div>
+    <div class="login-desc">Bitte melde dich mit deinen Zugangsdaten an.</div>
+    <div id="login-error" class="lf-error">Benutzername oder Passwort falsch.</div>
+    <div class="lf-label">Benutzername</div>
+    <input class="lf-input" id="lf-user" type="text" placeholder="z. B. thomas" autocomplete="username">
+    <div class="lf-label">Passwort</div>
+    <input class="lf-input" id="lf-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="lf-btn" onclick="doLogin()">🔐 Anmelden</button>
+    <div class="login-hint">
+      <strong>Testkonten (alle Passwort: vhs2026!)</strong><br>
+      thomas · katja · manuela · kristina · vanessa · marion
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="hdr-avatar"></div>
+        <div>
+          <div class="user-name" id="hdr-name"></div>
+          <div class="user-role" id="hdr-role"></div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    </div>
+  </div>
+
+  <!-- NAV — Workflow-Reihenfolge mit Schrittnummern -->
+  <div class="nav" id="nav">
+    <div class="nav-tab" id="tab-kalender"    onclick="window.open('/kalender','_blank')">
+      <span class="nav-step">1</span>📅 Redaktionsplan ↗
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-tab" id="tab-pbl"         onclick="showScreen('pbl')">
+      <span class="nav-step">2</span>📬 Kursvorschläge <span class="nbadge" id="nb-pbl">5</span>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-tab" id="tab-kurse"       onclick="showScreen('kurse'); kurseInit()">
+      <span class="nav-step">3</span>📚 Kursliste
+    </div>
+    <div class="nav-sep major"></div>
+    <div class="nav-tab" id="tab-redakteur"   onclick="showScreen('redakteur')">
+      <span class="nav-step">4</span>✏️ Redaktion
+    </div>
+    <div class="nav-tab studio" id="tab-editor" onclick="showScreen('editor')">
+      <span class="nav-step">5</span>🎨 Grafik-Studio
+    </div>
+    <div class="nav-sep major"></div>
+    <div class="nav-tab" id="tab-freigabe"    onclick="window.open('/freigabe','_blank')">
+      <span class="nav-step">6</span>✅ Freigabe ↗
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-tab" id="tab-direktion"   onclick="showScreen('direktion')">
+      <span class="nav-step">7</span>📊 Dashboard
+    </div>
+    <div class="nav-tab" id="tab-performance" onclick="window.open('/performance','_blank')">
+      <span class="nav-step">8</span>📈 Performance ↗
+    </div>
+    <div class="nav-sep major"></div>
+    <div class="nav-tab" id="tab-admin"       onclick="showScreen('admin')">
+      <span class="nav-step">⚙</span>Administration <span class="nbadge" id="nb-admin">6</span>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="main">
+
+    <!-- ── PBL ── -->
+    <div class="screen" id="screen-pbl">
+      <div id="pbl-welcome" class="pbl-welcome" style="margin:20px 22px 0">
+        <div class="pbl-avatar" id="pbl-icon">👋</div>
+        <div class="pbl-welcome-text">
+          <h2 id="pbl-greeting">Hallo!</h2>
+          <p>Schlage Kurse für aktuelle Anlässe vor — der Redakteur übernimmt den Rest.</p>
+          <div class="pbl-pb-badge" id="pbl-pb-badge"></div>
+        </div>
+      </div>
+      <div style="padding:16px 22px 0">
+        <div class="section-label">Aktuelle Anlässe — klicken zum Vorschlagen</div>
+        <div class="karten-grid" id="karten-grid"></div>
+      </div>
+      <div style="padding:16px 22px 20px">
+        <div class="section-label" id="status-label" style="display:none">Meine Einreichungen</div>
+        <div id="status-liste"></div>
+      </div>
+    </div>
+
+    <!-- ── REDAKTEUR ── -->
+    <div class="screen" id="screen-redakteur">
+      <div class="red-left">
+        <div>
+          <div class="sl">Einreichungen</div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="inbox-list">
+            <div class="inbox-item sel" onclick="pickInbox(this,0)">
+              <div class="ii-icon">🧘</div>
+              <div class="ii-info"><div class="ii-anlass">Yogatag — 21. Jun</div><div class="ii-kurs">Yoga Grundkurs · Manuela L.</div></div>
+              <div class="ii-pill p-neu">Neu</div>
+            </div>
+            <div class="inbox-item" onclick="pickInbox(this,1)">
+              <div class="ii-icon">🎵</div>
+              <div class="ii-info"><div class="ii-anlass">Fête de la Musique</div><div class="ii-kurs">Trommelkurs · Kristina S.</div></div>
+              <div class="ii-pill p-neu">Neu</div>
+            </div>
+            <div class="inbox-item" onclick="pickInbox(this,2)">
+              <div class="ii-icon">📷</div>
+              <div class="ii-info"><div class="ii-anlass">Welt-Fototag — 10. Aug</div><div class="ii-kurs">Naturfotografie · Vanessa P.</div></div>
+              <div class="ii-pill p-ok">Bereit</div>
+            </div>
+            <div class="inbox-item" onclick="pickInbox(this,3)">
+              <div class="ii-icon">🗣</div>
+              <div class="ii-info"><div class="ii-anlass">Tag der Sprachen</div><div class="ii-kurs">9 Fremdsprachen · Thomas M.</div></div>
+              <div class="ii-pill p-neu">Neu</div>
+            </div>
+          </div>
+        </div>
+        <div><div class="sl">Hook / Anlass</div><input class="fi" id="i-anlass" value="Internationaler Yogatag — 21. Juni 2026"></div>
+        <div><div class="sl">Kurs &amp; Inhalt</div><input class="fi" id="i-kurs" value="Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W"></div>
+        <div><div class="sl">Idee / Bezug</div><textarea class="ft" id="i-idee">Wer kennt das nicht: Der Alltag hetzt, der Körper kämpft mit. Yoga bringt den Ausgleich — kein Leistungsdruck. Einfach ankommen.</textarea></div>
+        <!-- MODUS-SCHALTER -->
+        <div class="modus-wrap">
+          <div class="modus-title">Post-Modus</div>
+          <div class="modus-row">
+            <div class="modus-chip on" id="modus-r7" onclick="setModus('r7')">
+              🎯 Regel 7
+              <span class="modus-sub">Gefühl · Aufhänger</span>
+            </div>
+            <div class="modus-chip" id="modus-direkt" onclick="setModus('direkt')">
+              📣 Direkter Aufruf
+              <span class="modus-sub">Kurs · Anmeldung</span>
+            </div>
+          </div>
+        </div>
+
+        <div><div class="sl">Ton</div>
+          <div class="chip-row">
+            <div class="chip on" onclick="setTon(this,'inspirierend')">💫 Inspirierend</div>
+            <div class="chip" onclick="setTon(this,'direkt')">🎯 Direkt</div>
+            <div class="chip" onclick="setTon(this,'humorvoll')">😄 Humorvoll</div>
+            <div class="chip" onclick="setTon(this,'informativ')">📋 Informativ</div>
+          </div>
+        </div>
+        <div><div class="sl">Kanal</div>
+          <div class="chip-row">
+            <div class="chip ig-on" id="c-ig" onclick="toggleK('ig')">📸 Instagram</div>
+            <div class="chip fb-on" id="c-fb" onclick="toggleK('fb')">👥 Facebook</div>
+          </div>
+        </div>
+
+        <!-- LINKTREE + KURSINFO TOGGLES -->
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="mini-toggle-row">
+            <div class="mt-label">
+              🔗 LinkTree
+              <span class="mt-sub">Link im Post einbetten</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="toggle-linktree" checked><span class="sl"></span></label>
+          </div>
+          <div id="linktree-url-wrap" style="padding:0 2px">
+            <input class="fi" id="i-linktree" type="text" placeholder="https://linktr.ee/vhsspandau" value="https://linktr.ee/vhsspandau" style="font-size:11px;padding:6px 10px">
+          </div>
+          <div class="mini-toggle-row">
+            <div class="mt-label">
+              📚 Kursinfo
+              <span class="mt-sub">Kursnummer + Titel einbetten</span>
+            </div>
+            <label class="sw"><input type="checkbox" id="toggle-kursinfo" checked><span class="sl gruen"></span></label>
+          </div>
+        </div>
+
+        <div class="regel modus-r7" id="regel-box"><strong>Regel Nr. 7 —</strong> Gute Aufhänger benennen ein Gefühl, kein Angebot.</div>
+        <button class="gen-btn" id="gen-btn" onclick="generate()">✨ Posts generieren · Schritt 4</button>
+      </div>
+      <div class="red-right" id="red-right">
+        <div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Redaktion bereit</div><div style="font-size:12px">Einreichung wählen → Ton → generieren</div></div>
+      </div>
+    </div>
+
+    <!-- ── ADMIN ── -->
+    <div class="screen" id="screen-admin">
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1">
+        <div>
+          <div class="section-label">Systemstatistik</div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-n" id="stat-users">–</div><div class="stat-label">Benutzer gesamt</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-n" id="stat-aktiv">–</div><div class="stat-label">Benutzer aktiv</div></div>
+            <div class="stat-card"><div class="stat-icon">📬</div><div class="stat-n">5</div><div class="stat-label">Einreichungen offen</div></div>
+            <div class="stat-card"><div class="stat-icon">📸</div><div class="stat-n">34</div><div class="stat-label">Posts veröffentlicht</div></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="section-label" style="margin-bottom:0">Benutzerverwaltung</div>
+            <button class="add-user-btn" onclick="openUserModal()">＋ Neuer Benutzer</button>
+          </div>
+          <div class="admin-grid" id="admin-grid">
+            <div style="color:var(--blau60);font-size:13px">Lade Benutzer…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER MODAL -->
+    <div class="umodal-overlay" id="umodal-overlay" onclick="closeUserModal(event)">
+      <div class="umodal">
+        <div class="umodal-head">
+          <div class="umodal-title" id="umodal-title">Neuer Benutzer</div>
+          <button class="umodal-close" onclick="closeUserModalDirect()">✕</button>
+        </div>
+        <div class="umodal-body">
+          <div class="uf-error" id="uf-error"></div>
+          <input type="hidden" id="uf-id">
+          <div class="uf-row">
+            <div>
+              <div class="uf-label">Vollständiger Name</div>
+              <input class="uf-input" id="uf-name" type="text" placeholder="Vorname Nachname">
+            </div>
+            <div>
+              <div class="uf-label">Benutzername</div>
+              <input class="uf-input" id="uf-username" type="text" placeholder="z. B. thomas">
+            </div>
+          </div>
+          <div>
+            <div class="uf-label">Passwort <span id="uf-pw-hint" style="text-transform:none;font-weight:400;letter-spacing:0">(leer lassen = nicht ändern)</span></div>
+            <input class="uf-input" id="uf-password" type="password" placeholder="Neues Passwort">
+          </div>
+          <div class="uf-row">
+            <div>
+              <div class="uf-label">Rolle</div>
+              <select class="uf-select" id="uf-role" onchange="updatePBVisibility()">
+                <option value="admin">Admin / Chief Editor</option>
+                <option value="redakteur">Redakteur</option>
+                <option value="pbl" selected>Programmbereichsleitung</option>
+                <option value="direktion">Direktion / Gast</option>
+              </select>
+            </div>
+            <div id="uf-pb-wrap">
+              <div class="uf-label">Programmbereich</div>
+              <select class="uf-select" id="uf-pb">
+                <option value="alle">Alle Bereiche</option>
+                <option>Deutsch und Integration</option>
+                <option>Fremdsprachen</option>
+                <option>Gesundheit &amp; Bewegung</option>
+                <option>Kultur &amp; Kreativität</option>
+                <option>Berufliche Bildung</option>
+                <option>Politik &amp; Gesellschaft</option>
+                <option>Grundbildung</option>
+                <option>Inklusion</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="umodal-foot">
+          <button class="uf-cancel" onclick="closeUserModalDirect()">Abbrechen</button>
+          <button class="uf-save" id="uf-save" onclick="saveUser()">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DIREKTION ── -->
+    <div class="screen" id="screen-direktion">
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1">
+        <div>
+          <div class="section-label">Übersicht</div>
+          <div class="stat-grid">
+            <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-n">884</div><div class="stat-label">Beste Reichweite (IG)</div></div>
+            <div class="stat-card"><div class="stat-icon">👁</div><div class="stat-n">3.2k</div><div class="stat-label">Ø Reichweite / Monat</div></div>
+            <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-n">4.7%</div><div class="stat-label">Ø Engagement-Rate</div></div>
+            <div class="stat-card"><div class="stat-icon">🔗</div><div class="stat-n">128</div><div class="stat-label">Link-Klicks gesamt</div></div>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:18px">
+          <div class="section-label" style="margin-bottom:12px">Kanal-Vergleich (Ø letzte 3 Monate)</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span>📸 Instagram</span><span style="font-weight:600;color:var(--blau)">Ø 412 Aufrufe</span>
+              </div>
+              <div style="height:10px;background:var(--blau10);border-radius:5px;overflow:hidden">
+                <div style="height:100%;width:78%;background:#E1306C;border-radius:5px"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span>👥 Facebook</span><span style="font-weight:600;color:var(--blau)">Ø 178 Aufrufe</span>
+              </div>
+              <div style="height:10px;background:var(--blau10);border-radius:5px;overflow:hidden">
+                <div style="height:100%;width:34%;background:#1877F2;border-radius:5px"></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--blau60)">Instagram erreicht durchschnittlich <strong style="color:var(--blau)">2,3× mehr</strong> Menschen als Facebook.</div>
+        </div>
+        <div style="background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:18px">
+          <div class="section-label" style="margin-bottom:10px">Nur lesen — kein Bearbeiten</div>
+          <div style="font-size:13px;color:var(--blau60);line-height:1.6">
+            Das Dashboard zeigt alle KPIs in Echtzeit.<br>
+            Redaktionsplan und Einreichungen sind einsehbar,<br>aber nicht bearbeitbar für die Direktion.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GRAFIK-STUDIO (eingebettet) ── -->
+    <div class="screen" id="screen-editor">
+  <input type="file" id="file-upload" accept="image/*" style="display:none" onchange="handleFile(this)">
+  <input type="file" id="cam-upload" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+      <div class="editor-wrap">
+
+  <!-- ══ LINKES PANEL ══ -->
+  <div class="panel">
+
+    <div class="p-section">
+      <div class="p-label">Templates</div>
+      <div class="tpl-grid">
+        <div>
+          <div class="tpl-card on" id="tpl-0" style="background:#00285A" onclick="loadTemplate(0)">
+            <div style="position:absolute;top:4px;right:4px"><svg width="14" height="9" viewBox="0 0 36 22"><circle cx="8" cy="11" r="5" fill="#00285A" opacity=".7"/><circle cx="18" cy="6" r="6" fill="#FAB90F"/><circle cx="7" cy="17" r="4" fill="#EB640F"/><circle cx="28" cy="13" r="5" fill="#64B9E6"/><circle cx="18" cy="17" r="3" fill="#E1000F"/></svg></div>
+            <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
+            <div class="tpl-active-badge">Aktiv</div>
+          </div>
+          <div class="tpl-name">Zitat</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-1" style="background:#AFC805" onclick="loadTemplate(1)">
+            <div style="margin-top:20px;font-size:7px;font-weight:700;color:#fff;line-height:1.25">Sommer 2026</div>
+            <div style="margin-top:3px;font-size:5px;color:#fff;font-weight:700">Vollfarbe · kein Foto</div>
+          </div>
+          <div class="tpl-name">Vollfarbe</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-2" style="background:#00285A" onclick="loadTemplate(2)">
+            <div style="margin-top:14px;font-size:6px;font-weight:700;color:#fff;line-height:1.25">Recruiting · Coach</div>
+            <div style="position:absolute;bottom:14px;right:5px;width:22px;height:22px;border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-size:4.5px;font-weight:700;color:#fff;text-align:center">Wir such. Dich!</div>
+          </div>
+          <div class="tpl-name">Recruiting</div>
+        </div>
+        <div>
+          <div class="tpl-card" id="tpl-3" style="background:#00285A" onclick="loadTemplate(3)">
+            <div style="margin-top:14px;font-size:5.5px;font-weight:700;color:#fff;line-height:1.25">Wie stellst Du Dir die Zukunft vor?</div>
+            <div style="position:absolute;bottom:10px;right:5px;width:20px;height:2px;background:#EB640F"></div>
+          </div>
+          <div class="tpl-name">Frage</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Hintergrundfoto</div>
+      <div class="upload-zone" id="upload-zone"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)"
+        onclick="document.getElementById('file-upload').click()">
+        <div class="uz-icon">🖼</div>
+        <div class="uz-text">Ziehen oder klicken</div>
+        <div class="uz-sub">JPG, PNG, WebP</div>
+      </div>
+      <div class="upload-btns">
+        <div class="upload-btn" onclick="document.getElementById('file-upload').click()">📁 Datei</div>
+        <div class="upload-btn cam" onclick="document.getElementById('cam-upload').click()">📷 Kamera</div>
+      </div>
+      <div class="foto-vorschau" id="foto-vorschau">
+        <img id="foto-preview-img" src="" alt="">
+        <button class="foto-del" onclick="removeFoto()">✕</button>
+      </div>
+      <div id="no-foto-hint" style="margin-top:6px;font-size:9px;color:rgba(255,255,255,.3);text-align:center">Kein Foto → Vollfarbe</div>
+    </div>
+
+    <div class="p-section">
+      <div class="p-label">Format</div>
+      <div class="format-btns">
+        <div class="fmt-btn on" id="fmt-0" onclick="setFormat(0,270,480,'Story / Reel','1080×1920')">
+          <div class="fmt-icon" style="width:12px;height:18px">9:16</div>
+          <span class="fmt-name">Story</span><span class="fmt-dim">1080×1920</span>
+        </div>
+        <div class="fmt-btn" id="fmt-1" onclick="setFormat(1,280,280,'Feed Quadrat','1080×1080')">
+          <div class="fmt-icon" style="width:18px;height:18px">1:1</div>
+          <span class="fmt-name">Feed</span><span class="fmt-dim">1080×1080</span>
+        </div>
+        <div class="fmt-btn" id="fmt-2" onclick="setFormat(2,320,180,'Querformat','1920×1080')">
+          <div class="fmt-icon" style="width:20px;height:11px">16:9</div>
+          <span class="fmt-name">Quer</span><span class="fmt-dim">1920×1080</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ CANVAS ══ -->
+  <div class="canvas-area">
+    <div class="canvas-outer" id="canvas-outer">
+
+      <div class="canvas-toolbar">
+        <div class="ct-btn" onclick="zoom(-10)">−</div>
+        <span class="zoom-lbl" id="zoom-lbl">100%</span>
+        <div class="ct-btn" onclick="zoom(+10)">+</div>
+        <div class="ct-sep"></div>
+        <div class="ct-btn" onclick="fitZoom()" title="Anpassen">⊡</div>
+        <div class="ct-sep"></div>
+        <div class="ct-btn" id="sz-toggle-btn" onclick="toggleSafeZones()" title="Safe-Zonen ein/aus" style="font-size:9px;width:auto;padding:0 6px;gap:3px">
+          ⊞ Safe-Zonen
+        </div>
+      </div>
+
+      <div class="canvas-frame" id="canvas-frame" style="width:270px;height:480px;border-radius:4px">
+
+        <!-- L1 Foto -->
+        <div class="cl-foto" id="cl-foto"></div>
+        <!-- L2 Farbe -->
+        <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
+        <!-- L3 DVV Logo -->
+        <div id="canvas-logo">
+          <svg width="40" height="25" viewBox="0 0 40 25"><circle cx="8" cy="12" r="7" fill="#00285A" opacity=".85"/><circle cx="19" cy="7" r="8" fill="#FAB90F"/><circle cx="7" cy="19" r="5.5" fill="#EB640F"/><circle cx="31" cy="14" r="6.5" fill="#64B9E6"/><circle cx="19" cy="19" r="4.5" fill="#E1000F"/><circle cx="31" cy="6" r="3.5" fill="#69829B"/></svg>
+        </div>
+        <!-- L4 Text-Block (draggable) -->
+        <div id="text-block" class="selected">
+          <div id="tb-headline" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:15px;line-height:1.28;word-break:break-word;margin-bottom:8px"></div>
+          <div id="tb-sub" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.8);font-size:11px;line-height:1.5;word-break:break-word"></div>
+          <div id="tb-author" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;text-decoration:underline;margin-top:8px"></div>
+          <div id="tb-role" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.75);font-size:9px;text-align:right;line-height:1.4;margin-top:1px"></div>
+        </div>
+        <!-- L5 Badge (draggable) -->
+        <div id="badge-block">
+          <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
+        </div>
+        <!-- L6 Footer -->
+        <div id="footer-block">
+          <div style="height:1px;background:rgba(255,255,255,.18);margin-bottom:5px"></div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+            <div id="tb-footer" style="font-family:Arial,sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
+          </div>
+          <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
+        </div>
+        <!-- L7 Safe-Zone SVG -->
+        <svg id="safe-zone-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <!-- L8 Overlay Badge -->
+        <div class="layer-badge" id="layer-badge">72% Blau</div>
+        <!-- Coordinate Readout -->
+        <div class="coord-readout" id="coord-readout" style="display:none">x: 0  y: 0</div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RECHTES PANEL ══ -->
+  <div class="panel-r panel">
+
+    <div style="display:flex;border-bottom:1px solid var(--border)">
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">Export</div>
+    </div>
+
+    <!-- TAB BILD -->
+    <div id="rtab-0">
+      <div class="p-section">
+        <div class="p-label">DVV-Farben (CI-konform)</div>
+        <div class="dvv-palette">
+          <div class="dvv-sw on" id="dvvsw-0" style="background:#00285A" title="DVV Primärblau" onclick="setOverlayColor(0,'#00285A','Blau')"></div>
+          <div class="dvv-sw" id="dvvsw-1" style="background:#AFC805" title="DVV Grün" onclick="setOverlayColor(1,'#AFC805','Grün')"></div>
+          <div class="dvv-sw" id="dvvsw-2" style="background:#E1000F" title="DVV Rot" onclick="setOverlayColor(2,'#E1000F','Rot')"></div>
+          <div class="dvv-sw" id="dvvsw-3" style="background:#64B9E6" title="Hellblau" onclick="setOverlayColor(3,'#64B9E6','Hellblau')"></div>
+          <div class="dvv-sw" id="dvvsw-4" style="background:#EB640F" title="DVV Orange" onclick="setOverlayColor(4,'#EB640F','Orange')"></div>
+          <div class="dvv-sw" id="dvvsw-5" style="background:#1A2943" title="Nachtblau" onclick="setOverlayColor(5,'#1A2943','Nacht')"></div>
+          <div class="dvv-sw" id="dvvsw-6" style="background:#5B2D8E" title="Lila" onclick="setOverlayColor(6,'#5B2D8E','Lila')"></div>
+          <div class="dvv-sw" id="dvvsw-7" style="background:#FAB90F" title="DVV Gelb" onclick="setOverlayColor(7,'#FAB90F','Gelb')"></div>
+          <div class="dvv-sw" id="dvvsw-8" style="background:#69829B" title="Blau 60%" onclick="setOverlayColor(8,'#69829B','Blau60')"></div>
+          <div class="dvv-sw" id="dvvsw-9" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" title="Blau 10%" onclick="setOverlayColor(9,'#E6EBF0','Blau10')"></div>
+        </div>
+        <div style="margin-top:7px;font-size:8px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--gruen);display:inline-block"></span>Nur DVV Corporate-Design-Farben
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Transparenz-Steuerung</div>
+        <div class="sl-row">
+          <span class="sl-lbl">Farbüberlagerung</span>
+          <div class="sl-track"><input type="range" min="0" max="100" value="72" step="1" id="sl-opacity" oninput="updateOpacity(this.value)"></div>
+          <span class="sl-val sv-blue" id="sv-opacity">72%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Helligkeit</span>
+          <div class="sl-track"><input type="range" min="20" max="130" value="75" step="1" id="sl-bright" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val sv-gelb" id="sv-bright">75%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Sättigung</span>
+          <div class="sl-track"><input type="range" min="0" max="200" value="70" step="1" id="sl-sat" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val sv-grn" id="sv-sat">70%</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-lbl">Foto-Kontrast</span>
+          <div class="sl-track"><input type="range" min="50" max="150" value="105" step="1" id="sl-contrast" oninput="updatePhotoFilter()"></div>
+          <span class="sl-val" style="color:rgba(255,255,255,.6)" id="sv-contrast">105%</span>
+        </div>
+        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(25)">25%</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid var(--gelb);background:rgba(250,185,15,.1);color:var(--gelb);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(72)">72% · Vigdís</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(85)">85%</button>
+          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(100)">100%</button>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Akzentlinie</div>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="linesw-0" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')"></div>
+          <div class="badge-sw" id="linesw-1" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')"></div>
+          <div class="badge-sw" id="linesw-2" style="background:#AFC805" onclick="setLineColor(2,'#AFC805')"></div>
+          <div class="badge-sw" id="linesw-3" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')"></div>
+          <div class="badge-sw" id="linesw-4" style="background:#fff" onclick="setLineColor(4,'#fff')"></div>
+          <div class="badge-sw" id="linesw-5" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')"></div>
+        </div>
+      </div>
+
+      <div class="p-section">
+        <div class="p-label">Safe-Zonen (Meta-Standards)</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,.7);cursor:pointer">
+            <input type="checkbox" id="sz-toggle" onchange="toggleSafeZones()">Hilfslinien einblenden
+          </label>
+        </div>
+        <div class="sz-legend">
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(250,185,15,.8)"></div>Außenrand · 5 % (allg. Sicherheit)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone oben · 14 % (Story UI)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone unten · 20 % (Story UI)</div>
+          <div class="sz-item"><div class="sz-dot" style="background:rgba(175,200,5,.8);border:none"></div>Text-Safe-Zone · zentrierter Innenbereich</div>
+        </div>
+        <div style="margin-top:8px;font-size:8px;color:rgba(255,255,255,.3);line-height:1.6">
+          Meta-Richtwerte: Profilbild-Überlagerung oben links ~14%, Story-Interaktionsleiste unten ~20%, Feed-Bildunterschrift ~10%. Hilfslinien erscheinen nur im Editor, nicht im Export.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB TEXT -->
+    <div id="rtab-1" style="display:none">
+      <div class="p-section">
+        <div class="p-label">Haupttext / Headline</div>
+        <textarea class="txt-field" id="tf-headline" rows="3" oninput="updateText()" placeholder="Hauptschlagzeile …"></textarea>
+        <div class="sl-row" style="margin-top:6px">
+          <span class="sl-lbl">Größe</span>
+          <div class="sl-track"><input type="range" min="10" max="36" value="15" step="1" id="sl-hlsize" oninput="updateText()"></div>
+          <span class="sl-val sv-blue" id="sv-hlsize">15px</span>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Unterzeile / Subtext</div>
+        <textarea class="txt-field" id="tf-sub" rows="2" oninput="updateText()" placeholder="Ergänzender Text …"></textarea>
+        <div class="sl-row" style="margin-top:6px">
+          <span class="sl-lbl">Größe</span>
+          <div class="sl-track"><input type="range" min="8" max="22" value="11" step="1" id="sl-subsize" oninput="updateText()"></div>
+          <span class="sl-val sv-blue" id="sv-subsize">11px</span>
+        </div>
+      </div>
+      <div class="p-section" id="fulltext-preview-section" style="display:none">
+        <div class="p-label" style="color:var(--orange)">📋 Text aus Redaktion</div>
+        <textarea class="txt-field" id="tf-fulltext-preview" rows="6" readonly
+          style="font-size:9px;color:rgba(255,255,255,.7);line-height:1.6;cursor:default;resize:none"
+          placeholder="Volltext aus Schritt 4 …"></textarea>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Textblock-Breite</div>
+        <div class="sl-row">
+          <span class="sl-lbl">Breite</span>
+          <div class="sl-track"><input type="range" min="50" max="100" value="88" step="1" id="sl-tbwidth" oninput="updateText()"></div>
+          <span class="sl-val sv-grn" id="sv-tbwidth">88%</span>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Autorin / Quelle</div>
+        <input class="txt-field" id="tf-author" type="text" oninput="updateText()" placeholder="Name …" style="margin-bottom:6px">
+        <input class="txt-field" id="tf-role" type="text" oninput="updateText()" placeholder="Titel / Funktion …">
+      </div>
+      <div class="p-section">
+        <div class="p-label">Footer-Text</div>
+        <input class="txt-field" id="tf-footer" type="text" oninput="updateText()" value="vhs Spandau">
+      </div>
+      <div class="p-section">
+        <div class="p-label">Textfarbe</div>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="txtsw-0" style="background:#fff;border:1px solid rgba(255,255,255,.3)" onclick="setTextColor(0,'#fff')"></div>
+          <div class="badge-sw" id="txtsw-1" style="background:#00285A" onclick="setTextColor(1,'#00285A')"></div>
+          <div class="badge-sw" id="txtsw-2" style="background:#FAB90F" onclick="setTextColor(2,'#FAB90F')"></div>
+          <div class="badge-sw" id="txtsw-3" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" onclick="setTextColor(3,'#E6EBF0')"></div>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Badge / Call-to-Action</div>
+        <input class="txt-field" id="tf-badge" type="text" oninput="updateText()" placeholder="z. B. Jetzt anmelden!" style="margin-bottom:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="badge-vis" onchange="updateText()"> Badge einblenden
+        </label>
+        <div class="badge-swatches">
+          <div class="badge-sw on" id="bgsw-0" style="background:#5B2D8E" onclick="setBadgeColor(0,'#5B2D8E')"></div>
+          <div class="badge-sw" id="bgsw-1" style="background:#E1000F" onclick="setBadgeColor(1,'#E1000F')"></div>
+          <div class="badge-sw" id="bgsw-2" style="background:#FAB90F" onclick="setBadgeColor(2,'#FAB90F')"></div>
+          <div class="badge-sw" id="bgsw-3" style="background:#AFC805" onclick="setBadgeColor(3,'#AFC805')"></div>
+          <div class="badge-sw" id="bgsw-4" style="background:#00285A" onclick="setBadgeColor(4,'#00285A')"></div>
+        </div>
+      </div>
+      <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
+        <div class="p-label" style="color:var(--gelb)">Position Textblock</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:6px">Textblock auf dem Canvas direkt ziehen (Drag & Drop). Snap zu Safe-Zonen aktiv.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">X px</div>
+            <input class="txt-field" id="pos-x" type="number" value="14" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
+          </div>
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">Y px</div>
+            <input class="txt-field" id="pos-y" type="number" value="200" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB EXPORT -->
+    <div id="rtab-2" style="display:none">
+      <div class="p-section">
+        <div class="p-label">PNG exportieren</div>
+        <button class="exp-btn exp-main" onclick="exportPNG()">⬇ Als PNG herunterladen</button>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Exportiert ohne Hilfslinien · Safe-Zonen werden automatisch ausgeblendet.</div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">In Redaktionsplan</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select class="txt-field" id="exp-kanal" style="font-size:10px">
+            <option value="ig">📸 Instagram</option>
+            <option value="fb">👥 Facebook</option>
+            <option value="beide">📸👥 Beide</option>
+          </select>
+          <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
+          <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Hook …" style="font-size:10px">
+          <button class="exp-btn" onclick="saveToRedaktionsplan()">📅 Im Redaktionsplan speichern</button>
+        </div>
+      </div>
+      <div class="p-section">
+        <div class="p-label">Auflösung</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+    </div>
+
+    <!-- ── KURSLISTE ── -->
+    <div class="screen" id="screen-kurse">
+      <div class="kurse-hero">
+        <div class="kurse-hero-title">📚 Kursliste</div>
+        <div class="kurse-hero-sub">Kursnummer oder Titel suchen · Klick kopiert in die Zwischenablage</div>
+        <div class="kurse-search-box">
+          <input class="kurse-search-input" id="kurse-search" type="text" placeholder="z. B. Sp3.316 oder Yoga oder Spanisch …">
+          <span class="kurse-search-icon">🔍</span>
+        </div>
+        <div class="kurse-count" id="kurse-count"></div>
+      </div>
+      <div class="kurse-body">
+        <div class="kurse-lookup">
+          <div class="kurse-lookup-title">⚡ Direktlookup — Kursnummer eingeben</div>
+          <div class="kurse-lookup-row">
+            <input class="kurse-lookup-input" id="kurse-lw-input" type="text" placeholder="Sp3.316-W">
+            <button class="kurse-lookup-btn" onclick="kurseLookup()">Nachschlagen</button>
+          </div>
+          <div class="kurse-lookup-result" id="kurse-lw-result"></div>
+        </div>
+        <div class="kurse-filter-row" id="kurse-filter-row">
+          <div class="kurse-chip on" onclick="kurseSetFilter(this,'alle')">Alle</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'deutsch')">🇩🇪 Deutsch</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'fremd')">🗣 Fremdsprachen</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'gesundheit')">🧘 Gesundheit</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'kultur')">🎨 Kultur</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'beruf')">💼 Beruf</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'grundbildung')">📖 Grundbildung</div>
+          <div class="kurse-chip" onclick="kurseSetFilter(this,'politik')">🏛 Politik</div>
+        </div>
+        <div id="kurse-ergebnis-area">
+          <div class="empty"><div class="empty-icon">📚</div><div class="empty-title">Kursliste wird geladen…</div></div>
+        </div>
+        <div class="kurse-paging" id="kurse-paging" style="display:none">
+          <button class="kurse-page-btn" id="kurse-btn-prev" onclick="kurseChangePage(-1)">← Zurück</button>
+          <span class="kurse-page-info" id="kurse-page-info"></span>
+          <button class="kurse-page-btn" id="kurse-btn-next" onclick="kurseChangePage(1)">Weiter →</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-icon" id="modal-icon"></div>
+      <div><div class="modal-title" id="modal-title"></div><div class="modal-datum" id="modal-datum"></div></div>
+    </div>
+    <div class="modal-body">
+      <div class="mf-label">Kursvorschlag</div>
+      <input class="mf-input" id="mf-kurs" type="text" placeholder="z. B. Yoga Grundkurs, Urban Sketching …">
+      <div class="mf-row">
+        <div>
+          <div class="mf-label">Programmbereich</div>
+          <select class="mf-select" id="mf-pb">
+            <option>Deutsch und Integration</option>
+            <option>Fremdsprachen</option>
+            <option>Gesundheit &amp; Bewegung</option>
+            <option>Kultur &amp; Kreativität</option>
+            <option>Berufliche Bildung</option>
+            <option>Politik &amp; Gesellschaft</option>
+            <option>Grundbildung</option>
+          </select>
+        </div>
+        <div>
+          <div class="mf-label">Kursnummer (opt.) <span id="kurs-lookup-status" style="font-size:10px;color:var(--gruen);font-weight:600"></span></div>
+          <input class="mf-input" id="mf-nr" type="text" placeholder="z. B. Sp3.316-W — Titel wird automatisch gefunden" style="margin-bottom:0" oninput="lookupKursnr(this.value)">
+        </div>
+      </div>
+      <div class="mf-label">Idee / Bezug zum Anlass</div>
+      <textarea class="mf-textarea" id="mf-idee" placeholder="Warum passt dieser Kurs? Was soll der Post vermitteln?"></textarea>
+      <div class="mf-label">Hashtag-Wunsch (opt.)</div>
+      <input class="mf-input" id="mf-tags" type="text" placeholder="#vhsspandau #yoga …" style="margin-bottom:0">
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModalDirect()">Abbrechen</button>
+      <button class="btn-submit" onclick="submitModal()">📬 Einreichen</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let currentUser = null;
+let ton = 'inspirierend';
+let igOn = true, fbOn = true;
+let modus = 'r7'; // 'r7' = Regel 7 Aufhänger | 'direkt' = Direkter Kursaufruf
+let currentAnlassId = null;
+const submitted = {};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════════════════════
+async function doLogin() {
+  const u = document.getElementById('lf-user').value.trim();
+  const p = document.getElementById('lf-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  try {
+    const r = await fetch('/api/login', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username:u, password:p })
+    });
+    const d = await r.json();
+    if (!r.ok) { errEl.style.display='block'; return; }
+    currentUser = d.user;
+    initApp();
+  } catch(e) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Server nicht erreichbar.';
+  }
+}
+
+async function doLogout() {
+  await fetch('/api/logout', { method:'POST', credentials:'include' });
+  currentUser = null;
+  // Alle Nav-Tabs ausblenden und Screens deaktivieren
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('lf-user').value = '';
+  document.getElementById('lf-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// Enter-Taste im Login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+// Session beim Laden prüfen
+window.addEventListener('load', async () => {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (r.ok) { const d = await r.json(); currentUser = d.user; initApp(); }
+  } catch {}
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// APP INITIALISIEREN
+// ══════════════════════════════════════════════════════════════════════════════
+const ROLE_LABELS = { admin:'Admin', redakteur:'Redakteur', pbl:'Programmbereichsleitung', direktion:'Direktion' };
+const ROLE_COLORS = { admin:'av-admin', redakteur:'av-redakteur', pbl:'av-pbl', direktion:'av-direktion' };
+const ROLE_INITIALS = u => u.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KURSLISTE LOOKUP
+// ══════════════════════════════════════════════════════════════════════════════
+let KURSLISTE = null;
+
+async function ladeKursliste() {
+  if (KURSLISTE) return KURSLISTE;
+  try {
+    const r = await fetch('/kurse.json');
+    KURSLISTE = await r.json();
+  } catch { KURSLISTE = []; }
+  return KURSLISTE;
+}
+
+async function lookupKursnr(val) {
+  const status = document.getElementById('kurs-lookup-status');
+  const kursInput = document.getElementById('mf-kurs');
+  if (!val || val.length < 4) { status.textContent = ''; return; }
+  const kurse = await ladeKursliste();
+  const treffer = kurse.find(k =>
+    k.nr.toLowerCase() === val.toLowerCase() ||
+    k.nr.toLowerCase().includes(val.toLowerCase())
+  );
+  if (treffer) {
+    status.textContent = '✓ ' + treffer.titel;
+    status.style.color = 'var(--gruen)';
+    // Kurstitel ins Kursvorschlag-Feld übernehmen wenn noch leer
+    if (!kursInput.value.trim()) kursInput.value = treffer.titel;
+  } else if (val.length >= 6) {
+    status.textContent = 'Nicht gefunden';
+    status.style.color = 'var(--rot)';
+  }
+}
+
+// Kursliste vorladen sobald App initialisiert
+function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  ladeKursliste(); // Kursliste im Hintergrund vorladen
+
+  // Header
+  const av = document.getElementById('hdr-avatar');
+  av.textContent = ROLE_INITIALS(currentUser);
+  av.className = 'user-avatar ' + ROLE_COLORS[currentUser.role];
+  document.getElementById('hdr-name').textContent = currentUser.name;
+  document.getElementById('hdr-role').textContent = ROLE_LABELS[currentUser.role];
+
+  // Tabs je Rolle — vollständige Sichtbarkeitsmatrix
+  const role = currentUser.role;
+
+  // Alle Tabs erst ausblenden
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.add('hidden'));
+
+  // Sichtbarkeitsmatrix: Rolle → sichtbare Tab-IDs
+  const NAV = {
+    admin:     ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-freigabe','tab-direktion','tab-performance','tab-admin'],
+    redakteur: ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-freigabe','tab-direktion','tab-performance'],
+    pbl:       ['tab-kalender','tab-pbl','tab-kurse'],
+    direktion: ['tab-kalender','tab-direktion','tab-performance'],
+  };
+  (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
+
+  // URL-Parameter von Freigabe-Seite: direkt zum Generator
+  const params = new URLSearchParams(window.location.search);
+
+  // Direktnavigation von externen Seiten via ?screen=
+  const screenParam = params.get('screen');
+  if (screenParam && ['pbl','redakteur','admin','direktion','kurse'].includes(screenParam)) {
+    document.getElementById('tab-' + screenParam)?.classList.remove('hidden');
+    showScreen(screenParam);
+    if (screenParam === 'admin') loadAdminUsers();
+    if (screenParam === 'pbl')   initPBL();
+    if (screenParam === 'kurse') kurseInit();
+  } else if (!params.get('einreichung')) {
+    // Standard nach Login: immer zum Redaktionsplan
+    window.location.href = '/kalender';
+    return;
+  }
+
+  if (params.get('einreichung')) {
+    // Tab sichtbar machen falls nötig
+    document.getElementById('tab-redakteur')?.classList.remove('hidden');
+    showScreen('redakteur');
+    // Felder vorbelegen
+    const anlass = params.get('anlass') || '';
+    const kurs   = params.get('kurs')   || '';
+    const idee   = params.get('idee')   || '';
+    const kursNr = params.get('kursNr') || '';
+    setTimeout(() => {
+      if (anlass) document.getElementById('i-anlass').value = anlass;
+      if (kurs || kursNr) document.getElementById('i-kurs').value = (kursNr ? kursNr + ' — ' : '') + kurs;
+      if (idee)  document.getElementById('i-idee').value   = idee;
+      // Hinweis-Banner
+      const right = document.getElementById('red-right');
+      right.innerHTML = `<div style="background:var(--blau10);border:1.5px solid var(--blau20);border-radius:10px;padding:16px 18px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">✅</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--blau);margin-bottom:3px">Einreichung geladen</div>
+          <div style="font-size:12px;color:var(--blau60)">Felder sind vorbelegt. Ton wählen und Post generieren.</div>
+        </div>
+      </div>`;
+      // URL bereinigen ohne Reload
+      window.history.replaceState({}, '', '/');
+    }, 100);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCREEN WECHSEL
+// ══════════════════════════════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + name)?.classList.add('active');
+  document.getElementById('tab-' + name)?.classList.add('active');
+}
+
+// Payload vom Generator ans Grafik-Studio übergeben
+function openStudio(payload) {
+  // Payload ZUERST setzen, bevor loadTemplate ihn lesen kann
+  redaktionPayload = payload;
+  showScreen('editor');
+  // initStudio setzt Drag+Drop und lädt Template (loadTemplate liest redaktionPayload)
+  initStudio();
+}
+
+
+// PBL SCREEN
+// ══════════════════════════════════════════════════════════════════════════════
+const ANLAESSE = [
+  {id:1, datum:'21. Jun 2026', titel:'Fête de la Musique',       typ:'ve', icon:'🎵', bg:'#FEF3DA', hint:'Musik, Kurse, Community'},
+  {id:2, datum:'27. Jun 2026', titel:'Tag der Architektur',       typ:'jt', icon:'🏛', bg:'#E6F1FB', hint:'Urban Sketching, Stadtführungen'},
+  {id:3, datum:'10. Aug 2026', titel:'Welt-Fototag',              typ:'jt', icon:'📷', bg:'#E6F1FB', hint:'Naturfotografie, Bildbearbeitung'},
+  {id:4, datum:'21. Jun 2026', titel:'Internationaler Yogatag',   typ:'jt', icon:'🧘', bg:'#EAF3DE', hint:'Yoga, Qi Gong, Pilates'},
+  {id:5, datum:'04. Sep 2026', titel:'Europ. Tag der Sprachen',   typ:'jt', icon:'🗣', bg:'#E6F1FB', hint:'Alle 9 Fremdsprachen'},
+  {id:6, datum:'26. Aug 2026', titel:'Lange Nacht der Museen',    typ:'ve', icon:'🎨', bg:'#FEF3DA', hint:'Kunst, Kulturgeschichte'},
+  {id:7, datum:'09. Nov 2026', titel:'Mauerfall-Jahrestag',       typ:'jt', icon:'🕊', bg:'#E6F1FB', hint:'Geschichte, pol. Bildung'},
+  {id:8, datum:'Jun–Aug 2026', titel:'Sommerkurse starten',       typ:'ks', icon:'☀️', bg:'#EAF3DE', hint:'Outdoor, Sprachen, Gesundheit'},
+];
+const TYP_LABEL = {jt:'Jahrestag',ve:'Veranstaltung',ks:'Kursstart',an:'Anlass'};
+
+function initPBL() {
+  // Begrüßung
+  const icons = {admin:'👑',redakteur:'✏️',pbl:'🌱',direktion:'👁'};
+  document.getElementById('pbl-icon').textContent = icons[currentUser.role]||'👋';
+  document.getElementById('pbl-greeting').textContent = 'Hallo, ' + currentUser.name.split(' ')[0] + '!';
+  document.getElementById('pbl-pb-badge').textContent = currentUser.pb;
+
+  renderKarten();
+}
+
+function renderKarten() {
+  const grid = document.getElementById('karten-grid');
+  grid.innerHTML = ANLAESSE.map(a => {
+    const done = submitted[a.id];
+    return `<div class="karte${done?' eingereicht':''}" onclick="openModal(${a.id})">
+      <div class="karte-top">
+        <div class="karte-icon" style="background:${a.bg}">${a.icon}</div>
+        <div class="karte-meta">
+          <div class="karte-datum">${a.datum}</div>
+          <div class="karte-titel">${a.titel}</div>
+          <span class="karte-typ t-${a.typ}">${TYP_LABEL[a.typ]}</span>
+        </div>
+      </div>
+      <div class="karte-body">${a.hint}</div>
+      <div class="karte-footer">
+        <button class="karte-cta" onclick="event.stopPropagation();openModal(${a.id})">
+          ${done?'✓ Eingereicht':'📬 Vorschlagen'}
+        </button>
+        <div class="einr-badge">✓ Gesendet</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openModal(id) {
+  currentAnlassId = id;
+  const a = ANLAESSE.find(x=>x.id===id);
+  document.getElementById('modal-icon').style.background = a.bg;
+  document.getElementById('modal-icon').textContent = a.icon;
+  document.getElementById('modal-title').textContent = a.titel;
+  document.getElementById('modal-datum').textContent = a.datum;
+  ['mf-kurs','mf-nr','mf-idee','mf-tags'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(e){ if(e.target===document.getElementById('modal-bg')) closeModalDirect(); }
+function closeModalDirect(){ document.getElementById('modal-bg').classList.remove('open'); }
+
+function submitModal() {
+  const kurs = document.getElementById('mf-kurs').value.trim();
+  if (!kurs) { document.getElementById('mf-kurs').focus(); return; }
+  submitted[currentAnlassId] = true;
+  closeModalDirect();
+  renderKarten();
+  // Status-Liste aktualisieren
+  const statusLabel = document.getElementById('status-label');
+  const statusListe = document.getElementById('status-liste');
+  statusLabel.style.display = 'block';
+  const a = ANLAESSE.find(x=>x.id===currentAnlassId);
+  statusListe.innerHTML += `<div style="background:#fff;border-radius:9px;border:1.5px solid var(--gruen);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+    <div style="font-size:20px">${a.icon}</div>
+    <div style="flex:1">
+      <div style="font-size:12px;font-weight:600;color:var(--blau)">${a.titel}</div>
+      <div style="font-size:11px;color:var(--blau60)">${kurs}</div>
+    </div>
+    <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;background:#EAF3DE;color:#3B6D11">Eingereicht</div>
+  </div>`;
+  showToast('📬 Vorschlag eingereicht!');
+  document.getElementById('nb-pbl').textContent = Object.keys(submitted).length;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REDAKTEUR / KI-GENERATOR
+// ══════════════════════════════════════════════════════════════════════════════
+const INBOX_DATA = [
+  {anlass:'Internationaler Yogatag — 21. Juni 2026', kurs:'Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W', idee:'Wer kennt das nicht: Der Alltag hetzt, der Körper kämpft mit. Yoga bringt den Ausgleich — kein Leistungsdruck.'},
+  {anlass:'Fête de la Musique — 21. Juni 2026',      kurs:'Trommelkurs, Percussion für alle — Sp2.731-H', idee:'Berlin klingt an einem Tag wie ein großes Konzert. Wir spielen mit.'},
+  {anlass:'Welt-Fototag — 10. August 2026',          kurs:'Naturfotografie — Sp2.610-S',                  idee:'Ein Tag für alle, die die Welt durch ein Objektiv sehen.'},
+  {anlass:'Europ. Tag der Sprachen — 4. Sep 2026',   kurs:'9 Fremdsprachen an der VHS Spandau',           idee:'Spandau spricht viele Sprachen — zu Hause, im Kiez, im Freundeskreis.'},
+];
+
+function pickInbox(el, idx) {
+  document.querySelectorAll('.inbox-item').forEach(i=>i.classList.remove('sel'));
+  el.classList.add('sel');
+  const d = INBOX_DATA[idx];
+  document.getElementById('i-anlass').value = d.anlass;
+  document.getElementById('i-kurs').value   = d.kurs;
+  document.getElementById('i-idee').value   = d.idee;
+  document.getElementById('red-right').innerHTML = '<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Bereit</div><div style="font-size:12px">Ton wählen und generieren</div></div>';
+}
+
+function setTon(el, t) {
+  document.querySelectorAll('#screen-redakteur .chip:not(#c-ig):not(#c-fb)').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); ton = t;
+}
+
+function setModus(m) {
+  modus = m;
+  document.getElementById('modus-r7').classList.toggle('on', m === 'r7');
+  document.getElementById('modus-direkt').classList.toggle('on', m === 'direkt');
+  const regelBox = document.getElementById('regel-box');
+  if (m === 'r7') {
+    regelBox.className = 'regel modus-r7';
+    regelBox.innerHTML = '<strong>Regel Nr. 7 —</strong> Gute Aufhänger benennen ein Gefühl, kein Angebot.';
+  } else {
+    regelBox.className = 'regel modus-direkt';
+    regelBox.innerHTML = '<strong>Direkter Aufruf —</strong> Klar, konkret, handlungsaufordernd: Kurs, Datum, Anmeldung.';
+  }
+}
+
+// LinkTree-Toggle: URL-Feld zeigen/verstecken
+document.addEventListener('DOMContentLoaded', () => {
+  const lt = document.getElementById('toggle-linktree');
+  if (lt) lt.addEventListener('change', () => {
+    document.getElementById('linktree-url-wrap').style.display = lt.checked ? 'block' : 'none';
+  });
+});
+function toggleK(k) {
+  if(k==='ig'){igOn=!igOn;document.getElementById('c-ig').className='chip'+(igOn?' ig-on':'');}
+  else{fbOn=!fbOn;document.getElementById('c-fb').className='chip'+(fbOn?' fb-on':'');}
+}
+
+async function generate() {
+  if (!igOn && !fbOn) { showToast('Bitte mindestens einen Kanal wählen'); return; }
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Claude schreibt…';
+
+  const anlass = document.getElementById('i-anlass').value;
+  const kurs   = document.getElementById('i-kurs').value;
+  const idee   = document.getElementById('i-idee').value;
+  const right  = document.getElementById('red-right');
+  const kanaele = [igOn&&'Instagram',fbOn&&'Facebook'].filter(Boolean).join(' und ');
+
+  right.innerHTML = (igOn?skelCard('📸 Instagram','c-ig'):'') + (fbOn?skelCard('👥 Facebook','c-fb'):'');
+
+  // Optionen lesen
+  const mitLinktree  = document.getElementById('toggle-linktree')?.checked;
+  const linktreeUrl  = document.getElementById('i-linktree')?.value?.trim() || 'https://linktr.ee/vhsspandau';
+  const mitKursinfo  = document.getElementById('toggle-kursinfo')?.checked;
+
+  // Modus-spezifische Anweisung
+  const modusAnweisung = modus === 'r7'
+    ? 'MODUS REGEL 7: Beginne mit einem Gefühl oder einer Beobachtung aus dem Alltag. Verkaufe NICHT direkt das Angebot. Der Kurs erscheint erst im zweiten Teil als natürliche Lösung — nie als Hauptbotschaft.'
+    : 'MODUS DIREKTER AUFRUF: Klarer, handlungsauffordernder Post. Nenne Kursname, Kursnummer (falls vorhanden), Starttermin, Anmeldemöglichkeit. Direkt, konkret, keine langen Einleitungen. CTA am Ende.';
+
+  // Kursinfo-Anweisung
+  const kursinfoAnweisung = mitKursinfo
+    ? `KURSINFO EINBETTEN: Integriere Kursname und Kursnummer organisch in den Post. Format: „${kurs}".`
+    : 'KURSINFO WEGLASSEN: Nenne keinen konkreten Kursnamen oder Kursnummer im Post. Der Post bleibt allgemein und atmosphärisch.';
+
+  // LinkTree-Anweisung
+  const linktreeAnweisung = mitLinktree
+    ? `LINKTREE: Füge am Ende des Posts einen Verweis auf den LinkTree ein. Instagram: „Alle Infos + Anmeldung: Link in der Bio (${linktreeUrl})" — oder kürzer für IG. Facebook: URL direkt nennen.`
+    : 'LINK WEGLASSEN: Keinen Link und keine URL im Post nennen.';
+
+  try {
+    const r = await fetch('/api/generate', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1200,
+        system:`Du bist Redakteur der Volkshochschule Berlin-Spandau.\nTON: ${ton}\n${modusAnweisung}\n${kursinfoAnweisung}\n${linktreeAnweisung}\nDu-Form IG, Sie-Form FB. Kurze Sätze. Zeilenumbrüche für Rhythmus. Max 3 Emojis auf IG.\n\nWICHTIG: Beginne jeden Post IMMER mit einer kurzen, prägnanten Überschrift/Slogan (max. 50 Zeichen, eine Zeile, ohne Punkt am Ende). Das ist die Grafik-Headline. Dann eine Leerzeile, dann der eigentliche Post-Text.\n\nFormat: === INSTAGRAM ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]\\n=== FACEBOOK ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]`,
+        messages:[{role:'user',content:`Kanäle: ${kanaele}\nAnlass: ${anlass}\nKurs: ${kurs}\nIdee: ${idee}\n\nNur die Posts, kein Kommentar.`}]
+      })
+    });
+    if (!r.ok) { const e=await r.json(); throw new Error(e.error||'API-Fehler'); }
+    const data = await r.json();
+    const text = data.content?.[0]?.text||'';
+    right.innerHTML = '<div style="font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;padding:0 2px">📝 Text des Posts — zum Kopieren &amp; Posten</div>';
+    parseAndRender(text, right, igOn, fbOn);
+
+    // ── Übergabe ans Grafik-Studio ─────────────────────────────
+    // Besten Text extrahieren (IG bevorzugt, ohne Hashtags)
+    const igMatch = text.match(/===\s*INSTAGRAM\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
+    const fbMatch = text.match(/===\s*FACEBOOK\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
+    let rawBest = igMatch ? igMatch[1] : (fbMatch ? fbMatch[1] : text);
+    // Hashtag-Block und LinkTree-Zeilen abschneiden
+    const hashCut = rawBest.search(/HASHTAGS?:/i);
+    if (hashCut > -1) rawBest = rawBest.slice(0, hashCut);
+    // Zeilen filtern: leer, nur Emojis, nur Hashtags weglassen
+    const cleanLines = rawBest.split('\n')
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#') && !/^[\u{1F300}-\u{1FAFF}\s]+$/u.test(l));
+
+    // ── Headline/Slogan für Grafik-Studio (max. 1-2 kurze Zeilen) ──
+    // Regel: Nur Slogan/Überschrift ins Template, NICHT den vollen Fließtext
+    const anlasstxt = document.getElementById('i-anlass').value;
+    const kursTxt   = document.getElementById('i-kurs').value;
+    const fullClean = cleanLines.join('\n'); // Volltext bleibt in Redaktion
+
+    // Headline: erste Zeile wenn ≤ 80 Zeichen, sonst Anlass-Hook nehmen
+    let headline = cleanLines[0] || anlass;
+    if (headline.length > 80) {
+      // Zu lang für Canvas — kürze auf Hook oder ersten Satz bis Punkt/Ausrufezeichen
+      const shortMatch = headline.match(/^(.{10,60}[.!?])/);
+      headline = shortMatch ? shortMatch[1] : headline.slice(0, 60) + ' …';
+    }
+
+    // Unterzeile: zweite Zeile wenn kurz (≤ 100 Zeichen), sonst leer lassen
+    // KEIN langer Fließtext ins Template — "Weniger ist mehr"
+    let sub = '';
+    if (cleanLines[1] && cleanLines[1].length <= 100) {
+      sub = cleanLines[1];
+    }
+
+    // Schriftgröße an Headline-Länge anpassen
+    const autoHlSize = headline.length > 60 ? 14 : headline.length > 40 ? 16 : headline.length > 25 ? 18 : 22;
+
+    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize };
+
+    // ── Vorschau was ins Grafik-Template geht ──
+    const previewHl  = window._lastStudioPayload.hl  || '';
+    const previewSub = window._lastStudioPayload.sub || '';
+
+    right.innerHTML += `
+    <div style="margin-top:20px;border-radius:10px;border:1.5px solid #e2e7ef;overflow:hidden">
+      <div style="background:var(--blau10);padding:9px 14px;border-bottom:1px solid #dde2e9;display:flex;align-items:center;gap:7px">
+        <span style="font-size:14px">🎨</span>
+        <span style="font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px">Slogan / Überschrift → Grafik-Template</span>
+      </div>
+      <div style="padding:12px 14px;background:#fff">
+        <div style="font-size:15px;font-weight:700;color:var(--blau);line-height:1.3;margin-bottom:${previewSub ? '6px' : '0'}">${esc(previewHl)}</div>
+        ${previewSub ? `<div style="font-size:12px;color:var(--blau60);line-height:1.5">${esc(previewSub)}</div>` : ''}
+      </div>
+    </div>`;
+
+    right.innerHTML += `
+    <div style="margin-top:12px;border-radius:12px;overflow:hidden;border:2px solid var(--orange)">
+      <div style="background:linear-gradient(135deg,#00285A,#1a3a60);padding:14px 18px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:26px">🎨</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">Schritt 5 — Grafik-Studio</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.65)">Slogan/Überschrift → Template · Volltext bleibt in der Redaktion</div>
+        </div>
+        <button onclick="openStudio(window._lastStudioPayload)"
+           style="background:var(--orange);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif">
+          🎨 Im Studio öffnen
+        </button>
+      </div>
+      <div style="background:#f8fafe;padding:10px 18px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="fg-btn fg-plan" onclick="showToast('📅 Im Redaktionsplan geplant')">📅 Planen</button>
+        <button class="fg-btn fg-ok" onclick="showToast('✅ Freigabe angefragt')">✅ Zur Freigabe</button>
+        <a href="/freigabe" style="font-size:11px;color:var(--blau60);display:flex;align-items:center;gap:4px;text-decoration:none;padding:4px 0">Schritt 6 → Freigabe</a>
+      </div>
+    </div>`;
+  } catch(e) {
+    right.innerHTML = `<div style="background:#FCEBEB;border:1.5px solid var(--rot);border-radius:10px;padding:16px;font-size:12px;color:#791F1F">⚠️ ${e.message}</div>`;
+  }
+  btn.disabled=false; btn.innerHTML='✨ Posts generieren';
+}
+
+function parseAndRender(text, el, ig, fb) {
+  const igM = text.match(/===\s*INSTAGRAM\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
+  const fbM = text.match(/===\s*FACEBOOK\s*===([\s\S]*?)(?:===\s*INSTAGRAM\s*===|$)/i);
+  if (ig && igM) { const {body,tags}=splitTags(igM[1].trim()); el.innerHTML+=buildCard('ig',body,tags||'#vhsspandau #spandau','Reichweite'); }
+  if (fb && fbM) { const {body,tags}=splitTags(fbM[1].trim()); el.innerHTML+=buildCard('fb',body,tags||'#vhsspandau','Engagement'); }
+  if (!igM&&!fbM) { const {body,tags}=splitTags(text.trim()); if(ig)el.innerHTML+=buildCard('ig',body,tags,'Reichweite'); }
+  el.querySelectorAll('.post-text').forEach(pt=>{
+    const cid=pt.closest('.pk-body').querySelector('.char-info').id;
+    countChars(pt,cid); pt.addEventListener('input',()=>countChars(pt,cid));
+  });
+}
+function splitTags(raw){
+  const i=raw.search(/HASHTAGS?:/i);
+  if(i===-1){const l=raw.split('\n');const ti=l.findIndex(x=>x.trim().startsWith('#'));if(ti>-1)return{body:l.slice(0,ti).join('\n').trim(),tags:l.slice(ti).join(' ').trim()};return{body:raw,tags:''};}
+  return{body:raw.slice(0,i).trim(),tags:raw.slice(i).replace(/HASHTAGS?:\s*/i,'').trim()};
+}
+function buildCard(k,body,tags,ziel){
+  const uid=k+Date.now()+Math.random().toString(36).slice(2,4);
+  const tid='pt'+uid,hid='ph'+uid,cid='cc'+uid;
+  return `<div class="post-karte"><div class="pk-head"><div class="pk-kanal c-${k}">${k==='ig'?'📸 Instagram':'👥 Facebook'}</div><div class="pk-acts"><button class="pk-btn" data-tid="${tid}" data-hid="${hid}" onclick="copyPost(this)">Kopieren</button></div></div><div class="pk-body"><div class="post-text" id="${tid}" contenteditable="true">${esc(body)}</div><div class="char-info" id="${cid}"></div></div><div class="pk-foot"><div class="pk-tags" id="${hid}">${esc(tags)}</div><div class="pk-ziel">Ziel: ${ziel}</div></div></div>`;
+}
+function skelCard(label,cls){return`<div class="post-karte"><div class="pk-head"><div class="pk-kanal ${cls}">${label}</div></div><div class="pk-body" style="padding:14px"><div class="sk" style="width:100%"></div><div class="sk" style="width:82%"></div><div class="sk" style="width:91%"></div><div class="sk" style="width:68%"></div></div></div>`;}
+function countChars(el,cid){const n=el.textContent.length;const isIG=!!el.closest('.post-karte').querySelector('.c-ig');document.getElementById(cid).textContent=n+' Zeichen';document.getElementById(cid).className='char-info'+(n>(isIG?300:500)?' char-warn':'');}
+function copyPost(btn){const t=document.getElementById(btn.dataset.tid).textContent;const h=document.getElementById(btn.dataset.hid).textContent;navigator.clipboard.writeText(t+'\n\n'+h).then(()=>{btn.textContent='✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Kopieren';btn.classList.remove('copied')},2000)});}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+// BENUTZERVERWALTUNG (Admin)
+// ══════════════════════════════════════════════════════════════════════════════
+let editingUserId = null;
+
+async function loadAdminUsers() {
+  const r = await fetch('/api/users', { credentials:'include' });
+  if (!r.ok) return;
+  const { users } = await r.json();
+  document.getElementById('stat-users').textContent = users.length;
+  document.getElementById('stat-aktiv').textContent = users.filter(u => u.aktiv !== false).length;
+  document.getElementById('admin-grid').innerHTML = users.map(u => {
+    const inaktiv = u.aktiv === false;
+    return `<div class="user-card${inaktiv?' inaktiv':''}">
+      <div class="uc-avatar ${ROLE_COLORS[u.role]}">${ROLE_INITIALS(u)}</div>
+      <div class="uc-info">
+        <div class="uc-name">${esc(u.name)}${inaktiv?' <span style="font-size:10px;color:var(--blau60)">(deaktiviert)</span>':''}</div>
+        <div class="uc-pb">${esc(u.pb||'alle')} · @${esc(u.username)}</div>
+        <div class="uc-role role-${u.role}">${ROLE_LABELS[u.role]}</div>
+      </div>
+      <div class="uc-actions">
+        <button class="uc-btn edit" onclick="openUserModal('${u.id}')">✏️</button>
+        <button class="uc-btn ${inaktiv?'toggle-off':'toggle-on'}" onclick="toggleUser('${u.id}',${!inaktiv})">${inaktiv?'🔓':'🔒'}</button>
+        <button class="uc-btn del" onclick="deleteUser('${u.id}','${esc(u.name)}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updatePBVisibility() {
+  const role = document.getElementById('uf-role').value;
+  document.getElementById('uf-pb-wrap').style.opacity = role === 'pbl' ? '1' : '0.4';
+}
+
+async function openUserModal(id) {
+  editingUserId = id || null;
+  const errEl = document.getElementById('uf-error');
+  errEl.style.display = 'none';
+  if (id) {
+    document.getElementById('umodal-title').textContent = 'Benutzer bearbeiten';
+    const r = await fetch('/api/users', { credentials:'include' });
+    const { users } = await r.json();
+    const u = users.find(x => x.id === id);
+    if (!u) return;
+    document.getElementById('uf-name').value     = u.name;
+    document.getElementById('uf-username').value = u.username;
+    document.getElementById('uf-password').value = '';
+    document.getElementById('uf-role').value     = u.role;
+    document.getElementById('uf-pb').value       = u.pb || 'alle';
+  } else {
+    document.getElementById('umodal-title').textContent = 'Neuer Benutzer';
+    ['uf-name','uf-username','uf-password'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('uf-role').value = 'pbl';
+    document.getElementById('uf-pb').value  = 'alle';
+  }
+  updatePBVisibility();
+  document.getElementById('umodal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('uf-name').focus(), 50);
+}
+
+function closeUserModal(e) {
+  if (e.target === document.getElementById('umodal-overlay')) closeUserModalDirect();
+}
+function closeUserModalDirect() {
+  document.getElementById('umodal-overlay').classList.remove('open');
+}
+
+async function saveUser() {
+  const errEl    = document.getElementById('uf-error');
+  errEl.style.display = 'none';
+  const name     = document.getElementById('uf-name').value.trim();
+  const username = document.getElementById('uf-username').value.trim().toLowerCase();
+  const password = document.getElementById('uf-password').value;
+  const role     = document.getElementById('uf-role').value;
+  const pb       = document.getElementById('uf-pb').value;
+  if (!name || !username) {
+    errEl.textContent = 'Name und Benutzername sind Pflichtfelder.';
+    errEl.style.display = 'block'; return;
+  }
+  if (!editingUserId && !password) {
+    errEl.textContent = 'Für neue Benutzer ist ein Passwort erforderlich.';
+    errEl.style.display = 'block'; return;
+  }
+  const body = { name, username, role, pb };
+  if (password) body.password = password;
+  const url = editingUserId ? `/api/users/${editingUserId}` : '/api/users';
+  const method = editingUserId ? 'PUT' : 'POST';
+  const r = await fetch(url, { method, credentials:'include',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) { errEl.textContent = d.error||'Fehler beim Speichern.'; errEl.style.display='block'; return; }
+  closeUserModalDirect();
+  showToast(editingUserId ? `✅ ${name} aktualisiert` : `✅ ${name} erstellt`);
+  loadAdminUsers();
+}
+
+async function toggleUser(id, aktiv) {
+  const r = await fetch(`/api/users/${id}`, { method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({ aktiv }) });
+  if (r.ok) { showToast(aktiv ? '🔓 Aktiviert' : '🔒 Gesperrt'); loadAdminUsers(); }
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`Benutzer „${name}" wirklich löschen?\nDiese Aktion kann nicht rückgängig gemacht werden.`)) return;
+  const r = await fetch(`/api/users/${id}`, { method:'DELETE', credentials:'include' });
+  const d = await r.json();
+  if (!r.ok) { showToast('⚠️ ' + (d.error||'Fehler')); return; }
+  showToast(`🗑 ${name} gelöscht`); loadAdminUsers();
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════════════════════
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRAFIK-STUDIO STATE & TEMPLATES
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let activeColor='#00285A', activeColorName='Blau';
+let lineColor='#FAB90F', badgeColor='#5B2D8E', textColor='#fff';
+let fotoDataUrl=null, zoomLevel=100;
+let currentFormatIdx=0;
+let safeZonesVisible=false;
+
+// Textblock position (in canvas-frame px)
+let tbX=14, tbY=200;
+
+const FORMATS=[
+  {w:270,h:480,label:'Story / Reel',exp:'1080×1920'},
+  {w:280,h:280,label:'Feed Quadrat',exp:'1080×1080'},
+  {w:320,h:180,label:'Querformat',  exp:'1920×1080'},
+];
+const EXPORT_RES=[{w:1080,h:1920},{w:1080,h:1080},{w:1920,h:1080}];
+
+// Safe-Zone-Definitionen (als Anteil 0..1 der Canvas-Größe)
+// Basierend auf Meta/Instagram Story Guidelines
+const SAFE_ZONES=[
+  // Typ, Beschreibung, Farbe, [x,y,w,h] als Anteil
+  {id:'outer',  label:'Außenrand (5%)',           color:'rgba(250,185,15,.55)', dash:'4,3',
+   rect: f=>({x:f.w*.05, y:f.h*.05, w:f.w*.90, h:f.h*.90})},
+  {id:'top',    label:'Profilbild/UI oben (14%)', color:'rgba(100,185,230,.6)', dash:'6,3',
+   rect: f=>({x:0, y:0, w:f.w, h:f.h*.14})},
+  {id:'bottom', label:'Story-UI unten (20%)',     color:'rgba(100,185,230,.6)', dash:'6,3',
+   rect: f=>({x:0, y:f.h*.80, w:f.w, h:f.h*.20})},
+  {id:'text',   label:'Text-Safe-Bereich',        color:'rgba(175,200,5,.45)', dash:'3,3',
+   rect: f=>({x:f.w*.08, y:f.h*.16, w:f.w*.84, h:f.h*.62})},
+  // Mittellinie horizontal
+  {id:'hcenter',label:'Horizontale Mitte',        color:'rgba(255,255,255,.18)', dash:'2,4',
+   line: f=>({x1:0, y1:f.h/2, x2:f.w, y2:f.h/2})},
+  // Mittellinie vertikal
+  {id:'vcenter',label:'Vertikale Mitte',          color:'rgba(255,255,255,.18)', dash:'2,4',
+   line: f=>({x1:f.w/2, y1:0, x2:f.w/2, y2:f.h})},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATES
+// ═══════════════════════════════════════════════════════════════
+const TEMPLATES=[
+  {bg:'#00285A',opacity:72,bright:75,sat:70,contrast:105,
+   headline:'Ich wollte immer die Welt sehen. Wenn mich jemand fragte, was ich mal werden möchte, antwortete ich: Kapitänin auf einem Schiff.',
+   hlsize:15,sub:'',subsize:11,tbWidth:88,
+   author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
+   footer:'vhs Spandau',badge:'',badgeVis:false,
+   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:140},
+  {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
+   author:'',role:'',footer:'vhs Spandau',badge:'',badgeVis:false,
+   lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
+   tbX:14,tbY:160},
+  {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Baskisch vom Sofa \u2013 mit Dir als Coach.',hlsize:19,
+   sub:'Starte ab September 2026 als Online-Kursleitung an der VHS Spandau.',subsize:12,tbWidth:88,
+   author:'',role:'',footer:'vhs Fremdsprachen',badge:'Wir suchen Dich!',badgeVis:true,
+   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:120},
+  {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
+   headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
+   sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
+   author:'',role:'',footer:'vhs Politik | Gesellschaft | Umwelt',badge:'',badgeVis:false,
+   lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   tbX:14,tbY:130},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KURSLISTE SCREEN — inline eingebettet
+// ══════════════════════════════════════════════════════════════════════════════
+let KURSE_ALLE = [];
+let KURSE_GEFILTERT = [];
+let KURSE_FILTER = 'alle';
+let KURSE_SUCHE = '';
+let KURSE_SEITE = 0;
+let KURSE_GELADEN = false;
+const KURSE_PRO_SEITE = 30;
+
+const KURSE_PB_LABEL = {deutsch:'Deutsch & Integration',fremd:'Fremdsprachen',gesundheit:'Gesundheit',kultur:'Kultur & Kreativ',beruf:'Beruf & IT',grundbildung:'Grundbildung',politik:'Politik & Gesell.',andere:''};
+const KURSE_PB_CSS   = {deutsch:'pb-deutsch',fremd:'pb-fremd',gesundheit:'pb-gesundheit',kultur:'pb-kultur',beruf:'pb-beruf',grundbildung:'pb-grundbildung',politik:'pb-politik',andere:'pb-andere'};
+
+function kurseErkennePB(k) {
+  const pb = (k.pb||'').toLowerCase(), n=(k.nr||'').toLowerCase(), t=(k.titel||'').toLowerCase();
+  if (pb==='deutsch und integration'||n.startsWith('sp4.')) return 'deutsch';
+  if (pb==='fremdsprachen'||n.startsWith('sp5.')) return 'fremd';
+  if (n.startsWith('sp3.')||t.match(/yoga|pilates|qi gong|fitness|rücken|bewegung|gesundheit|ernährung|entspannung|meditation|tanz|sport|körper/)) return 'gesundheit';
+  if (n.startsWith('sp2.')||t.match(/kunst|malen|zeichnen|foto|film|musik|theater|kreativ|schreib|skulptur|töpfer|textil|design|aquarell/)) return 'kultur';
+  if (t.match(/edv|computer|excel|word|powerpoint|internet|buchführung|steuern|bewerbung|beruf|office|digital/)) return 'beruf';
+  if (t.match(/alphabetisier|lesen|schreiben|rechnen|grundbildung|gebärden/)) return 'grundbildung';
+  if (t.match(/politik|gesellschaft|geschichte|demokratie|recht|philosophie|psychologie|pädagog/)) return 'politik';
+  return 'andere';
+}
+
+async function kurseInit() {
+  if (KURSE_GELADEN) return; // schon geladen, nicht neu laden
+  KURSE_GELADEN = true;
+  try {
+    const r = await fetch('/kurse.json');
+    const data = await r.json();
+    KURSE_ALLE = data.map(k => ({...k, pbFilter: kurseErkennePB(k)}));
+    document.getElementById('kurse-count').textContent = KURSE_ALLE.length + ' Kurse geladen';
+    kurseRenderListe(KURSE_ALLE);
+    // Such-Event
+    const si = document.getElementById('kurse-search');
+    if (si && !si._bound) {
+      si._bound = true;
+      si.addEventListener('input', function() {
+        KURSE_SUCHE = this.value.trim().toLowerCase();
+        kurseFilterUndSuche();
+      });
+    }
+    const li = document.getElementById('kurse-lw-input');
+    if (li && !li._bound) {
+      li._bound = true;
+      li.addEventListener('keydown', e => { if(e.key==='Enter') kurseLookup(); });
+    }
+  } catch(e) {
+    document.getElementById('kurse-ergebnis-area').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Kursliste konnte nicht geladen werden</div></div>`;
+  }
+}
+
+function kurseRenderListe(kurse) {
+  KURSE_GEFILTERT = kurse;
+  KURSE_SEITE = 0;
+  kurseRenderSeite();
+}
+
+function kurseRenderSeite() {
+  const start = KURSE_SEITE * KURSE_PRO_SEITE;
+  const slice = KURSE_GEFILTERT.slice(start, start + KURSE_PRO_SEITE);
+  const area  = document.getElementById('kurse-ergebnis-area');
+  const paging = document.getElementById('kurse-paging');
+  if (!area) return;
+
+  if (KURSE_GEFILTERT.length === 0) {
+    area.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Keine Kurse gefunden</div><div style="font-size:12px">Anderen Suchbegriff versuchen</div></div>`;
+    paging.style.display = 'none';
+    return;
+  }
+
+  area.innerHTML = `<div class="kurse-liste">${slice.map(k => `
+    <div class="kurse-zeile" onclick="kurseKopieren('${esc(k.nr)}','${esc(k.titel)}')">
+      <div class="kurse-nr">${esc(k.nr)}</div>
+      <div class="kurse-titel">${esc(k.titel)}</div>
+      ${k.beginn ? `<div class="kurse-beginn">${k.beginn}</div>` : ''}
+      ${k.pbFilter!=='andere' ? `<div class="kurse-pb-badge ${KURSE_PB_CSS[k.pbFilter]}">${KURSE_PB_LABEL[k.pbFilter]}</div>` : ''}
+    </div>`).join('')}
+  </div>`;
+
+  const totalPages = Math.ceil(KURSE_GEFILTERT.length / KURSE_PRO_SEITE);
+  if (totalPages > 1) {
+    paging.style.display = 'flex';
+    document.getElementById('kurse-page-info').textContent = `Seite ${KURSE_SEITE+1} von ${totalPages} · ${KURSE_GEFILTERT.length} Kurse`;
+    document.getElementById('kurse-btn-prev').disabled = KURSE_SEITE === 0;
+    document.getElementById('kurse-btn-next').disabled = KURSE_SEITE >= totalPages - 1;
+  } else {
+    paging.style.display = 'none';
+  }
+  document.getElementById('kurse-count').textContent = `${KURSE_GEFILTERT.length} von ${KURSE_ALLE.length} Kursen`;
+}
+
+function kurseChangePage(dir) {
+  KURSE_SEITE += dir;
+  kurseRenderSeite();
+  document.getElementById('screen-kurse')?.querySelector('.kurse-body')?.scrollTo({top:0, behavior:'smooth'});
+}
+
+function kurseSetFilter(el, f) {
+  document.querySelectorAll('.kurse-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  KURSE_FILTER = f;
+  kurseFilterUndSuche();
+}
+
+function kurseFilterUndSuche() {
+  let result = KURSE_ALLE;
+  if (KURSE_FILTER !== 'alle') result = result.filter(k => k.pbFilter === KURSE_FILTER);
+  if (KURSE_SUCHE) result = result.filter(k =>
+    k.nr.toLowerCase().includes(KURSE_SUCHE) || k.titel.toLowerCase().includes(KURSE_SUCHE)
+  );
+  kurseRenderListe(result);
+}
+
+function kurseLookup() {
+  const query = (document.getElementById('kurse-lw-input')?.value||'').trim().toLowerCase();
+  if (!query) return;
+  const kurs = KURSE_ALLE.find(k =>
+    k.nr.toLowerCase()===query || k.nr.toLowerCase().includes(query) || k.titel.toLowerCase().includes(query)
+  );
+  const el = document.getElementById('kurse-lw-result');
+  if (!el) return;
+  if (kurs) {
+    el.className = 'kurse-lookup-result found';
+    el.innerHTML = `<div style="font-weight:700;color:var(--blau);font-size:13px">${esc(kurs.titel)}</div>
+      <div style="color:var(--blau60);font-size:11px;margin-top:2px;font-family:'DM Mono',monospace">${esc(kurs.nr)}${kurs.beginn?' · Start: '+kurs.beginn:''}</div>
+      <button onclick="kurseKopieren('${esc(kurs.nr)}','${esc(kurs.titel)}')" style="margin-top:7px;padding:4px 11px;border-radius:6px;background:var(--blau);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Kursnummer + Titel kopieren</button>`;
+  } else {
+    el.className = 'kurse-lookup-result notfound';
+    el.innerHTML = `<strong>Nicht gefunden:</strong> „${esc(query)}" — Kürzel prüfen oder Freitext-Suche oben nutzen.`;
+  }
+}
+
+function kurseKopieren(nr, titel) {
+  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => showToast(`📋 Kopiert: ${nr}`));
+}
+
+
+// ══ GRAFIK-STUDIO FUNKTIONEN (eingebettet) ══
+
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GRAFIK-STUDIO FUNKTIONEN
+// ══════════════════════════════════════════════════════════════════════════════
+// Redaktion-Payload (wird von generate() befüllt)
+let redaktionPayload = null;
+
+function applyRedaktionPayload() {
+  if (!redaktionPayload) return;
+  const p = redaktionPayload;
+  const hl  = document.getElementById('tf-headline');
+  const sub = document.getElementById('tf-sub');
+  const hls = document.getElementById('sl-hlsize');
+  const sls = document.getElementById('sl-subsize');
+  const anl = document.getElementById('exp-anlass');
+  if (hl  && p.hl)     hl.value  = p.hl;
+  // Sub nur setzen wenn vorhanden und kurz (Weniger-ist-mehr Regel)
+  if (sub) sub.value = (p.sub && p.sub.length <= 100) ? p.sub : '';
+  // Schriftgröße: aus Payload oder automatisch berechnet
+  if (hls) hls.value = p.hlsize || (p.hl && p.hl.length > 60 ? 14 : p.hl && p.hl.length > 40 ? 16 : 18);
+  if (sls && p.sub && p.sub.length <= 100) sls.value = 12;
+  if (anl && p.anlass) anl.value = p.anlass;
+  if (p.full) {
+    const ft  = document.getElementById('tf-fulltext-preview');
+    const sec = document.getElementById('fulltext-preview-section');
+    if (ft)  ft.value = p.full;
+    if (sec) sec.style.display = 'block';
+  }
+  updateText();
+  setRTab(1);  // Text-Tab öffnen damit User den Text sofort sieht
+}
+
+function initStudio() {
+  const tb = document.getElementById('text-block');
+  if (!tb._dragInit) {
+    tb._dragInit = true;
+    initDrag();
+  }
+  document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
+  loadTemplate(0);  // lädt Template und ruft danach applyRedaktionPayload wenn Payload da
+}
+
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// DRAG & DROP — Textblock
+// ═══════════════════════════════════════════════════════════════
+function initDrag(){
+  makeDraggable(document.getElementById('text-block'), (x,y)=>{
+    tbX=x; tbY=y;
+    document.getElementById('pos-x').value=Math.round(x);
+    document.getElementById('pos-y').value=Math.round(y);
+    document.getElementById('coord-readout').textContent='x: '+Math.round(x)+'  y: '+Math.round(y);
+  });
+  makeDraggable(document.getElementById('badge-block'), ()=>{});
+}
+
+function makeDraggable(el, onMove){
+  let startX,startY,startLeft,startTop,dragging=false;
+  const frame=document.getElementById('canvas-frame');
+
+  function getCanvasScale(){return zoomLevel/100;}
+
+  function pointerDown(e){
+    e.preventDefault();
+    dragging=true;
+    el.classList.add('dragging');
+    document.getElementById('coord-readout').style.display='block';
+    const scale=getCanvasScale();
+    const clientX=e.touches?e.touches[0].clientX:e.clientX;
+    const clientY=e.touches?e.touches[0].clientY:e.clientY;
+    startX=clientX/scale;
+    startY=clientY/scale;
+    startLeft=parseInt(el.style.left)||0;
+    startTop=parseInt(el.style.top)||0;
+    document.addEventListener('mousemove',pointerMove,{passive:false});
+    document.addEventListener('mouseup',pointerUp);
+    document.addEventListener('touchmove',pointerMove,{passive:false});
+    document.addEventListener('touchend',pointerUp);
+  }
+
+  function pointerMove(e){
+    if(!dragging)return;
+    e.preventDefault();
+    const scale=getCanvasScale();
+    const clientX=e.touches?e.touches[0].clientX:e.clientX;
+    const clientY=e.touches?e.touches[0].clientY:e.clientY;
+    const dx=(clientX/scale)-startX;
+    const dy=(clientY/scale)-startY;
+    const fw=frame.offsetWidth, fh=frame.offsetHeight;
+    const ew=el.offsetWidth, eh=el.offsetHeight;
+    let nx=Math.max(0,Math.min(fw-ew, startLeft+dx));
+    let ny=Math.max(0,Math.min(fh-eh, startTop+dy));
+    // Snap to safe-zone edges (5px threshold)
+    const f=FORMATS[currentFormatIdx];
+    const scaleF=fw/f.w;
+    const snap=5;
+    const snapPoints=[
+      f.w*.05*scaleF, f.w*.08*scaleF,
+      (f.w*.05+f.w*.90)*scaleF-ew,
+    ];
+    const snapY=[
+      f.h*.14*scaleF, f.h*.16*scaleF,
+      (f.h*.80)*scaleF-eh,
+    ];
+    snapPoints.forEach(s=>{ if(Math.abs(nx-s)<snap) nx=s; });
+    snapY.forEach(s=>{ if(Math.abs(ny-s)<snap) ny=s; });
+
+    el.style.left=Math.round(nx)+'px';
+    el.style.top=Math.round(ny)+'px';
+    onMove(Math.round(nx), Math.round(ny));
+  }
+
+  function pointerUp(){
+    dragging=false;
+    el.classList.remove('dragging');
+    setTimeout(()=>{ document.getElementById('coord-readout').style.display='none'; },1200);
+    document.removeEventListener('mousemove',pointerMove);
+    document.removeEventListener('mouseup',pointerUp);
+    document.removeEventListener('touchmove',pointerMove);
+    document.removeEventListener('touchend',pointerUp);
+  }
+
+  el.addEventListener('mousedown',pointerDown);
+  el.addEventListener('touchstart',pointerDown,{passive:false});
+}
+
+function setPosByInput(){
+  const x=parseInt(document.getElementById('pos-x').value)||0;
+  const y=parseInt(document.getElementById('pos-y').value)||0;
+  const tb=document.getElementById('text-block');
+  tb.style.left=x+'px'; tb.style.top=y+'px';
+  tbX=x; tbY=y;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAFE ZONES
+// ═══════════════════════════════════════════════════════════════
+function drawSafeZones(){
+  const svg=document.getElementById('safe-zone-svg');
+  const frame=document.getElementById('canvas-frame');
+  const fw=frame.offsetWidth, fh=frame.offsetHeight;
+  const f=FORMATS[currentFormatIdx];
+  // Scale factor canvas display px → logical %
+  const sx=fw/f.w, sy=fh/f.h;
+  svg.setAttribute('viewBox',`0 0 ${fw} ${fh}`);
+  svg.setAttribute('width',fw);
+  svg.setAttribute('height',fh);
+
+  let content='';
+  // Label definitions
+  const LABELS=[
+    {id:'outer', text:'5% Außenrand'},
+    {id:'top',   text:'Story-UI oben 14%'},
+    {id:'bottom',text:'Story-UI unten 20%'},
+    {id:'text',  text:'Text-Safe-Zone'},
+  ];
+
+  SAFE_ZONES.forEach(z=>{
+    if(z.rect){
+      const r=z.rect({w:f.w*sx,h:f.h*sy});
+      content+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"
+        fill="none" stroke="${z.color}" stroke-width="1"
+        stroke-dasharray="${z.dash}" rx="2"/>`;
+      // Label im Strich
+      const lbl=LABELS.find(l=>l.id===z.id);
+      if(lbl){
+        const lx=r.x+4, ly=r.y+(z.id==='bottom'?12:10);
+        content+=`<rect x="${lx-2}" y="${ly-9}" width="${lbl.text.length*4.8+4}" height="12" rx="2" fill="rgba(0,0,0,.55)"/>`;
+        content+=`<text x="${lx}" y="${ly}" font-family="Arial,sans-serif" font-size="8" fill="${z.color}" font-weight="700">${lbl.text}</text>`;
+      }
+    }
+    if(z.line){
+      const l=z.line({w:fw,h:fh});
+      content+=`<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}"
+        stroke="${z.color}" stroke-width="0.75" stroke-dasharray="${z.dash}"/>`;
+    }
+  });
+  svg.innerHTML=content;
+}
+
+function toggleSafeZones(){
+  safeZonesVisible=!safeZonesVisible;
+  const svg=document.getElementById('safe-zone-svg');
+  const cb=document.getElementById('sz-toggle');
+  const btn=document.getElementById('sz-toggle-btn');
+  svg.style.display=safeZonesVisible?'block':'none';
+  if(cb) cb.checked=safeZonesVisible;
+  btn.classList.toggle('on',safeZonesVisible);
+  if(safeZonesVisible) drawSafeZones();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE LADEN
+// ═══════════════════════════════════════════════════════════════
+// keepText=true → nur Farbe/Transparenz/Position laden, Text-Felder unangetastet lassen
+function loadTemplate(idx){
+  document.querySelectorAll('.tpl-card').forEach((c,i)=>{
+    c.classList.toggle('on',i===idx);
+    c.querySelectorAll('.tpl-active-badge').forEach(b=>b.remove());
+  });
+  const b2=document.createElement('div');
+  b2.className='tpl-active-badge';b2.textContent='Aktiv';
+  document.getElementById('tpl-'+idx).appendChild(b2);
+
+  const t=TEMPLATES[idx];
+  setOverlayColorDirect(t.colorIdx,t.bg,
+    {0:'Blau',1:'Grün',2:'Rot',3:'Hellblau',4:'Orange',5:'Nacht',6:'Lila',7:'Gelb',8:'Blau60',9:'Blau10'}[t.colorIdx]||'Farbe');
+  document.getElementById('sl-opacity').value=t.opacity;
+  updateOpacity(t.opacity);
+  document.getElementById('sl-bright').value=t.bright;
+  document.getElementById('sl-sat').value=t.sat;
+  document.getElementById('sl-contrast').value=t.contrast;
+  updatePhotoFilter();
+
+  // Text-Defaults aus Template laden
+  document.getElementById('tf-headline').value=t.headline;
+  document.getElementById('tf-sub').value=t.sub;
+  document.getElementById('tf-author').value=t.author;
+  document.getElementById('tf-role').value=t.role;
+  document.getElementById('tf-footer').value=t.footer;
+  document.getElementById('tf-badge').value=t.badge;
+  document.getElementById('badge-vis').checked=t.badgeVis;
+  document.getElementById('sl-hlsize').value=t.hlsize;
+  document.getElementById('sl-subsize').value=t.subsize;
+  document.getElementById('sl-tbwidth').value=t.tbWidth||88;
+
+  lineColor=t.lineColor; badgeColor=t.badgeColor; textColor=t.textColor;
+  syncLineSwatches(t.lineColor); syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
+
+  // Textblock platzieren
+  tbX=t.tbX||14; tbY=t.tbY||160;
+  const tb=document.getElementById('text-block');
+  tb.style.left=tbX+'px'; tb.style.top=tbY+'px';
+  document.getElementById('pos-x').value=tbX;
+  document.getElementById('pos-y').value=tbY;
+
+  if(idx===1) removeFoto();
+  updateText();
+  // Wenn Redaktions-Payload vorhanden: sofort überschreiben (kein setTimeout)
+  if (redaktionPayload) {
+    applyRedaktionPayload();
+  }
+  if(safeZonesVisible) drawSafeZones();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// OVERLAY FARBE
+// ═══════════════════════════════════════════════════════════════
+function setOverlayColorDirect(idx,hex,name){
+  activeColor=hex; activeColorName=name||hex;
+  document.querySelectorAll('.dvv-sw').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  document.getElementById('cl-color').style.background=hex;
+  updateBadgeLabel();
+}
+function setOverlayColor(idx,hex,name){setOverlayColorDirect(idx,hex,name);}
+
+// ═══════════════════════════════════════════════════════════════
+// TRANSPARENZ
+// ═══════════════════════════════════════════════════════════════
+function updateOpacity(v){
+  v=Math.round(v);
+  document.getElementById('cl-color').style.opacity=v/100;
+  document.getElementById('sv-opacity').textContent=v+'%';
+  updateBadgeLabel();
+}
+function updateBadgeLabel(){
+  const v=Math.round(document.getElementById('sl-opacity').value);
+  document.getElementById('layer-badge').textContent=v+'% '+activeColorName;
+}
+function applyPreset(v){document.getElementById('sl-opacity').value=v;updateOpacity(v);}
+function updatePhotoFilter(){
+  const b=Math.round(document.getElementById('sl-bright').value);
+  const s=Math.round(document.getElementById('sl-sat').value);
+  const c=Math.round(document.getElementById('sl-contrast').value);
+  document.getElementById('sv-bright').textContent=b+'%';
+  document.getElementById('sv-sat').textContent=s+'%';
+  document.getElementById('sv-contrast').textContent=c+'%';
+  document.getElementById('cl-foto').style.filter=`brightness(${b}%) saturate(${s}%) contrast(${c}%)`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEXT UPDATE (DOM direkt, kein innerHTML rebuild)
+// ═══════════════════════════════════════════════════════════════
+function updateText(){
+  const hl=document.getElementById('tf-headline').value;
+  const sub=document.getElementById('tf-sub').value;
+  const author=document.getElementById('tf-author').value;
+  const role=document.getElementById('tf-role').value;
+  const footer=document.getElementById('tf-footer').value;
+  const badge=document.getElementById('tf-badge').value;
+  const badgeOn=document.getElementById('badge-vis').checked;
+  const hlsize=Math.round(document.getElementById('sl-hlsize').value);
+  const subsize=Math.round(document.getElementById('sl-subsize').value);
+  const tbw=Math.round(document.getElementById('sl-tbwidth').value);
+
+  document.getElementById('sv-hlsize').textContent=hlsize+'px';
+  document.getElementById('sv-subsize').textContent=subsize+'px';
+  document.getElementById('sv-tbwidth').textContent=tbw+'%';
+
+  const tc=textColor;
+  const tc75=tc==='#fff'?'rgba(255,255,255,.78)':'rgba(0,40,90,.7)';
+
+  // Text block width
+  const frame=document.getElementById('canvas-frame');
+  const tbEl=document.getElementById('text-block');
+  tbEl.style.width=(frame.offsetWidth*tbw/100)+'px';
+
+  // Content
+  document.getElementById('tb-headline').innerHTML=escHtml(hl);
+  document.getElementById('tb-headline').style.fontSize=hlsize+'px';
+  document.getElementById('tb-headline').style.color=tc;
+  document.getElementById('tb-headline').style.display=hl?'block':'none';
+
+  document.getElementById('tb-sub').innerHTML=escHtml(sub);
+  document.getElementById('tb-sub').style.fontSize=subsize+'px';
+  document.getElementById('tb-sub').style.color=tc75;
+  document.getElementById('tb-sub').style.display=sub?'block':'none';
+
+  document.getElementById('tb-author').textContent=author;
+  document.getElementById('tb-author').style.fontSize=Math.round(hlsize*.72)+'px';
+  document.getElementById('tb-author').style.color=tc;
+  document.getElementById('tb-author').style.display=author?'block':'none';
+
+  document.getElementById('tb-role').innerHTML=escHtml(role);
+  document.getElementById('tb-role').style.fontSize=Math.max(8,subsize-2)+'px';
+  document.getElementById('tb-role').style.color=tc75;
+  document.getElementById('tb-role').style.display=role?'block':'none';
+
+  // Footer
+  document.getElementById('tb-footer').textContent=footer;
+  document.getElementById('tb-footer').style.color=tc75;
+  document.getElementById('footer-line').style.background=lineColor;
+
+  // Badge
+  const bb=document.getElementById('badge-block');
+  const bi=document.getElementById('badge-inner');
+  if(badgeOn && badge){
+    bb.style.display='block';
+    bi.textContent=badge;
+    bi.style.background=badgeColor;
+    const bsz=Math.round(hlsize*3.8);
+    bi.style.width=bsz+'px'; bi.style.height=bsz+'px';
+    bi.style.fontSize=Math.round(hlsize*.6)+'px';
+    // Default badge position if not yet placed
+    if(!bb.style.left){
+      bb.style.right='14px';
+      bb.style.bottom='60px';
+      bb.style.left='';
+      bb.style.top='';
+    }
+  } else {
+    bb.style.display='none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FARB-SWATCHES SYNC
+// ═══════════════════════════════════════════════════════════════
+function setLineColor(idx,col){
+  lineColor=col; syncLineSwatches(col); updateText();
+}
+function syncLineSwatches(col){
+  const cols=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
+  document.querySelectorAll('[id^="linesw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+function setBadgeColor(idx,col){
+  badgeColor=col;
+  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  updateText();
+}
+function syncBadgeSwatches(col){
+  const cols=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A'];
+  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+function setTextColor(idx,col){
+  textColor=col;
+  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  updateText();
+}
+function syncTextSwatches(col){
+  const cols=['#fff','#00285A','#FAB90F','#E6EBF0'];
+  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════════════════════
+function setFormat(idx,w,h,label,dim){
+  currentFormatIdx=idx;
+  document.querySelectorAll('.fmt-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
+  const frame=document.getElementById('canvas-frame');
+  frame.style.width=w+'px'; frame.style.height=h+'px';
+  document.getElementById('format-tag').textContent=label;
+  document.getElementById('exp-info').innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
+  updateText();
+  if(safeZonesVisible) setTimeout(drawSafeZones,50);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ZOOM
+// ═══════════════════════════════════════════════════════════════
+function zoom(d){
+  zoomLevel=Math.min(200,Math.max(30,zoomLevel+d));
+  document.getElementById('canvas-frame').style.transform=`scale(${zoomLevel/100})`;
+  document.getElementById('canvas-frame').style.transformOrigin='center center';
+  document.getElementById('zoom-lbl').textContent=zoomLevel+'%';
+}
+function fitZoom(){zoomLevel=100;zoom(0);}
+
+// ═══════════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════════
+function setRTab(n){
+  [0,1,2].forEach(i=>{
+    document.getElementById('rtab-'+i).style.display=i===n?'block':'none';
+    const btn=document.getElementById('rtab-btn-'+i);
+    btn.style.color=i===n?'rgba(255,255,255,.9)':'rgba(255,255,255,.4)';
+    btn.style.borderBottom=i===n?'2px solid var(--gelb)':'2px solid transparent';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FOTO
+// ═══════════════════════════════════════════════════════════════
+function handleFile(input){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    fotoDataUrl=e.target.result;
+    document.getElementById('cl-foto').style.backgroundImage=`url(${fotoDataUrl})`;
+    document.getElementById('foto-preview-img').src=fotoDataUrl;
+    document.getElementById('foto-vorschau').style.display='block';
+    document.getElementById('no-foto-hint').style.display='none';
+    document.getElementById('upload-zone').style.display='none';
+    showToast('📷 Foto geladen');
+  };
+  reader.readAsDataURL(file); input.value='';
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(!file||!file.type.startsWith('image/'))return;
+  handleFile({files:[file]});
+}
+function removeFoto(){
+  fotoDataUrl=null;
+  document.getElementById('cl-foto').style.backgroundImage='';
+  document.getElementById('foto-vorschau').style.display='none';
+  document.getElementById('upload-zone').style.display='block';
+  document.getElementById('no-foto-hint').style.display='block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT PNG
+// ═══════════════════════════════════════════════════════════════
+async function exportPNG(){
+  showToast('🖼 Wird erstellt …');
+  const svgEl=document.getElementById('safe-zone-svg');
+  const wasVisible=safeZonesVisible;
+  if(wasVisible){ svgEl.style.display='none'; }// Safe Zones ausblenden
+  // Outline temporär entfernen
+  const tb=document.getElementById('text-block');
+  tb.classList.remove('selected');
+  const frame=document.getElementById('canvas-frame');
+  const origT=frame.style.transform;
+  frame.style.transform='scale(1)';
+  const res=EXPORT_RES[currentFormatIdx]||{w:1080,h:1920};
+  const f=FORMATS[currentFormatIdx];
+  try{
+    const canvas=await html2canvas(frame,{
+      scale:res.w/f.w, useCORS:true, allowTaint:true,
+      backgroundColor:null, logging:false, width:f.w, height:f.h,
+    });
+    frame.style.transform=origT;
+    tb.classList.add('selected');
+    if(wasVisible){ svgEl.style.display='block'; }
+    const link=document.createElement('a');
+    link.download='vhs-spandau-'+Date.now()+'.png';
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ PNG gespeichert');
+  }catch(err){
+    frame.style.transform=origT;
+    tb.classList.add('selected');
+    if(wasVisible){ svgEl.style.display='block'; }
+    showToast('❌ Export fehlgeschlagen');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// REDAKTIONSPLAN
+// ═══════════════════════════════════════════════════════════════
+async function saveToRedaktionsplan(){
+  const datum=document.getElementById('exp-datum').value;
+  if(!datum){showToast('⚠️ Bitte Datum wählen');return;}
+  const post={
+    id:'ed'+Date.now(), datum,uhrzeit:'17:00',
+    kanal:document.getElementById('exp-kanal').value,
+    anlass:document.getElementById('exp-anlass').value.trim()||'Visueller Post',
+    text:document.getElementById('tf-headline').value||'',
+    tags:'#vhsspandau #spandau',status:'geplant',freigabe:'',paid:'nein',url:'',ziel:'Reichweite',
+  };
+  try{
+    const r=await fetch('/api/posts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});
+    showToast(r.ok?'📅 Im Redaktionsplan gespeichert':'❌ Fehler beim Speichern');
+  }catch{showToast('❌ Server nicht erreichbar');}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════════
+function resetEditor(){removeFoto();loadTemplate(0);showToast('↺ Editor zurückgesetzt');}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+// ═══════════════════════════════════════════════════════════════
+// STUDIO BANNER — Eingang aus Schritt 4 Redaktion
+// ═══════════════════════════════════════════════════════════════
+function showStudioBanner(anlass, kurs, fulltext) {
+  // Workflow-Banner oben im Canvas-Bereich einblenden
+  const area = document.querySelector('.canvas-area');
+  const banner = document.createElement('div');
+  banner.id = 'studio-banner';
+  banner.style.cssText = `
+    position:absolute;top:56px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,#00285A,#1a3a60);
+    border:1.5px solid var(--orange);border-radius:10px;
+    padding:10px 16px;display:flex;align-items:center;gap:12px;
+    z-index:30;max-width:480px;width:calc(100% - 32px);
+    box-shadow:0 4px 20px rgba(0,0,0,.4);
+  `;
+  banner.innerHTML = `
+    <div style="font-size:22px;flex-shrink:0">🎨</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:700;color:#FAB90F;margin-bottom:1px">Schritt 5 · Grafik-Studio</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        Text aus Redaktion geladen${anlass?' · '+anlass:''}
+      </div>
+    </div>
+    <button onclick="document.getElementById('studio-banner').remove()"
+      style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;
+             color:rgba(255,255,255,.6);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;flex-shrink:0">
+      ✕
+    </button>
+  `;
+  area.style.position = 'relative';
+  area.appendChild(banner);
+  setTimeout(() => { if(banner.parentNode) banner.remove(); }, 8000);
+
+  // Volltext in ein Panel-Element schreiben falls vorhanden
+  if (fulltext) {
+    const ft = document.getElementById('tf-fulltext-preview');
+    if (ft) { ft.value = fulltext; ft.closest('.p-section').style.display='block'; }
+  }
+
+  // Freigabe-CTA in Export-Tab einblenden
+  injectFreigabeCTA(anlass);
+  showToast('🎨 Text aus Redaktion geladen · Schritt 5 aktiv');
+}
+
+function injectFreigabeCTA(anlass) {
+  const expTab = document.getElementById('rtab-2');
+  if (!expTab) return;
+  const existing = document.getElementById('freigabe-cta');
+  if (existing) existing.remove();
+  const cta = document.createElement('div');
+  cta.id = 'freigabe-cta';
+  cta.style.cssText = 'border-top:1px solid var(--border);';
+  cta.innerHTML = `
+    <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
+      <div class="p-label" style="color:var(--gelb)">Schritt 6 — Freigabe</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:10px">
+        Grafik fertig? PNG exportieren, dann direkt zur Freigabe weiterleiten.
+      </div>
+      <button class="exp-btn exp-main" onclick="exportPNG()">⬇ PNG exportieren</button>
+      <a href="/freigabe" target="_blank"
+         style="display:block;text-align:center;padding:8px;border-radius:6px;font-size:11px;font-weight:700;
+                border:1.5px solid var(--orange);color:var(--orange);text-decoration:none;
+                background:rgba(235,100,15,.08);margin-top:5px;transition:all .15s"
+         onmouseover="this.style.background='rgba(235,100,15,.18)'"
+         onmouseout="this.style.background='rgba(235,100,15,.08)'">
+        ✅ Weiter zur Freigabe ↗
+      </a>
+    </div>
+  `;
+  expTab.prepend(cta);
+  // Export-Tab aktiv schalten damit CTA sichtbar
+  setRTab(2);
+  setTimeout(() => setRTab(0), 200);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+
+
+</script>
+</body>
+</html>

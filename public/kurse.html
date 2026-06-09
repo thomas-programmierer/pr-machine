@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kursliste — VHS Spandau</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blau:#00285A;--blau60:#69829B;--blau10:#E6EBF0;--gelb:#FAB90F;--gruen:#AFC805;--rot:#E1000F;--hellblau:#64B9E6;--grau:#f4f5f7}
+body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh}
+
+.header{background:var(--blau);height:54px;padding:0 22px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{display:flex;align-items:center}
+.logo-text{color:#fff;font-size:13px;font-weight:600;line-height:1.2}
+.logo-sub{color:var(--blau60);font-size:10px}
+.ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 18px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
+.ext-nav-tab{padding:10px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}
+.ext-nav-tab:hover{color:#fff}
+.ext-nav-tab.active{color:#fff;border-bottom-color:var(--gelb,#FAB90F)}
+.ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.5);padding:0 6px;flex-shrink:0}
+.ext-logout-btn{margin-left:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;flex-shrink:0}
+.ext-logout-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+
+/* SEARCH HERO */
+.search-hero{background:var(--blau);padding:0 22px 28px}
+.search-wrap{max-width:700px;margin:0 auto}
+.search-title{color:#fff;font-size:20px;font-weight:700;margin-bottom:4px;padding-top:20px}
+.search-sub{color:var(--blau60);font-size:13px;margin-bottom:16px}
+.search-box{position:relative}
+.search-input{width:100%;padding:13px 50px 13px 16px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--blau);outline:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.search-input:focus{box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.search-count{color:rgba(255,255,255,.5);font-size:11px;margin-top:8px;font-family:'DM Mono',monospace}
+
+/* MAIN */
+.main{max-width:700px;margin:0 auto;padding:20px 22px}
+
+/* LOOKUP WIDGET */
+.lookup-widget{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:20px;margin-bottom:20px}
+.lw-title{font-size:13px;font-weight:700;color:var(--blau);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.lw-row{display:flex;gap:10px;align-items:flex-start}
+.lw-input{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid #dde2e9;font-family:'DM Mono',monospace;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s}
+.lw-input:focus{border-color:var(--blau)}
+.lw-btn{padding:10px 16px;border-radius:8px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
+.lw-btn:hover{background:#001f47}
+.lw-result{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;display:none}
+.lw-result.found{background:#EAF3DE;border:1px solid var(--gruen);display:block}
+.lw-result.notfound{background:#FCEBEB;border:1px solid var(--rot);display:block}
+.lw-result-titel{font-weight:700;color:var(--blau);font-size:14px}
+.lw-result-meta{color:var(--blau60);font-size:11px;margin-top:3px;font-family:'DM Mono',monospace}
+.copy-btn{margin-top:8px;padding:5px 12px;border-radius:6px;background:var(--blau);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.copy-btn:hover{background:#001f47}
+.copy-btn.done{background:var(--gruen)}
+
+/* FILTER ROW */
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.filter-chip{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);transition:all .15s}
+.filter-chip:hover{border-color:var(--blau60)}
+.filter-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
+
+/* ERGEBNIS-LISTE */
+.ergebnis-liste{display:flex;flex-direction:column;gap:8px}
+.kurs-zeile{background:#fff;border-radius:9px;border:1.5px solid #e2e7ef;padding:12px 15px;display:flex;align-items:center;gap:12px;transition:border-color .15s;cursor:pointer}
+.kurs-zeile:hover{border-color:var(--blau60)}
+.kurs-nr{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--blau60);flex-shrink:0;min-width:100px}
+.kurs-titel{font-size:13px;font-weight:500;color:var(--blau);flex:1}
+.kurs-beginn{font-size:10px;color:var(--blau60);font-family:'DM Mono',monospace;flex-shrink:0}
+.kurs-pb{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;flex-shrink:0}
+
+/* PB-Farben */
+.pb-deutsch{background:#E6F1FB;color:#185FA5}
+.pb-fremd{background:#D6EAF8;color:#0D4B8C}
+.pb-gesundheit{background:#EAF3DE;color:#3B6D11}
+.pb-kultur{background:#FCF0FA;color:#7A2A8C}
+.pb-beruf{background:#FEF3DA;color:#996B00}
+.pb-grundbildung{background:#FFF0E6;color:#8B4000}
+.pb-politik{background:#E6EBF0;color:#375578}
+.pb-andere{background:#F0F0F0;color:#666}
+
+/* EMPTY / LOADING */
+.hint{text-align:center;padding:48px 20px;color:var(--blau60)}
+.hint-icon{font-size:42px;margin-bottom:10px}
+.hint-title{font-size:14px;font-weight:600;color:var(--blau);margin-bottom:4px}
+
+/* PAGINIERUNG */
+.paging{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.page-btn{padding:6px 12px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:var(--blau60);transition:all .15s}
+.page-btn:hover:not(:disabled){border-color:var(--blau);color:var(--blau)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-info{font-size:12px;color:var(--blau60);font-family:'DM Mono',monospace}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+        <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
+  </div>
+  
+</div>
+
+<div class="ext-nav-bar" id="ext-nav-bar">
+  <a href="/" class="ext-nav-tab">← App</a>
+</div>
+<script>
+(async function() {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (!r.ok) return;
+    const { user } = await r.json();
+    const role = user.role;
+    const PAGES = [
+      { label:'📅 Redaktionsplan', url:'/kalender',           roles:['admin','redakteur','pbl'] },
+      { label:'📬 Kursvorschläge',  url:'/?screen=pbl',        roles:['admin','pbl'] },
+      { label:'📚 Kursliste',        url:'/?screen=kurse',      roles:['admin','redakteur','pbl'] },
+      { label:'✏️ Redaktion',        url:'/?screen=redakteur',  roles:['admin','redakteur'] },
+      { label:'🎨 Grafik-Studio',    url:'/editor',             roles:['admin','redakteur'] },
+      { label:'✅ Freigabe',          url:'/freigabe',           roles:['admin','redakteur'] },
+      { label:'📊 Dashboard',        url:'/?screen=direktion',  roles:['admin','redakteur','direktion'] },
+      { label:'📈 Performance',      url:'/performance',        roles:['admin','redakteur','direktion'] },
+      { label:'⚙️ Admin',            url:'/?screen=admin',      roles:['admin'] },
+    
+    ];
+    const nav = PAGES
+      .filter(p => p.roles.includes(role))
+      .map(p => {
+        const isActive = !p.url.startsWith('/?') && window.location.pathname === p.url;
+        return '<a href="'+p.url+'" class="ext-nav-tab'+(isActive?' active':'')+'">'+p.label+'</a>';
+      }).join('');
+    document.getElementById('ext-nav-bar').innerHTML = nav +
+      '<span class="ext-nav-user">👤 '+user.name.split(' ')[0]+'</span>' +
+      '<button class="ext-logout-btn" onclick="extLogout()">Abmelden</button>';
+  } catch(e) {}
+})();
+async function extLogout() {
+  await fetch('/api/logout', { method:'POST', credentials:'include' });
+  window.location.href = '/';
+}
+</script>
+
+
+<!-- SEARCH HERO -->
+<div class="search-hero">
+  <div class="search-wrap">
+    <div class="search-title">Kursliste durchsuchen</div>
+    <div class="search-sub">Kursnummer oder Kurstitel eingeben</div>
+    <div class="search-box">
+      <input class="search-input" id="search-input" type="text" placeholder="z. B. Sp3.316 oder Yoga oder Spanisch …" autofocus>
+      <span class="search-icon">🔍</span>
+    </div>
+    <div class="search-count" id="search-count"></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- DIREKTLOOKUP WIDGET -->
+  <div class="lookup-widget">
+    <div class="lw-title">⚡ Direktlookup — Kursnummer eingeben</div>
+    <div class="lw-row">
+      <input class="lw-input" id="lw-input" type="text" placeholder="Sp3.316-W">
+      <button class="lw-btn" onclick="directLookup()">Nachschlagen</button>
+    </div>
+    <div class="lw-result" id="lw-result"></div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-row" id="filter-row">
+    <div class="filter-chip on" onclick="setFilter(this,'alle')">Alle</div>
+    <div class="filter-chip" onclick="setFilter(this,'deutsch')">🇩🇪 Deutsch</div>
+    <div class="filter-chip" onclick="setFilter(this,'fremd')">🗣 Fremdsprachen</div>
+    <div class="filter-chip" onclick="setFilter(this,'gesundheit')">🧘 Gesundheit</div>
+    <div class="filter-chip" onclick="setFilter(this,'kultur')">🎨 Kultur</div>
+    <div class="filter-chip" onclick="setFilter(this,'beruf')">💼 Beruf</div>
+    <div class="filter-chip" onclick="setFilter(this,'grundbildung')">📖 Grundbildung</div>
+    <div class="filter-chip" onclick="setFilter(this,'politik')">🏛 Politik</div>
+  </div>
+
+  <!-- ERGEBNISSE -->
+  <div id="ergebnis-area">
+    <div class="hint">
+      <div class="hint-icon">📚</div>
+      <div class="hint-title">Kursliste wird geladen…</div>
+    </div>
+  </div>
+
+  <div class="paging" id="paging" style="display:none">
+    <button class="page-btn" id="btn-prev" onclick="changePage(-1)">← Zurück</button>
+    <span class="page-info" id="page-info"></span>
+    <button class="page-btn" id="btn-next" onclick="changePage(1)">Weiter →</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ALLE_KURSE = [];
+let gefiltertKurse = [];
+let aktuellerFilter = 'alle';
+let suchbegriff = '';
+let seite = 0;
+const PRO_SEITE = 30;
+
+// PB-Erkennung: nutzt pb-Feld aus kurse.json (bereits korrekt gesetzt)
+function erkennePB(k) {
+  const pb = (k.pb || '').toLowerCase();
+  const n  = (k.nr || '').toLowerCase();
+  const t  = (k.titel || '').toLowerCase();
+  if (pb === 'deutsch und integration' || n.startsWith('sp4.')) return 'deutsch';
+  if (pb === 'fremdsprachen'           || n.startsWith('sp5.')) return 'fremd';
+  if (n.startsWith('sp3.') || t.match(/yoga|pilates|qi gong|fitness|rücken|bewegung|gesundheit|ernährung|entspannung|meditation|tanz|sport|körper/)) return 'gesundheit';
+  if (n.startsWith('sp2.') || t.match(/kunst|malen|zeichnen|foto|film|musik|theater|kreativ|schreib|skulptur|töpfer|textil|design|aquarell/)) return 'kultur';
+  if (t.match(/edv|computer|excel|word|powerpoint|internet|buchführung|steuern|bewerbung|beruf|office|digital/)) return 'beruf';
+  if (t.match(/alphabetisier|lesen|schreiben|rechnen|grundbildung|gebärden/)) return 'grundbildung';
+  if (t.match(/politik|gesellschaft|geschichte|demokratie|recht|philosophie|psychologie|pädagog/)) return 'politik';
+  return 'andere';
+}
+
+const PB_LABEL = {deutsch:'Deutsch & Integration',fremd:'Fremdsprachen',gesundheit:'Gesundheit',kultur:'Kultur & Kreativ',beruf:'Beruf & IT',grundbildung:'Grundbildung',politik:'Politik & Gesell.',andere:''};
+const PB_CSS   = {deutsch:'pb-deutsch',fremd:'pb-fremd',gesundheit:'pb-gesundheit',kultur:'pb-kultur',beruf:'pb-beruf',grundbildung:'pb-grundbildung',politik:'pb-politik',andere:'pb-andere'};
+
+async function ladeListe() {
+  try {
+    const r = await fetch('/kurse.json');
+    const data = await r.json();
+    ALLE_KURSE = data.map(k => ({...k, pbFilter: erkennePB(k)}));
+    document.getElementById('search-count').textContent = ALLE_KURSE.length + ' Kurse geladen';
+    renderListe(ALLE_KURSE);
+  } catch(e) {
+    document.getElementById('ergebnis-area').innerHTML = `<div class="hint"><div class="hint-icon">⚠️</div><div class="hint-title">Kursliste konnte nicht geladen werden</div></div>`;
+  }
+}
+
+function renderListe(kurse) {
+  gefiltertKurse = kurse;
+  seite = 0;
+  renderSeite();
+}
+
+function renderSeite() {
+  const start = seite * PRO_SEITE;
+  const slice = gefiltertKurse.slice(start, start + PRO_SEITE);
+  const area  = document.getElementById('ergebnis-area');
+  const paging = document.getElementById('paging');
+
+  if (gefiltertKurse.length === 0) {
+    area.innerHTML = `<div class="hint"><div class="hint-icon">🔍</div><div class="hint-title">Keine Kurse gefunden</div><div>Anderen Suchbegriff versuchen</div></div>`;
+    paging.style.display = 'none';
+    return;
+  }
+
+  area.innerHTML = `<div class="ergebnis-liste">${slice.map(k => `
+    <div class="kurs-zeile" onclick="inClipboard('${esc(k.nr)}','${esc(k.titel)}')">
+      <div class="kurs-nr">${esc(k.nr)}</div>
+      <div class="kurs-titel">${esc(k.titel)}</div>
+      ${k.beginn ? `<div class="kurs-beginn">${k.beginn}</div>` : ''}
+      ${k.pbFilter !== 'andere' ? `<div class="kurs-pb ${PB_CSS[k.pbFilter]}">${PB_LABEL[k.pbFilter]}</div>` : ''}
+    </div>`).join('')}
+  </div>`;
+
+  // Paginierung
+  const totalPages = Math.ceil(gefiltertKurse.length / PRO_SEITE);
+  if (totalPages > 1) {
+    paging.style.display = 'flex';
+    document.getElementById('page-info').textContent = `Seite ${seite+1} von ${totalPages} · ${gefiltertKurse.length} Kurse`;
+    document.getElementById('btn-prev').disabled = seite === 0;
+    document.getElementById('btn-next').disabled = seite >= totalPages - 1;
+  } else {
+    paging.style.display = 'none';
+  }
+
+  document.getElementById('search-count').textContent = `${gefiltertKurse.length} von ${ALLE_KURSE.length} Kursen`;
+}
+
+function changePage(dir) {
+  seite += dir;
+  renderSeite();
+  window.scrollTo({top:200, behavior:'smooth'});
+}
+
+// Suche
+document.getElementById('search-input').addEventListener('input', function() {
+  suchbegriff = this.value.trim().toLowerCase();
+  filterUndSuche();
+});
+
+function setFilter(el, f) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  aktuellerFilter = f;
+  filterUndSuche();
+}
+
+function filterUndSuche() {
+  let result = ALLE_KURSE;
+  if (aktuellerFilter !== 'alle') result = result.filter(k => k.pbFilter === aktuellerFilter);
+  if (suchbegriff) result = result.filter(k =>
+    k.nr.toLowerCase().includes(suchbegriff) ||
+    k.titel.toLowerCase().includes(suchbegriff)
+  );
+  renderListe(result);
+}
+
+// Direktlookup
+document.getElementById('lw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') directLookup();
+});
+
+function directLookup() {
+  const query = document.getElementById('lw-input').value.trim().toLowerCase();
+  if (!query) return;
+  const kurs = ALLE_KURSE.find(k =>
+    k.nr.toLowerCase() === query ||
+    k.nr.toLowerCase().includes(query) ||
+    k.titel.toLowerCase().includes(query)
+  );
+  const el = document.getElementById('lw-result');
+  if (kurs) {
+    el.className = 'lw-result found';
+    el.innerHTML = `
+      <div class="lw-result-titel">${esc(kurs.titel)}</div>
+      <div class="lw-result-meta">${esc(kurs.nr)}${kurs.beginn ? ' · Start: ' + kurs.beginn : ''}</div>
+      <button class="copy-btn" id="copy-direct" onclick="copyDirect('${esc(kurs.nr)}','${esc(kurs.titel)}')">📋 Kursnummer + Titel kopieren</button>`;
+  } else {
+    el.className = 'lw-result notfound';
+    el.innerHTML = `<strong>Nicht gefunden:</strong> „${esc(query)}" — Kürzel prüfen oder Freitext-Suche oben nutzen.`;
+  }
+}
+
+function copyDirect(nr, titel) {
+  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => {
+    const btn = document.getElementById('copy-direct');
+    if (btn) { btn.textContent = '✓ Kopiert!'; btn.classList.add('done'); setTimeout(()=>{btn.textContent='📋 Kursnummer + Titel kopieren';btn.classList.remove('done')},2000); }
+  });
+}
+
+function inClipboard(nr, titel) {
+  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => showToast(`📋 Kopiert: ${nr}`));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
+
+// Start
+ladeListe();
+</script>
+</body>
+</html>
