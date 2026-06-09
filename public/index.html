@@ -675,6 +675,46 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
             <div style="color:var(--blau60);font-size:13px">Lade Benutzer…</div>
           </div>
         </div>
+
+        <!-- ── REDAKTIONELLE GRUNDDATEN ──────────────────────── -->
+        <div>
+          <div class="section-label">Redaktionelle Grunddaten</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+
+            <!-- Kursprogramm -->
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px">
+              <div style="font-size:11px;font-weight:700;color:var(--gelb);margin-bottom:4px">📚 KURSPROGRAMM</div>
+              <div style="font-size:11px;color:var(--blau60);margin-bottom:10px;line-height:1.5">Kursbeschreibungen als KI-Kontext — verhindert Halluzinationen in allen generierten Posts.</div>
+              <div id="status-kursprogramm" style="font-size:10px;color:var(--blau60);background:rgba(255,255,255,.04);border-radius:6px;padding:6px 8px;margin-bottom:8px">Noch kein Kursprogramm hinterlegt</div>
+              <label style="display:block;font-size:10px;color:var(--blau60);margin-bottom:4px">Datei auswählen (.xls, .xlsx, .csv)</label>
+              <input type="file" id="file-kursprogramm" accept=".xls,.xlsx,.csv" style="display:block;width:100%;font-size:10px;color:rgba(255,255,255,.7);margin-bottom:8px">
+              <button onclick="adminUpload('kursprogramm','file-kursprogramm','status-kursprogramm')" style="width:100%;padding:7px;background:var(--gelb);color:#00285A;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">⬆ Hochladen</button>
+            </div>
+
+            <!-- Redaktionsplan Datei -->
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px">
+              <div style="font-size:11px;font-weight:700;color:var(--gelb);margin-bottom:4px">📅 REDAKTIONSPLAN</div>
+              <div style="font-size:11px;color:var(--blau60);margin-bottom:10px;line-height:1.5">Aktuellen Redaktionsplan einspielen — steht allen Redakteur:innen im Kalender zur Verfügung.</div>
+              <div id="status-redaktionsplan" style="font-size:10px;color:var(--blau60);background:rgba(255,255,255,.04);border-radius:6px;padding:6px 8px;margin-bottom:8px">Noch kein Redaktionsplan hochgeladen</div>
+              <label style="display:block;font-size:10px;color:var(--blau60);margin-bottom:4px">Datei auswählen (.xls, .xlsx, .csv)</label>
+              <input type="file" id="file-redaktionsplan" accept=".xls,.xlsx,.csv" style="display:block;width:100%;font-size:10px;color:rgba(255,255,255,.7);margin-bottom:8px">
+              <button onclick="adminUpload('redaktionsplan','file-redaktionsplan','status-redaktionsplan')" style="width:100%;padding:7px;background:var(--gelb);color:#00285A;border:none;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">⬆ Hochladen</button>
+            </div>
+
+            <!-- Redaktionsplan URLs -->
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;grid-column:1/-1">
+              <div style="font-size:11px;font-weight:700;color:var(--gelb);margin-bottom:4px">🔗 REDAKTIONSPLAN-URLs</div>
+              <div style="font-size:11px;color:var(--blau60);margin-bottom:10px;line-height:1.5">Links zu externen Redaktionsplänen (SharePoint, Google Drive o.ä.) — für automatische Aktualisierungen durch Dritte nutzbar.</div>
+              <div id="admin-url-list" style="margin-bottom:8px"></div>
+              <div style="display:flex;gap:8px">
+                <span onclick="adminAddUrl()" style="font-size:10px;color:var(--gelb);cursor:pointer;text-decoration:underline">+ URL hinzufügen</span>
+                <span onclick="adminSaveUrls()" style="font-size:10px;color:var(--gelb);cursor:pointer;text-decoration:underline;margin-left:auto">💾 Speichern</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1353,7 +1393,7 @@ function initApp() {
   if (screenParam && ['pbl','redakteur','admin','direktion','kurse'].includes(screenParam)) {
     document.getElementById('tab-' + screenParam)?.classList.remove('hidden');
     showScreen(screenParam);
-    if (screenParam === 'admin') loadAdminUsers();
+    if (screenParam === 'admin') { loadAdminUsers(); loadAdminStatus(); }
     if (screenParam === 'pbl')   initPBL();
     if (screenParam === 'kurse') kurseInit();
   } else if (!params.get('einreichung')) {
@@ -1398,6 +1438,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('screen-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
+  if (name === 'admin') { loadAdminUsers(); loadAdminStatus(); }
 }
 
 // Payload vom Generator ans Grafik-Studio übergeben
@@ -1706,6 +1747,90 @@ function copyPost(btn){const t=document.getElementById(btn.dataset.tid).textCont
 // BENUTZERVERWALTUNG (Admin)
 // ══════════════════════════════════════════════════════════════════════════════
 let editingUserId = null;
+
+// ── Admin Grunddaten ─────────────────────────────────────────────────────────
+async function loadAdminStatus() {
+  try {
+    const r = await fetch('/api/admin/status', { credentials:'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (d.kursprogramm) {
+      const dt = new Date(d.kursprogramm.uploaded).toLocaleDateString('de-DE');
+      document.getElementById('status-kursprogramm').textContent =
+        `✓ ${d.kursprogramm.filename} · ${dt} · ${Math.round(d.kursprogramm.chars/1000)}k Zeichen im KI-Kontext`;
+      document.getElementById('status-kursprogramm').style.color = '#AFC805';
+    }
+    if (d.redaktionsplan && d.redaktionsplan.lastFileUpload) {
+      const dt = new Date(d.redaktionsplan.lastFileUpload.uploaded).toLocaleDateString('de-DE');
+      document.getElementById('status-redaktionsplan').textContent =
+        `✓ ${d.redaktionsplan.lastFileUpload.filename} · ${dt} · ${Math.round(d.redaktionsplan.lastFileUpload.size/1024)}KB`;
+      document.getElementById('status-redaktionsplan').style.color = '#AFC805';
+    }
+    if (d.redaktionsplan && d.redaktionsplan.urls) {
+      renderAdminUrls(d.redaktionsplan.urls);
+    } else {
+      renderAdminUrls([]);
+    }
+  } catch(e) { console.error(e); }
+}
+
+function renderAdminUrls(urls) {
+  const list = document.getElementById('admin-url-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const arr = urls.length ? urls : [''];
+  arr.forEach((u, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:6px;margin-bottom:5px';
+    row.innerHTML = `<input type="text" value="${u}" placeholder="https://..." style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:5px 8px;font-size:10px;color:#fff">
+      <button onclick="this.parentElement.remove()" style="background:rgba(225,0,15,.2);border:1px solid rgba(225,0,15,.4);border-radius:5px;padding:4px 8px;color:#ff6b6b;cursor:pointer;font-size:10px">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+function adminAddUrl() {
+  const list = document.getElementById('admin-url-list');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:6px;margin-bottom:5px';
+  row.innerHTML = `<input type="text" placeholder="https://..." style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:5px 8px;font-size:10px;color:#fff">
+    <button onclick="this.parentElement.remove()" style="background:rgba(225,0,15,.2);border:1px solid rgba(225,0,15,.4);border-radius:5px;padding:4px 8px;color:#ff6b6b;cursor:pointer;font-size:10px">✕</button>`;
+  list.appendChild(row);
+}
+
+async function adminSaveUrls() {
+  const inputs = document.querySelectorAll('#admin-url-list input[type=text]');
+  const urls = Array.from(inputs).map(i => i.value.trim()).filter(u => u.startsWith('http'));
+  const r = await fetch('/api/admin/redaktionsplan-urls', {
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({urls})
+  });
+  if ((await r.json()).ok) showToast('🔗 URLs gespeichert');
+}
+
+async function adminUpload(type, inputId, statusId) {
+  const fi = document.getElementById(inputId);
+  if (!fi || !fi.files.length) { showToast('⚠ Bitte Datei auswählen'); return; }
+  const file = fi.files[0];
+  const fd = new FormData();
+  fd.append('type', type);
+  fd.append('file', file);
+  const statusEl = document.getElementById(statusId);
+  statusEl.textContent = 'Wird hochgeladen…';
+  statusEl.style.color = '#FAB90F';
+  const r = await fetch('/api/admin/upload', { method:'POST', credentials:'include', body:fd });
+  const d = await r.json();
+  if (d.ok) {
+    showToast(`✓ ${file.name} hochgeladen`);
+    statusEl.textContent = `✓ ${d.filename} · ${Math.round(d.size/1024)}KB · gerade hochgeladen`;
+    statusEl.style.color = '#AFC805';
+    fi.value = '';
+    loadAdminStatus();
+  } else {
+    showToast('Fehler: ' + d.error);
+    statusEl.textContent = 'Fehler: ' + d.error;
+    statusEl.style.color = '#E1000F';
+  }
+}
 
 async function loadAdminUsers() {
   const r = await fetch('/api/users', { credentials:'include' });
