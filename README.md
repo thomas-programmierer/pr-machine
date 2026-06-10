@@ -56,3 +56,4 @@ node server.js
 - Neuer Tab "🖼 Foto-Editor" in der Navigation
 - Neue Route /editor im Server
 - Kalender: Berliner Feiertage + Schulferien 2026/2027
+ 
