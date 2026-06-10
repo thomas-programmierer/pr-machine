@@ -304,6 +304,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .kurse-page-btn:hover:not(:disabled){border-color:var(--blau);color:var(--blau)}
 .kurse-page-btn:disabled{opacity:.4;cursor:not-allowed}
 .kurse-page-info{font-size:11px;color:var(--blau60);font-family:'DM Mono',monospace}
+/* SPLIT DETAIL */
+.kurse-split{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
+.kurse-detail-panel{background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;position:sticky;top:10px;overflow:hidden;display:flex;flex-direction:column;min-height:300px}
+.kurse-detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;color:var(--blau60);font-size:12px}
+.kurse-detail-body{display:none;flex-direction:column;flex:1}
+.kurse-detail-head{background:var(--blau);padding:12px 14px}
+.kurse-detail-nr{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.6);margin-bottom:3px}
+.kurse-detail-titel{font-size:14px;font-weight:700;color:#fff;line-height:1.3}
+.kurse-detail-meta{padding:10px 14px 6px;display:flex;flex-wrap:wrap;gap:6px}
+.kurse-detail-meta span{background:var(--blau10);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--blau60)}
+.kurse-detail-desc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blau60);padding:8px 14px 4px;border-top:1px solid #f0f0f0}
+.kurse-detail-desc{font-size:12px;color:#333;line-height:1.7;padding:0 14px 12px;overflow-y:auto;max-height:300px;white-space:pre-wrap;flex:1}
+.kurse-detail-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid #f0f0f0;background:#f8fafc}
+.kurse-detail-btn{padding:6px 11px;border-radius:6px;border:1.5px solid #dde2e9;background:#fff;font-size:11px;font-weight:600;color:var(--blau60);cursor:pointer}
+.kurse-detail-btn:hover{border-color:var(--blau);color:var(--blau)}
+.kurse-detail-btn-primary{background:var(--blau);color:#fff;border-color:var(--blau)}
+.kurse-zeile.selected{border-color:var(--blau);background:#f0f5ff}
+@media(max-width:900px){.kurse-split{grid-template-columns:1fr}.kurse-detail-panel{position:static;margin-top:12px}}
 /* PB Badge Farben */
 .pb-deutsch{background:#E6F1FB;color:#185FA5}
 .pb-fremd{background:#D6EAF8;color:#0D4B8C}
@@ -1194,13 +1212,37 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="kurse-chip" onclick="kurseSetFilter(this,'grundbildung')">📖 Grundbildung</div>
           <div class="kurse-chip" onclick="kurseSetFilter(this,'politik')">🏛 Politik</div>
         </div>
-        <div id="kurse-ergebnis-area">
-          <div class="empty"><div class="empty-icon">📚</div><div class="empty-title">Kursliste wird geladen…</div></div>
-        </div>
-        <div class="kurse-paging" id="kurse-paging" style="display:none">
-          <button class="kurse-page-btn" id="kurse-btn-prev" onclick="kurseChangePage(-1)">← Zurück</button>
-          <span class="kurse-page-info" id="kurse-page-info"></span>
-          <button class="kurse-page-btn" id="kurse-btn-next" onclick="kurseChangePage(1)">Weiter →</button>
+        <div class="kurse-split">
+          <div>
+            <div id="kurse-ergebnis-area">
+              <div class="empty"><div class="empty-icon">📚</div><div class="empty-title">Kursliste wird geladen…</div></div>
+            </div>
+            <div class="kurse-paging" id="kurse-paging" style="display:none">
+              <button class="kurse-page-btn" id="kurse-btn-prev" onclick="kurseChangePage(-1)">← Zurück</button>
+              <span class="kurse-page-info" id="kurse-page-info"></span>
+              <button class="kurse-page-btn" id="kurse-btn-next" onclick="kurseChangePage(1)">Weiter →</button>
+            </div>
+          </div>
+          <div class="kurse-detail-panel" id="kurse-detail-panel">
+            <div class="kurse-detail-empty" id="kurse-detail-empty">
+              <div style="font-size:2rem;margin-bottom:8px">📖</div>
+              <div style="font-weight:600;color:var(--blau);margin-bottom:4px">Kurs auswählen</div>
+              <div>Klicke auf einen Kurs<br>für die Detailansicht</div>
+            </div>
+            <div class="kurse-detail-body" id="kurse-detail-body">
+              <div class="kurse-detail-head">
+                <div class="kurse-detail-nr" id="kurse-detail-nr"></div>
+                <div class="kurse-detail-titel" id="kurse-detail-titel"></div>
+              </div>
+              <div class="kurse-detail-meta" id="kurse-detail-meta"></div>
+              <div class="kurse-detail-desc-label">Kursbeschreibung</div>
+              <div class="kurse-detail-desc" id="kurse-detail-desc"></div>
+              <div class="kurse-detail-actions">
+                <button class="kurse-detail-btn" onclick="kurseKopiereDetail()">📋 Kopieren</button>
+                <button class="kurse-detail-btn kurse-detail-btn-primary" onclick="kurseNachRedaktion()">✏️ Redaktion</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2096,7 +2138,7 @@ function kurseRenderSeite() {
   }
 
   area.innerHTML = `<div class="kurse-liste">${slice.map(k => `
-    <div class="kurse-zeile" onclick="kurseKopieren('${esc(k.nr)}','${esc(k.titel)}')">
+    <div class="kurse-zeile" data-nr="${esc(k.nr)}" onclick="kurseZeigeDetail('${esc(k.nr)}')">
       <div class="kurse-nr">${esc(k.nr)}</div>
       <div class="kurse-titel">${esc(k.titel)}</div>
       ${k.beginn ? `<div class="kurse-beginn">${k.beginn}</div>` : ''}
@@ -2157,8 +2199,64 @@ function kurseLookup() {
   }
 }
 
+function kurseZeigeDetail(nr) {
+  const k = KURSE_ALLE.find(k => k.nr === nr);
+  if (!k) return;
+
+  // Selektion markieren
+  document.querySelectorAll('.kurse-zeile').forEach(r => r.classList.remove('selected'));
+  const zeile = document.querySelector('.kurse-zeile[data-nr="'+nr+'"]');
+  if (zeile) zeile.classList.add('selected');
+
+  // Panels umschalten
+  document.getElementById('kurse-detail-empty').style.display = 'none';
+  document.getElementById('kurse-detail-body').style.display = 'flex';
+
+  // Inhalt befüllen
+  document.getElementById('kurse-detail-nr').textContent = k.nr || '';
+  document.getElementById('kurse-detail-titel').textContent = k.titel || '';
+
+  const meta = [];
+  if (k.beginn) meta.push('<span>📅 ' + esc(k.beginn) + '</span>');
+  if (k.ende)   meta.push('<span>bis ' + esc(k.ende) + '</span>');
+  if (k.pb)     meta.push('<span>🏛 ' + esc(k.pb) + '</span>');
+  if (k.pbl)    meta.push('<span>👤 ' + esc(k.pbl) + '</span>');
+  if (k.maximum > 0) meta.push('<span>👥 ' + k.angemeldet + '/' + k.maximum + '</span>');
+  document.getElementById('kurse-detail-meta').innerHTML = meta.join('');
+
+  const desc = k.beschreibung || k.text || k.beschr || k.info || k.kurztext || '';
+  const descEl = document.getElementById('kurse-detail-desc');
+  descEl.textContent = desc || 'Keine Beschreibung vorhanden.';
+  descEl.style.color = desc ? '#333' : '#aaa';
+
+  window._kurseSelectedKurs = k;
+
+  // Mobile: runterscrollen
+  if (window.innerWidth <= 900) {
+    setTimeout(() => document.getElementById('kurse-detail-panel').scrollIntoView({behavior:'smooth', block:'start'}), 50);
+  }
+}
+
 function kurseKopieren(nr, titel) {
-  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => showToast(`📋 Kopiert: ${nr}`));
+  navigator.clipboard.writeText(nr + ' — ' + titel).then(() => showToast('📋 Kopiert: ' + nr));
+}
+
+function kurseKopiereDetail() {
+  const k = window._kurseSelectedKurs;
+  if (!k) return;
+  navigator.clipboard.writeText(k.nr + ' — ' + k.titel).then(() => showToast('📋 Kopiert: ' + k.nr));
+}
+
+function kurseNachRedaktion() {
+  const k = window._kurseSelectedKurs;
+  if (!k) return;
+  showScreen('redakteur');
+  // Kursinfos in Redaktionsfelder übertragen falls vorhanden
+  const kursNrEl = document.getElementById('kurs-nr');
+  const kursTitelEl = document.getElementById('kurs-titel');
+  if (kursNrEl) kursNrEl.value = k.nr;
+  if (kursTitelEl) kursTitelEl.value = k.titel;
+  showToast('✏️ Kurs ' + k.nr + ' in Redaktion geladen');
 }
 
 
