@@ -405,6 +405,112 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && url === "/admin")
     return fs.readFile(path.join(__dirname, "public", "admin.html"), (e,c) => { if(e){res.writeHead(404);return res.end("404");} res.writeHead(200,{"Content-Type":"text/html; charset=utf-8"});res.end(c); });
 
+  // ── KURSPROGRAMM API ──────────────────────────────────────────────────────
+  if (req.method === "GET" && url.startsWith("/api/kurse")) {
+    const urlObj = new URL("http://x" + req.url);
+    const id = url.split("/")[3];
+    if (id && id !== 'kategorien') {
+      const kurs = KURSE.find(k => k.id === id);
+      if (!kurs) return jsonRes(res, 404, { error: 'Kurs nicht gefunden' });
+      return jsonRes(res, 200, kurs);
+    }
+    if (url === "/api/kurse-kategorien") {
+      return jsonRes(res, 200, [...new Set(KURSE.map(k => k.kategorie))].sort());
+    }
+    const q = urlObj.searchParams.get('q');
+    const kategorie = urlObj.searchParams.get('kategorie');
+    const limit = parseInt(urlObj.searchParams.get('limit')) || 5000;
+    const offset = parseInt(urlObj.searchParams.get('offset')) || 0;
+    let result = KURSE;
+    if (kategorie && kategorie !== 'alle') result = result.filter(k => k.kategorie === kategorie);
+    if (q && q.trim()) {
+      const s = q.toLowerCase().trim();
+      result = result.filter(k =>
+        k.titel.toLowerCase().includes(s) ||
+        k.id.toLowerCase().includes(s) ||
+        (k.beschreibung && k.beschreibung.toLowerCase().includes(s))
+      );
+    }
+    return jsonRes(res, 200, { total: result.length, offset, limit, kurse: result.slice(offset, offset + limit) });
+  }
+
+  if (req.method === "POST" && url === "/admin/upload-kursprogramm") {
+    if (!adminOnly(sess)) return jsonRes(res, 403, { error: "Kein Zugriff" });
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => {
+      try {
+        const buf = Buffer.concat(chunks);
+        const boundary = req.headers['content-type']?.split('boundary=')[1];
+        if (!boundary) return jsonRes(res, 400, { error: 'Kein Boundary' });
+        // Einfacher multipart-Parser für xlsx
+        const marker = Buffer.from('--' + boundary);
+        const parts = [];
+        let start = buf.indexOf(marker) + marker.length + 2;
+        while (start < buf.length) {
+          const end = buf.indexOf(marker, start);
+          if (end === -1) break;
+          const part = buf.slice(start, end - 2);
+          const headerEnd = part.indexOf('\r\n\r\n');
+          if (headerEnd !== -1) parts.push(part.slice(headerEnd + 4));
+          start = end + marker.length + 2;
+        }
+        if (!parts[0]) return jsonRes(res, 400, { error: 'Keine Datei' });
+        const workbook = XLSX.read(parts[0], { type: 'buffer', cellDates: true });
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: null, raw: false });
+        if (rows.length < 2) return jsonRes(res, 400, { error: 'Keine Daten' });
+        const kurse = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r[1] || !r[2]) continue;
+          const id = String(r[1]).trim();
+          if (id.includes('\n') || id.length > 30 || !/^Sp[\d.]/.test(id)) continue;
+          kurse.push({ id, titel: String(r[2]).trim(), beginn: parseKursDate(r[3]), ende: parseKursDate(r[4]),
+            beschreibung: r[5] ? String(r[5]).trim().slice(0, 1000) : '',
+            angemeldet: parseInt(r[6]) || 0, maximum: parseInt(r[7]) || 0, kategorie: getKategorie(id) });
+        }
+        if (!kurse.length) return jsonRes(res, 400, { error: 'Keine gültigen Kurse' });
+        const dataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+        fs.writeFileSync(KURSE_JSON_PATH, JSON.stringify(kurse, null, 2), 'utf8');
+        KURSE.length = 0; KURSE.push(...kurse);
+        return jsonRes(res, 200, { success: true, count: kurse.length });
+      } catch (err) { return jsonRes(res, 500, { error: err.message }); }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && url === "/admin/upload-redaktionsplan") {
+    if (!adminOnly(sess)) return jsonRes(res, 403, { error: "Kein Zugriff" });
+    const chunks = [];
+    req.on('data', c => chunks.push(c));
+    req.on('end', () => {
+      try {
+        const buf = Buffer.concat(chunks);
+        const dest = path.join(__dirname, 'data', 'redaktionsplan.xlsx');
+        fs.writeFileSync(dest, buf);
+        return jsonRes(res, 200, { success: true });
+      } catch (err) { return jsonRes(res, 500, { error: err.message }); }
+    });
+    return;
+  }
+
+  if (req.method === "GET" && url === "/admin/urls") {
+    const URLS_PATH = path.join(__dirname, 'data', 'externe_urls.json');
+    try {
+      return jsonRes(res, 200, fs.existsSync(URLS_PATH) ? JSON.parse(fs.readFileSync(URLS_PATH, 'utf8')) : { urls: [] });
+    } catch { return jsonRes(res, 200, { urls: [] }); }
+  }
+
+  if (req.method === "POST" && url === "/admin/urls") {
+    if (!adminOnly(sess)) return jsonRes(res, 403, { error: "Kein Zugriff" });
+    const URLS_PATH = path.join(__dirname, 'data', 'externe_urls.json');
+    const b = await readBody(req);
+    if (!Array.isArray(b.urls)) return jsonRes(res, 400, { error: 'Ungültiges Format' });
+    fs.writeFileSync(URLS_PATH, JSON.stringify({ urls: b.urls }, null, 2), 'utf8');
+    return jsonRes(res, 200, { success: true });
+  }
+
   // ── STATISCHE DATEIEN ─────────────────────────────────────────────────────
   let fp = path.join(__dirname, "public", url === "/" || !url.includes(".") ? "index.html" : url);
   fs.readFile(fp, (err, c) => {
@@ -421,10 +527,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 
-// === VHS UPDATE: Admin & Kurse API-Routen ===
-// Multer: Uploads im Memory
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
-
+// === VHS UPDATE: Hilfsfunktionen ===
 function getKategorie(code) {
   if (!code) return 'Sonstiges';
   const m = String(code).match(/Sp(\d+)/);
@@ -443,90 +546,6 @@ function parseKursDate(v) {
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
   return null;
 }
-
-// GET /api/kurse
-app.get('/api/kurse', (req, res) => {
-  const { q, kategorie, limit = 5000, offset = 0 } = req.query;
-  let result = KURSE;
-  if (kategorie && kategorie !== 'alle') result = result.filter(k => k.kategorie === kategorie);
-  if (q && q.trim()) {
-    const s = q.toLowerCase().trim();
-    result = result.filter(k =>
-      k.titel.toLowerCase().includes(s) ||
-      k.id.toLowerCase().includes(s) ||
-      (k.beschreibung && k.beschreibung.toLowerCase().includes(s))
-    );
-  }
-  const total = result.length;
-  res.json({ total, offset: Number(offset), limit: Number(limit), kurse: result.slice(Number(offset), Number(offset) + Number(limit)) });
-});
-
-// GET /api/kurse/:id
-app.get('/api/kurse/:id', (req, res) => {
-  const kurs = KURSE.find(k => k.id === req.params.id);
-  if (!kurs) return res.status(404).json({ error: 'Kurs nicht gefunden' });
-  res.json(kurs);
-});
-
-// GET /api/kurse-kategorien
-app.get('/api/kurse-kategorien', (req, res) => {
-  res.json([...new Set(KURSE.map(k => k.kategorie))].sort());
-});
-
-// POST /admin/upload-kursprogramm
-app.post('/admin/upload-kursprogramm', upload.single('kursprogramm'), (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Keine Datei empfangen' });
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
-    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: null, raw: false });
-    if (rows.length < 2) return res.status(400).json({ error: 'Keine Daten in der Datei' });
-    const kurse = [];
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (!r[1] || !r[2]) continue;
-      const id = String(r[1]).trim();
-      if (id.includes('\n') || id.includes('\t') || id.length > 30) continue;
-      if (!/^Sp[\d.]/.test(id)) continue;
-      kurse.push({ id, titel: String(r[2]).trim(), beginn: parseKursDate(r[3]), ende: parseKursDate(r[4]),
-        beschreibung: r[5] ? String(r[5]).trim().slice(0, 1000) : '',
-        angemeldet: parseInt(r[6]) || 0, maximum: parseInt(r[7]) || 0, kategorie: getKategorie(id) });
-    }
-    if (kurse.length === 0) return res.status(400).json({ error: 'Keine gültigen Kurse gefunden' });
-    const dataDir = require('path').join(__dirname, 'data');
-    if (!require('fs').existsSync(dataDir)) require('fs').mkdirSync(dataDir);
-    require('fs').writeFileSync(KURSE_JSON_PATH, JSON.stringify(kurse, null, 2), 'utf8');
-    KURSE.length = 0; KURSE.push(...kurse);
-    const kategorien = [...new Set(kurse.map(k => k.kategorie))].sort();
-    console.log(`[Admin] Kursprogramm: ${kurse.length} Kurse importiert`);
-    res.json({ success: true, count: kurse.length, kategorien });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// POST /admin/upload-redaktionsplan
-app.post('/admin/upload-redaktionsplan', upload.single('redaktionsplan'), (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Keine Datei empfangen' });
-    const dest = require('path').join(__dirname, 'data', 'redaktionsplan.xlsx');
-    require('fs').writeFileSync(dest, req.file.buffer);
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// GET + POST /admin/urls
-const URLS_PATH = require('path').join(__dirname, 'data', 'externe_urls.json');
-app.get('/admin/urls', (req, res) => {
-  try {
-    res.json(require('fs').existsSync(URLS_PATH) ? JSON.parse(require('fs').readFileSync(URLS_PATH, 'utf8')) : { urls: [] });
-  } catch { res.json({ urls: [] }); }
-});
-app.post('/admin/urls', express.json(), (req, res) => {
-  try {
-    const { urls } = req.body;
-    if (!Array.isArray(urls)) return res.status(400).json({ error: 'Ungültiges Format' });
-    require('fs').writeFileSync(URLS_PATH, JSON.stringify({ urls }, null, 2), 'utf8');
-    res.json({ success: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
 
 // === END VHS UPDATE ROUTEN ===
 
