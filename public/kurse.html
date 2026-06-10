@@ -11,10 +11,7 @@
 body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh}
 
 .header{background:var(--blau);height:54px;padding:0 22px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:10px}
 .logo-mark{display:flex;align-items:center}
-.logo-text{color:#fff;font-size:13px;font-weight:600;line-height:1.2}
-.logo-sub{color:var(--blau60);font-size:10px}
 .ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 18px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
 .ext-nav-tab{padding:10px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}
 .ext-nav-tab:hover{color:#fff}
@@ -23,78 +20,65 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .ext-logout-btn{margin-left:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;flex-shrink:0}
 .ext-logout-btn:hover{background:rgba(255,255,255,.18);color:#fff}
 
-/* SEARCH HERO */
 .search-hero{background:var(--blau);padding:0 22px 28px}
 .search-wrap{max-width:1280px;margin:0 auto}
 .search-title{color:#fff;font-size:20px;font-weight:700;margin-bottom:4px;padding-top:20px}
 .search-sub{color:var(--blau60);font-size:13px;margin-bottom:16px}
 .search-box{position:relative}
 .search-input{width:100%;padding:13px 50px 13px 16px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--blau);outline:none;box-shadow:0 4px 16px rgba(0,0,0,.2)}
-.search-input:focus{box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
 .search-count{color:rgba(255,255,255,.5);font-size:11px;margin-top:8px;font-family:'DM Mono',monospace}
 
-/* MAIN */
 .main{max-width:1280px;margin:0 auto;padding:20px 22px}
 
-/* LOOKUP WIDGET */
 .lookup-widget{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:20px;margin-bottom:20px}
-.lw-title{font-size:13px;font-weight:700;color:var(--blau);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.lw-title{font-size:13px;font-weight:700;color:var(--blau);margin-bottom:12px}
 .lw-row{display:flex;gap:10px;align-items:flex-start}
-.lw-input{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid #dde2e9;font-family:'DM Mono',monospace;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s}
+.lw-input{flex:1;padding:10px 12px;border-radius:8px;border:1.5px solid #dde2e9;font-family:'DM Mono',monospace;font-size:13px;color:var(--blau);outline:none}
 .lw-input:focus{border-color:var(--blau)}
-.lw-btn{padding:10px 16px;border-radius:8px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s}
-.lw-btn:hover{background:#001f47}
+.lw-btn{padding:10px 16px;border-radius:8px;background:var(--blau);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .lw-result{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;display:none}
 .lw-result.found{background:#EAF3DE;border:1px solid var(--gruen);display:block}
 .lw-result.notfound{background:#FCEBEB;border:1px solid var(--rot);display:block}
-.lw-result-titel{font-weight:700;color:var(--blau);font-size:14px}
-.lw-result-meta{color:var(--blau60);font-size:11px;margin-top:3px;font-family:'DM Mono',monospace}
-.copy-btn{margin-top:8px;padding:5px 12px;border-radius:6px;background:var(--blau);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
-.copy-btn:hover{background:#001f47}
-.copy-btn.done{background:var(--gruen)}
+.copy-btn{margin-top:8px;padding:5px 12px;border-radius:6px;background:var(--blau);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer}
 
-/* FILTER ROW */
 .filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .filter-chip{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:500;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);transition:all .15s}
-.filter-chip:hover{border-color:var(--blau60)}
 .filter-chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
 
-/* ERGEBNIS-LISTE */
+/* SPLIT LAYOUT — immer sichtbar, stapelt auf schmalem Screen */
 .split-wrap{display:grid;grid-template-columns:1fr 440px;gap:20px;align-items:start}
 @media(max-width:900px){
   .split-wrap{grid-template-columns:1fr}
-  .split-detail{position:static;max-height:none;min-height:0;margin-top:16px}
-  .split-detail.has-content{display:flex}
-  .split-detail.empty-state{display:none}
+  .split-detail{position:static !important;max-height:none !important;margin-top:16px}
 }
 .split-list{min-width:0}
-.split-detail{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;position:sticky;top:80px;overflow:hidden;min-height:400px;max-height:calc(100vh - 100px);display:flex;flex-direction:column}
+.split-detail{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;position:sticky;top:80px;overflow:hidden;min-height:200px;max-height:calc(100vh - 100px);display:flex;flex-direction:column}
+
 .detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;color:var(--blau60)}
 .detail-content{flex:1;display:flex;flex-direction:column;padding:0}
 .detail-header{background:var(--blau);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.detail-nr{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:rgba(255,255,255,.7)}
+.detail-nr{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.7)}
 .detail-pb-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.15);color:#fff}
 .detail-titel{font-size:15px;font-weight:700;color:var(--blau);padding:14px 16px 4px;line-height:1.4}
 .detail-meta{font-size:11px;color:var(--blau60);padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:8px}
 .detail-meta span{background:var(--blau10);border-radius:4px;padding:2px 7px}
-.detail-desc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blau60);padding:0 16px 6px;border-top:1px solid #f0f0f0;padding-top:12px}
-.detail-desc{font-size:12px;color:#333;line-height:1.7;padding:0 16px 16px;flex:1;overflow-y:auto;max-height:420px;white-space:pre-wrap}
-.detail-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0;background:#f8fafc}
+.detail-desc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blau60);padding:12px 16px 6px;border-top:1px solid #f0f0f0}
+.detail-desc{font-size:12px;color:#333;line-height:1.7;padding:0 16px 16px;flex:1;overflow-y:auto;max-height:360px;white-space:pre-wrap}
+.detail-actions{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0;background:#f8fafc;flex-wrap:wrap}
 .detail-btn{padding:7px 12px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:11px;font-weight:600;color:var(--blau60);cursor:pointer;transition:all .15s}
 .detail-btn:hover{border-color:var(--blau);color:var(--blau)}
 .detail-btn-primary{background:var(--blau);color:#fff;border-color:var(--blau)}
-.detail-btn-primary:hover{background:#1A2943;border-color:#1A2943}
+
 .kurs-zeile.selected{border-color:var(--blau);background:#f0f5ff}
 .ergebnis-liste{display:flex;flex-direction:column;gap:6px}
 .kurs-zeile{background:#fff;border-radius:9px;border:1.5px solid #e2e7ef;padding:12px 15px;display:flex;align-items:center;gap:12px;transition:border-color .15s;cursor:pointer}
 .kurs-zeile:hover{border-color:var(--blau60)}
-.kurs-nr{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--blau60);flex-shrink:0;min-width:100px}
+.kurs-nr{font-family:'DM Mono',monospace;font-size:11px;color:var(--blau60);flex-shrink:0;min-width:100px}
 .kurs-titel{font-size:13px;font-weight:500;color:var(--blau);flex:1}
 .kurs-beginn{font-size:10px;color:var(--blau60);font-family:'DM Mono',monospace;flex-shrink:0}
 .kurs-pb{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;flex-shrink:0}
 
-/* PB-Farben */
 .pb-deutsch{background:#E6F1FB;color:#185FA5}
 .pb-fremd{background:#D6EAF8;color:#0D4B8C}
 .pb-gesundheit{background:#EAF3DE;color:#3B6D11}
@@ -104,19 +88,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .pb-politik{background:#E6EBF0;color:#375578}
 .pb-andere{background:#F0F0F0;color:#666}
 
-/* EMPTY / LOADING */
 .hint{text-align:center;padding:48px 20px;color:var(--blau60)}
 .hint-icon{font-size:42px;margin-bottom:10px}
 .hint-title{font-size:14px;font-weight:600;color:var(--blau);margin-bottom:4px}
 
-/* PAGINIERUNG */
 .paging{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
-.page-btn{padding:6px 12px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:var(--blau60);transition:all .15s}
+.page-btn{padding:6px 12px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:var(--blau60)}
 .page-btn:hover:not(:disabled){border-color:var(--blau);color:var(--blau)}
 .page-btn:disabled{opacity:.4;cursor:not-allowed}
 .page-info{font-size:12px;color:var(--blau60);font-family:'DM Mono',monospace}
 
-/* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
 </style>
@@ -124,15 +105,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 <body>
 
 <div class="header">
-  <div class="logo">
-        <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
-  </div>
-  
+  <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
 </div>
 
-<div class="ext-nav-bar" id="ext-nav-bar">
-  <a href="/" class="ext-nav-tab">← App</a>
-</div>
+<div class="ext-nav-bar" id="ext-nav-bar"><a href="/" class="ext-nav-tab">← App</a></div>
 <script>
 (async function() {
   try {
@@ -143,21 +119,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
     const PAGES = [
       { label:'📅 Redaktionsplan', url:'/kalender',           roles:['admin','redakteur','pbl'] },
       { label:'📬 Kursvorschläge',  url:'/?screen=pbl',        roles:['admin','pbl'] },
-      { label:'📚 Kursliste',        url:'/?screen=kurse',      roles:['admin','redakteur','pbl'] },
+      { label:'📚 Kursliste',        url:'/kurse',              roles:['admin','redakteur','pbl'] },
       { label:'✏️ Redaktion',        url:'/?screen=redakteur',  roles:['admin','redakteur'] },
       { label:'🎨 Grafik-Studio',    url:'/editor',             roles:['admin','redakteur'] },
       { label:'✅ Freigabe',          url:'/freigabe',           roles:['admin','redakteur'] },
       { label:'📊 Dashboard',        url:'/?screen=direktion',  roles:['admin','redakteur','direktion'] },
       { label:'📈 Performance',      url:'/performance',        roles:['admin','redakteur','direktion'] },
       { label:'⚙️ Admin',            url:'/?screen=admin',      roles:['admin'] },
-    
     ];
-    const nav = PAGES
-      .filter(p => p.roles.includes(role))
-      .map(p => {
-        const isActive = !p.url.startsWith('/?') && window.location.pathname === p.url;
-        return '<a href="'+p.url+'" class="ext-nav-tab'+(isActive?' active':'')+'">'+p.label+'</a>';
-      }).join('');
+    const nav = PAGES.filter(p => p.roles.includes(role)).map(p => {
+      const isActive = window.location.pathname === p.url || window.location.pathname === p.url + '.html';
+      return '<a href="'+p.url+'" class="ext-nav-tab'+(isActive?' active':'')+'" >'+p.label+'</a>';
+    }).join('');
     document.getElementById('ext-nav-bar').innerHTML = nav +
       '<span class="ext-nav-user">👤 '+user.name.split(' ')[0]+'</span>' +
       '<button class="ext-logout-btn" onclick="extLogout()">Abmelden</button>';
@@ -169,8 +142,6 @@ async function extLogout() {
 }
 </script>
 
-
-<!-- SEARCH HERO -->
 <div class="search-hero">
   <div class="search-wrap">
     <div class="search-title">Kursliste durchsuchen</div>
@@ -184,8 +155,6 @@ async function extLogout() {
 </div>
 
 <div class="main">
-
-  <!-- DIREKTLOOKUP WIDGET -->
   <div class="lookup-widget">
     <div class="lw-title">⚡ Direktlookup — Kursnummer eingeben</div>
     <div class="lw-row">
@@ -195,7 +164,6 @@ async function extLogout() {
     <div class="lw-result" id="lw-result"></div>
   </div>
 
-  <!-- FILTER -->
   <div class="filter-row" id="filter-row">
     <div class="filter-chip on" onclick="setFilter(this,'alle')">Alle</div>
     <div class="filter-chip" onclick="setFilter(this,'deutsch')">🇩🇪 Deutsch</div>
@@ -207,16 +175,10 @@ async function extLogout() {
     <div class="filter-chip" onclick="setFilter(this,'politik')">🏛 Politik</div>
   </div>
 
-  <!-- SPLIT LAYOUT: LISTE + DETAIL -->
   <div class="split-wrap">
-
-    <!-- LINKE SEITE: Liste -->
     <div class="split-list">
       <div id="ergebnis-area">
-        <div class="hint">
-          <div class="hint-icon">📚</div>
-          <div class="hint-title">Kursliste wird geladen…</div>
-        </div>
+        <div class="hint"><div class="hint-icon">📚</div><div class="hint-title">Kursliste wird geladen…</div></div>
       </div>
       <div class="paging" id="paging" style="display:none">
         <button class="page-btn" id="btn-prev" onclick="changePage(-1)">← Zurück</button>
@@ -225,8 +187,7 @@ async function extLogout() {
       </div>
     </div>
 
-    <!-- RECHTE SEITE: Detail -->
-    <div class="split-detail empty-state" id="split-detail">
+    <div class="split-detail" id="split-detail">
       <div class="detail-empty" id="detail-empty">
         <div style="font-size:2.5rem;margin-bottom:12px">📖</div>
         <div style="font-weight:600;color:var(--blau);margin-bottom:6px">Kurs auswählen</div>
@@ -242,14 +203,12 @@ async function extLogout() {
         <div class="detail-desc-label">Kursbeschreibung</div>
         <div class="detail-desc" id="detail-desc"></div>
         <div class="detail-actions">
-          <button class="detail-btn" onclick="copyDetailKurs()">📋 Kursnummer + Titel kopieren</button>
-          <button class="detail-btn detail-btn-primary" onclick="useInRedaktion()">✏️ In Redaktion verwenden</button>
+          <button class="detail-btn" onclick="copyDetailKurs()">📋 Kopieren</button>
+          <button class="detail-btn detail-btn-primary" onclick="useInRedaktion()">✏️ In Redaktion</button>
         </div>
       </div>
     </div>
-
   </div>
-
 </div>
 
 <div class="toast" id="toast"></div>
@@ -262,7 +221,6 @@ let suchbegriff = '';
 let seite = 0;
 const PRO_SEITE = 30;
 
-// PB-Erkennung: nutzt pb-Feld aus kurse.json (bereits korrekt gesetzt)
 function erkennePB(k) {
   const pb = (k.pb || '').toLowerCase();
   const n  = (k.nr || '').toLowerCase();
@@ -288,7 +246,7 @@ async function ladeListe() {
     document.getElementById('search-count').textContent = ALLE_KURSE.length + ' Kurse geladen';
     renderListe(ALLE_KURSE);
   } catch(e) {
-    document.getElementById('ergebnis-area').innerHTML = `<div class="hint"><div class="hint-icon">⚠️</div><div class="hint-title">Kursliste konnte nicht geladen werden</div></div>`;
+    document.getElementById('ergebnis-area').innerHTML = '<div class="hint"><div class="hint-icon">⚠️</div><div class="hint-title">Kursliste konnte nicht geladen werden</div></div>';
   }
 }
 
@@ -305,57 +263,54 @@ function renderSeite() {
   const paging = document.getElementById('paging');
 
   if (gefiltertKurse.length === 0) {
-    area.innerHTML = `<div class="hint"><div class="hint-icon">🔍</div><div class="hint-title">Keine Kurse gefunden</div><div>Anderen Suchbegriff versuchen</div></div>`;
+    area.innerHTML = '<div class="hint"><div class="hint-icon">🔍</div><div class="hint-title">Keine Kurse gefunden</div></div>';
     paging.style.display = 'none';
     return;
   }
 
-  // Liste rendern — data-idx trägt den globalen Index
-  const rows = slice.map((k, idx) => {
-    const globalIdx = start + idx;
-    const pbBadge = k.pbFilter !== 'andere' ? `<div class="kurs-pb ${PB_CSS[k.pbFilter]}">${PB_LABEL[k.pbFilter]}</div>` : '';
-    const beginnBadge = k.beginn ? `<div class="kurs-beginn">${esc(k.beginn)}</div>` : '';
-    return `<div class="kurs-zeile" data-idx="${globalIdx}" data-nr="${esc(k.nr)}">
-      <div class="kurs-nr">${esc(k.nr)}</div>
-      <div class="kurs-titel">${esc(k.titel)}</div>
-      ${beginnBadge}
-      ${pbBadge}
-    </div>`;
+  // WICHTIG: data-nr als eindeutiger Schlüssel, nicht data-idx
+  const rows = slice.map(k => {
+    const pbBadge = k.pbFilter !== 'andere' ? '<div class="kurs-pb '+PB_CSS[k.pbFilter]+'">'+PB_LABEL[k.pbFilter]+'</div>' : '';
+    const beginnBadge = k.beginn ? '<div class="kurs-beginn">'+esc(k.beginn)+'</div>' : '';
+    return '<div class="kurs-zeile" data-nr="'+esc(k.nr)+'">'
+      + '<div class="kurs-nr">'+esc(k.nr)+'</div>'
+      + '<div class="kurs-titel">'+esc(k.titel)+'</div>'
+      + beginnBadge + pbBadge
+      + '</div>';
   }).join('');
-  area.innerHTML = `<div class="ergebnis-liste">${rows}</div>`;
 
-  // Event-Delegation auf die Liste
-  area.querySelectorAll('.kurs-zeile').forEach(row => {
-    row.addEventListener('click', () => {
-      const idx = parseInt(row.getAttribute('data-idx'), 10);
-      showDetail(idx);
-    });
+  area.innerHTML = '<div class="ergebnis-liste">' + rows + '</div>';
+
+  // Event-Delegation — sucht Kurs direkt per nr, kein Index-Problem
+  area.querySelector('.ergebnis-liste').addEventListener('click', function(e) {
+    const zeile = e.target.closest('.kurs-zeile');
+    if (!zeile) return;
+    const nr = zeile.getAttribute('data-nr');
+    const kurs = ALLE_KURSE.find(k => k.nr === nr);
+    if (kurs) showDetail(kurs);
   });
 
-  // Paginierung
   const totalPages = Math.ceil(gefiltertKurse.length / PRO_SEITE);
   if (totalPages > 1) {
     paging.style.display = 'flex';
-    document.getElementById('page-info').textContent = `Seite ${seite+1} von ${totalPages} · ${gefiltertKurse.length} Kurse`;
+    document.getElementById('page-info').textContent = 'Seite '+(seite+1)+' von '+totalPages+' · '+gefiltertKurse.length+' Kurse';
     document.getElementById('btn-prev').disabled = seite === 0;
     document.getElementById('btn-next').disabled = seite >= totalPages - 1;
   } else {
     paging.style.display = 'none';
   }
-
-  document.getElementById('search-count').textContent = `${gefiltertKurse.length} von ${ALLE_KURSE.length} Kursen`;
+  document.getElementById('search-count').textContent = gefiltertKurse.length + ' von ' + ALLE_KURSE.length + ' Kursen';
 }
 
-function showDetail(globalIdx) {
-  const k = gefiltertKurse[globalIdx];
+function showDetail(k) {
   if (!k) return;
 
-  // Selektion markieren
+  // Selektion
   document.querySelectorAll('.kurs-zeile').forEach(r => r.classList.remove('selected'));
-  const row = document.querySelector(`.kurs-zeile[data-nr="${k.nr}"]`);
+  const row = document.querySelector('.kurs-zeile[data-nr="'+CSS.escape(k.nr)+'"]');
   if (row) row.classList.add('selected');
 
-  // Detail befüllen
+  // Panels umschalten
   document.getElementById('detail-empty').style.display = 'none';
   document.getElementById('detail-content').style.display = 'flex';
 
@@ -370,94 +325,54 @@ function showDetail(globalIdx) {
     badge.style.display = 'none';
   }
 
-  // Meta-Infos (Felder aus kurse.json: nr, titel, beginn, pb, pbl)
-  const metaEl = document.getElementById('detail-meta');
   const metaParts = [];
-  if (k.beginn) metaParts.push(`<span>📅 Start: ${esc(k.beginn)}</span>`);
-  if (k.pb)     metaParts.push(`<span>🏛 ${esc(k.pb)}</span>`);
-  if (k.pbl)    metaParts.push(`<span>👤 ${esc(k.pbl)}</span>`);
-  if (k.ende)      metaParts.push(`<span>bis ${esc(k.ende)}</span>`);
-  if (k.wochentag) metaParts.push(`<span>📆 ${esc(k.wochentag)}</span>`);
-  if (k.uhrzeit)   metaParts.push(`<span>🕐 ${esc(k.uhrzeit)}</span>`);
-  if (k.ort)       metaParts.push(`<span>📍 ${esc(k.ort)}</span>`);
-  if (k.preis)     metaParts.push(`<span>💶 ${esc(String(k.preis))}</span>`);
-  metaEl.innerHTML = metaParts.join('');
+  if (k.beginn) metaParts.push('<span>📅 Start: '+esc(k.beginn)+'</span>');
+  if (k.ende)   metaParts.push('<span>bis '+esc(k.ende)+'</span>');
+  if (k.pb)     metaParts.push('<span>🏛 '+esc(k.pb)+'</span>');
+  if (k.pbl)    metaParts.push('<span>👤 '+esc(k.pbl)+'</span>');
+  if (k.maximum > 0) metaParts.push('<span>👥 '+k.angemeldet+'/'+k.maximum+'</span>');
+  document.getElementById('detail-meta').innerHTML = metaParts.join('');
 
-  // Beschreibung
   const desc = k.beschreibung || k.text || k.beschr || k.info || k.kurztext || '';
   const descEl = document.getElementById('detail-desc');
-  if (desc) {
-    descEl.textContent = desc;
-    descEl.style.display = 'block';
-    document.querySelector('.detail-desc-label').style.display = 'block';
-  } else {
-    descEl.textContent = 'Keine Beschreibung vorhanden.';
-    descEl.style.color = '#aaa';
-    descEl.style.display = 'block';
-    document.querySelector('.detail-desc-label').style.display = 'block';
+  descEl.textContent = desc || 'Keine Beschreibung vorhanden.';
+  descEl.style.color = desc ? '#333' : '#aaa';
+
+  // Auf Mobile: nach unten scrollen zum Detail
+  if (window.innerWidth <= 900) {
+    setTimeout(() => {
+      document.getElementById('split-detail').scrollIntoView({behavior:'smooth', block:'start'});
+    }, 50);
   }
 
-  // Auf mobil nach oben scrollen zum Detail
-  // Auf mobil: Detail einblenden und scrollen
-  const detailEl = document.getElementById('split-detail');
-  detailEl.classList.remove('empty-state');
-  detailEl.classList.add('has-content');
-  if (window.innerWidth < 900) {
-    setTimeout(() => detailEl.scrollIntoView({behavior:'smooth', block:'start'}), 50);
-  }
-
-  // Merke aktuellen Kurs für Actions
   window._selectedKurs = k;
 }
 
 function copyDetailKurs() {
   const k = window._selectedKurs;
   if (!k) return;
-  const text = k.nr + ' · ' + k.titel;
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('Kopiert: ' + text);
-  });
+  navigator.clipboard.writeText(k.nr + ' · ' + k.titel).then(() => showToast('📋 Kopiert: ' + k.nr));
 }
 
 function useInRedaktion() {
   const k = window._selectedKurs;
   if (!k) return;
-  // Zur Hauptapp navigieren mit Kurs-Kontext
-  const params = new URLSearchParams({
-    screen: 'redakteur',
-    kursNr: k.nr,
-    kursTitel: k.titel
-  });
-  window.location.href = '/?' + params.toString();
-}
-
-function showToast(msg) {
-  let t = document.getElementById('kurs-toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'kurs-toast';
-    t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#1A2943;color:#fff;padding:.65rem 1.1rem;border-radius:8px;font-size:12px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  setTimeout(() => t.style.opacity = '0', 2500);
+  window.location.href = '/?screen=redakteur&kursNr='+encodeURIComponent(k.nr)+'&kursTitel='+encodeURIComponent(k.titel);
 }
 
 function changePage(dir) {
   seite += dir;
   renderSeite();
-  window.scrollTo({top:200, behavior:'smooth'});
+  window.scrollTo({top: 200, behavior:'smooth'});
 }
 
-// Suche
 document.getElementById('search-input').addEventListener('input', function() {
   suchbegriff = this.value.trim().toLowerCase();
   filterUndSuche();
 });
 
 function setFilter(el, f) {
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on'));
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('on'));
   el.classList.add('on');
   aktuellerFilter = f;
   filterUndSuche();
@@ -467,16 +382,12 @@ function filterUndSuche() {
   let result = ALLE_KURSE;
   if (aktuellerFilter !== 'alle') result = result.filter(k => k.pbFilter === aktuellerFilter);
   if (suchbegriff) result = result.filter(k =>
-    k.nr.toLowerCase().includes(suchbegriff) ||
-    k.titel.toLowerCase().includes(suchbegriff)
+    k.nr.toLowerCase().includes(suchbegriff) || k.titel.toLowerCase().includes(suchbegriff)
   );
   renderListe(result);
 }
 
-// Direktlookup
-document.getElementById('lw-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') directLookup();
-});
+document.getElementById('lw-input').addEventListener('keydown', e => { if (e.key === 'Enter') directLookup(); });
 
 function directLookup() {
   const query = document.getElementById('lw-input').value.trim().toLowerCase();
@@ -489,25 +400,17 @@ function directLookup() {
   const el = document.getElementById('lw-result');
   if (kurs) {
     el.className = 'lw-result found';
-    el.innerHTML = `
-      <div class="lw-result-titel">${esc(kurs.titel)}</div>
-      <div class="lw-result-meta">${esc(kurs.nr)}${kurs.beginn ? ' · Start: ' + kurs.beginn : ''}</div>
-      <button class="copy-btn" id="copy-direct" onclick="copyDirect('${esc(kurs.nr)}','${esc(kurs.titel)}')">📋 Kursnummer + Titel kopieren</button>`;
+    el.innerHTML = '<div style="font-weight:700;color:var(--blau);font-size:14px">'+esc(kurs.titel)+'</div>'
+      + '<div style="color:var(--blau60);font-size:11px;margin-top:3px;font-family:DM Mono,monospace">'+esc(kurs.nr)+(kurs.beginn?' · Start: '+kurs.beginn:'')+'</div>'
+      + '<button class="copy-btn" onclick="copyDirect(\''+esc(kurs.nr)+'\',\''+esc(kurs.titel)+'\')">📋 Kopieren</button>';
   } else {
     el.className = 'lw-result notfound';
-    el.innerHTML = `<strong>Nicht gefunden:</strong> „${esc(query)}" — Kürzel prüfen oder Freitext-Suche oben nutzen.`;
+    el.innerHTML = '<strong>Nicht gefunden:</strong> „'+esc(query)+'"';
   }
 }
 
 function copyDirect(nr, titel) {
-  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => {
-    const btn = document.getElementById('copy-direct');
-    if (btn) { btn.textContent = '✓ Kopiert!'; btn.classList.add('done'); setTimeout(()=>{btn.textContent='📋 Kursnummer + Titel kopieren';btn.classList.remove('done')},2000); }
-  });
-}
-
-function inClipboard(nr, titel) {
-  navigator.clipboard.writeText(`${nr} — ${titel}`).then(() => showToast(`📋 Kopiert: ${nr}`));
+  navigator.clipboard.writeText(nr + ' — ' + titel).then(() => showToast('📋 Kopiert: ' + nr));
 }
 
 function showToast(msg) {
@@ -519,7 +422,6 @@ function showToast(msg) {
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
 
-// Start
 ladeListe();
 </script>
 </body>
