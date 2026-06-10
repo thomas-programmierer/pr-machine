@@ -3,319 +3,390 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin · VHS Spandau PR-Maschine</title>
+<title>⚙ Administration – VHS Spandau PR-Maschine</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#E6EBF0;min-height:100vh;color:#1A2943}
-.topbar{background:#00285A;height:52px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem}
-.topbar-logo{color:#FAB90F;font-weight:700;font-size:1rem}
-.topbar-sub{color:#69829B;font-size:0.85rem}
-.topbar-spacer{flex:1}
-.topbar-user{color:#E6EBF0;font-size:0.8rem}
-.topbar-logout{color:#69829B;font-size:0.8rem;cursor:pointer;text-decoration:underline}
-.nav{background:#fff;border-bottom:1px solid #CDD7DC;padding:0 1.5rem;display:flex;gap:0;overflow-x:auto}
-.nav a{display:block;padding:0.75rem 1.1rem;font-size:0.82rem;color:#586481;text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
-.nav a:hover{color:#00285A}
-.nav a.active{color:#00285A;border-bottom-color:#FAB90F;font-weight:700}
-.main{max-width:900px;margin:1.5rem auto;padding:0 1rem}
-.page-title{font-size:1.2rem;font-weight:700;color:#00285A;margin-bottom:0.25rem}
-.page-sub{font-size:0.85rem;color:#586481;margin-bottom:1.5rem}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-@media(max-width:640px){.grid{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:10px;border:1px solid #CDD7DC;padding:1.25rem}
-.card-title{font-size:0.9rem;font-weight:700;color:#00285A;margin-bottom:0.25rem;display:flex;align-items:center;gap:8px}
-.card-desc{font-size:0.8rem;color:#586481;margin-bottom:1rem;line-height:1.5}
-.status-bar{background:#E6EBF0;border-radius:6px;padding:0.6rem 0.9rem;font-size:0.78rem;color:#586481;margin-bottom:1rem;min-height:42px}
-.status-bar.ok{background:#EAF3DE;color:#27500A}
-.status-bar.warn{background:#FAEEDA;color:#633806}
-label{display:block;font-size:0.8rem;color:#586481;margin-bottom:4px;font-weight:700}
-input[type=file]{display:block;width:100%;border:1.5px dashed #CDD7DC;border-radius:6px;padding:0.6rem;font-size:0.8rem;cursor:pointer;background:#fff;color:#1A2943}
-input[type=file]:hover{border-color:#FAB90F}
-input[type=text]{width:100%;border:1px solid #CDD7DC;border-radius:6px;padding:0.5rem 0.75rem;font-size:0.85rem;color:#1A2943}
-input[type=text]:focus{outline:2px solid #FAB90F;border-color:#FAB90F}
-.btn{display:inline-flex;align-items:center;gap:6px;background:#00285A;color:#fff;border:none;border-radius:6px;padding:0.5rem 1.1rem;font-size:0.85rem;cursor:pointer;font-weight:700;margin-top:0.75rem}
-.btn:hover{background:#1A2943}
-.btn:disabled{background:#CDD7DC;cursor:not-allowed}
-.btn.secondary{background:#E6EBF0;color:#00285A}
-.btn.secondary:hover{background:#CDD7DC}
-.btn.danger{background:#E1000F;color:#fff}
-.url-list{margin-top:0.75rem}
-.url-item{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.url-item input{flex:1}
-.url-item button{background:none;border:1px solid #CDD7DC;border-radius:4px;padding:4px 8px;cursor:pointer;color:#E1000F;font-size:0.8rem}
-.add-url{font-size:0.8rem;color:#00285A;cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block}
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1A2943;color:#fff;padding:0.75rem 1.25rem;border-radius:8px;font-size:0.85rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
-.toast.show{opacity:1}
-.toast.ok{background:#1D9E75}
-.toast.err{background:#E1000F}
-.full{grid-column:1/-1}
-.section-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#969696;font-weight:700;margin:1.5rem 0 0.75rem}
-.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem}
-.stat{background:#E6EBF0;border-radius:6px;padding:0.5rem 0.9rem;font-size:0.78rem;color:#586481}
-.stat strong{display:block;font-size:1.1rem;color:#00285A;font-weight:700}
-.login-overlay{position:fixed;inset:0;background:#00285A;display:flex;align-items:center;justify-content:center;z-index:100}
-.login-box{background:#fff;border-radius:12px;padding:2rem;width:320px;text-align:center}
-.login-box h2{color:#00285A;margin-bottom:0.25rem}
-.login-box p{font-size:0.8rem;color:#586481;margin-bottom:1.25rem}
-.login-box input{display:block;width:100%;border:1px solid #CDD7DC;border-radius:6px;padding:0.6rem 0.75rem;font-size:0.9rem;margin-bottom:0.75rem}
-.login-err{color:#E1000F;font-size:0.8rem;margin-bottom:0.5rem;display:none}
-.badge{display:inline-block;font-size:0.7rem;padding:2px 7px;border-radius:10px;font-weight:700}
-.badge.admin{background:#00285A;color:#FAB90F}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f4f6f9; color: #1A2943; font-size: 14px; min-height: 100vh; }
+
+  nav { background: #00285A; display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 46px; overflow-x: auto; white-space: nowrap; }
+  nav a { color: #fff; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 4px; opacity: 0.75; transition: opacity .2s, background .2s; }
+  nav a:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  nav a.active { background: #FAB90F; color: #00285A; opacity: 1; font-weight: bold; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 28px 20px; }
+  h1 { font-size: 20px; color: #00285A; margin-bottom: 6px; }
+  .subtitle { color: #69829B; font-size: 13px; margin-bottom: 28px; }
+
+  .section { background: #fff; border: 1px solid #dde2ea; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eef0f4; }
+  .section-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .icon-blue   { background: #E6EBF0; }
+  .icon-green  { background: #e8f4e8; }
+  .icon-yellow { background: #fff8e0; }
+  .section-title { font-size: 15px; font-weight: bold; color: #00285A; }
+  .section-desc  { font-size: 12px; color: #69829B; margin-top: 2px; }
+
+  /* Upload Zone */
+  .upload-zone { border: 2px dashed #c8d0db; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
+  .upload-zone:hover, .upload-zone.dragover { border-color: #00285A; background: #f0f4ff; }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone .upload-label { font-size: 13px; color: #69829B; }
+  .upload-zone .upload-label strong { color: #00285A; }
+  .upload-zone .file-selected { font-size: 13px; color: #00285A; font-weight: bold; margin-top: 6px; }
+
+  .btn { display: inline-block; padding: 9px 20px; border-radius: 6px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; transition: background .2s; }
+  .btn-primary { background: #00285A; color: #fff; }
+  .btn-primary:hover { background: #003a7a; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-gold { background: #FAB90F; color: #00285A; }
+  .btn-gold:hover { background: #e6a800; }
+
+  .upload-actions { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+
+  /* Status messages */
+  .status { font-size: 13px; padding: 8px 12px; border-radius: 6px; display: none; }
+  .status.visible { display: block; }
+  .status.loading { background: #E6EBF0; color: #00285A; }
+  .status.success { background: #e8f4e8; color: #1a6a1a; }
+  .status.error   { background: #fde8e8; color: #a00; }
+
+  /* Progress bar */
+  .progress-wrap { margin-top: 10px; display: none; }
+  .progress-wrap.visible { display: block; }
+  .progress-bar { height: 6px; background: #E6EBF0; border-radius: 100px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #00285A; border-radius: 100px; width: 0%; transition: width .3s; }
+  .progress-label { font-size: 11px; color: #69829B; margin-top: 4px; }
+
+  /* Info table */
+  .info-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .info-table td { padding: 7px 10px; border-bottom: 1px solid #eef0f4; }
+  .info-table td:first-child { color: #69829B; width: 180px; }
+  .info-table td:last-child { font-weight: bold; color: #1A2943; }
+  .info-table tr:last-child td { border-bottom: none; }
+
+  /* URL list */
+  .url-list { list-style: none; }
+  .url-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eef0f4; font-size: 13px; }
+  .url-list li:last-child { border-bottom: none; }
+  .url-list .url-text { flex: 1; color: #00285A; word-break: break-all; }
+  .url-list .btn-remove { background: none; border: 1px solid #dde; border-radius: 4px; color: #888; font-size: 11px; padding: 2px 7px; cursor: pointer; }
+  .url-list .btn-remove:hover { background: #fde8e8; color: #a00; border-color: #fbb; }
+  .url-add { display: flex; gap: 8px; margin-top: 12px; }
+  .url-add input { flex: 1; padding: 7px 10px; border: 1px solid #c8d0db; border-radius: 6px; font-size: 13px; outline: none; }
+  .url-add input:focus { border-color: #00285A; }
+
+  .chip { display: inline-block; background: #E6EBF0; color: #00285A; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: bold; }
+  .chip.green { background: #e8f4e8; color: #1a6a1a; }
 </style>
 </head>
 <body>
 
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-box">
-    <h2>VHS Spandau</h2>
-    <p>PR-Maschine · Admin-Bereich</p>
-    <input type="text" id="loginUser" placeholder="Benutzername" autocomplete="username">
-    <input type="password" id="loginPass" placeholder="Passwort" autocomplete="current-password">
-    <p class="login-err" id="loginErr">Ungültige Zugangsdaten</p>
-    <button class="btn" style="width:100%;justify-content:center" onclick="doLogin()">Einloggen</button>
-  </div>
-</div>
+<nav>
+  <a href="/kalender.html">① Redaktionsplan</a>
+  <a href="/kursvorschlaege.html">② Kursvorschläge</a>
+  <a href="/kursliste.html">③ Kursliste</a>
+  <a href="/redaktion.html">④ Redaktion</a>
+  <a href="/editor.html">⑤ Grafik-Studio</a>
+  <a href="/freigabe.html">⑥ Freigabe</a>
+  <a href="/dashboard.html">⑦ Dashboard</a>
+  <a href="/performance.html">⑧ Performance</a>
+  <a href="/admin" class="active">⚙ Administration</a>
+</nav>
 
-<div class="topbar">
-  <span class="topbar-logo">VHS Spandau</span>
-  <span class="topbar-sub">PR-Maschine</span>
-  <div class="topbar-spacer"></div>
-  <span class="topbar-user" id="topUser"></span>
-  <span class="topbar-logout" onclick="doLogout()">Abmelden</span>
-</div>
+<div class="page">
+  <h1>⚙ Administration</h1>
+  <p class="subtitle">Kursprogramm, Redaktionsplan und externe URLs verwalten</p>
 
-<div class="nav">
-  <a href="/">① Redaktionsplan</a>
-  <a href="/kurse">③ Kursliste</a>
-  <a href="/editor">⑤ Grafik-Studio</a>
-  <a href="/freigabe">⑥ Freigabe</a>
-  <a href="/performance">⑧ Performance</a>
-  <a href="/admin" class="active">⚙ Admin</a>
-</div>
-
-<div class="main">
-  <div class="page-title">⚙ Admin-Bereich</div>
-  <div class="page-sub">Redaktionelle Grunddaten pflegen · Nur für Administratoren</div>
-
-  <div class="section-label">Aktueller Status</div>
-  <div class="stat-row" id="statRow">
-    <div class="stat"><strong id="statKurs">—</strong>Kursprogramm</div>
-    <div class="stat"><strong id="statPlan">—</strong>Redaktionsplan</div>
-    <div class="stat"><strong id="statUrls">—</strong>Verknüpfte URLs</div>
-  </div>
-
-  <div class="grid">
-
-    <!-- Karte 1: Kursprogramm -->
-    <div class="card">
-      <div class="card-title">📚 Kursprogramm hochladen</div>
-      <div class="card-desc">
-        Die Kursbeschreibungen werden automatisch als Kontext in jeden KI-Post eingebettet. 
-        So entstehen halluzinationsfreie, faktenbasierte Texte auf Basis echter Kursdaten.
-        Beim nächsten Update wird der bisherige Kontext überschrieben.
+  <!-- ① KURSPROGRAMM XLS UPLOAD -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-green">📊</div>
+      <div>
+        <div class="section-title">Kursprogramm — Excel-Upload</div>
+        <div class="section-desc">Aktuelles Kursprogramm hochladen. Wird als KI-Kontext und für die Kursliste verwendet.</div>
       </div>
-      <div class="status-bar" id="statusKurs">Noch kein Kursprogramm hinterlegt</div>
-      <label>Datei auswählen (.xls, .xlsx, .csv)</label>
-      <input type="file" id="fileKurs" accept=".xls,.xlsx,.csv">
-      <button class="btn" onclick="uploadFile('kursprogramm', 'fileKurs', 'statusKurs')">
-        ⬆ Kursprogramm hochladen
-      </button>
     </div>
 
-    <!-- Karte 2: Redaktionsplan Datei -->
-    <div class="card">
-      <div class="card-title">📅 Redaktionsplan hochladen</div>
-      <div class="card-desc">
-        Aktuellen Redaktionsplan als XLS-Datei einspielen. 
-        Die Planung steht danach allen Redakteur:innen im Kalender zur Verfügung.
-      </div>
-      <div class="status-bar" id="statusPlan">Noch kein Redaktionsplan hochgeladen</div>
-      <label>Datei auswählen (.xls, .xlsx, .csv)</label>
-      <input type="file" id="filePlan" accept=".xls,.xlsx,.csv">
-      <button class="btn" onclick="uploadFile('redaktionsplan', 'filePlan', 'statusPlan')">
-        ⬆ Redaktionsplan hochladen
-      </button>
+    <div class="upload-zone" id="kurs-zone">
+      <input type="file" id="kurs-file" accept=".xlsx,.xls">
+      <div class="upload-icon">📁</div>
+      <div class="upload-label"><strong>Excel-Datei hier ablegen</strong> oder klicken</div>
+      <div class="upload-label">.xlsx / .xls — Felder: Bezirk, Speichern unter, Kurztitel, Beginn, Ende, Beschreibung, Angemeldet, Maximum</div>
+      <div class="file-selected" id="kurs-file-name"></div>
     </div>
 
-    <!-- Karte 3: Redaktionsplan URLs (full width) -->
-    <div class="card full">
-      <div class="card-title">🔗 Redaktionsplan-URLs verknüpfen</div>
-      <div class="card-desc">
-        URLs zu externen Redaktionsplänen (z.B. SharePoint, Google Drive, Confluence) hinterlegen. 
-        Diese werden im Kalender als Verweise angezeigt und können von Dritten (z.B. Hatchable) 
-        für automatische Aktualisierungen genutzt werden.
-      </div>
-      <div id="urlList" class="url-list"></div>
-      <span class="add-url" onclick="addUrlField()">+ URL hinzufügen</span>
-      <br>
-      <button class="btn" onclick="saveUrls()">💾 URLs speichern</button>
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="kurs-upload-btn" disabled onclick="uploadKursprogramm()">Hochladen &amp; verarbeiten</button>
+      <div class="status" id="kurs-status"></div>
+    </div>
+    <div class="progress-wrap" id="kurs-progress">
+      <div class="progress-bar"><div class="progress-fill" id="kurs-progress-fill"></div></div>
+      <div class="progress-label" id="kurs-progress-label">Verarbeite …</div>
     </div>
 
+    <div id="kurs-info" style="margin-top:16px; display:none;">
+      <table class="info-table">
+        <tr><td>Zuletzt hochgeladen</td><td id="kurs-date">–</td></tr>
+        <tr><td>Kurse gesamt</td><td id="kurs-count">–</td></tr>
+        <tr><td>Kategorien</td><td id="kurs-cats">–</td></tr>
+        <tr><td>Status</td><td><span class="chip green">Aktiv</span></td></tr>
+      </table>
+    </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <!-- ② REDAKTIONSPLAN XLS UPLOAD -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-blue">📅</div>
+      <div>
+        <div class="section-title">Redaktionsplan — Excel-Upload</div>
+        <div class="section-desc">Redaktionsplanung als Excel importieren (befüllt den Kalender).</div>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="plan-zone">
+      <input type="file" id="plan-file" accept=".xlsx,.xls">
+      <div class="upload-icon">📁</div>
+      <div class="upload-label"><strong>Excel-Datei hier ablegen</strong> oder klicken</div>
+      <div class="upload-label">.xlsx / .xls — Redaktionskalender-Format</div>
+      <div class="file-selected" id="plan-file-name"></div>
+    </div>
+
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="plan-upload-btn" disabled onclick="uploadRedaktionsplan()">Hochladen</button>
+      <div class="status" id="plan-status"></div>
+    </div>
+  </div>
+
+  <!-- ③ EXTERNE URLs -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">🔗</div>
+      <div>
+        <div class="section-title">Externe URLs</div>
+        <div class="section-desc">Externe Links und Ressourcen für die Redaktion verwalten.</div>
+      </div>
+    </div>
+
+    <ul class="url-list" id="url-list">
+      <li><span class="url-text" style="color:#aaa; font-style:italic;">Lädt …</span></li>
+    </ul>
+    <div class="url-add">
+      <input type="url" id="url-input" placeholder="https://…">
+      <button class="btn btn-gold" onclick="addUrl()">Hinzufügen</button>
+    </div>
+    <div class="status" id="url-status" style="margin-top:8px;"></div>
+  </div>
+
+</div>
 
 <script>
-let currentUser = null;
-let urlCount = 0;
+// ── FILE INPUT HANDLING ──────────────────────────────────────
 
-async function checkAuth() {
-  try {
-    const r = await fetch("/api/me");
-    if (!r.ok) return showLogin();
-    const d = await r.json();
-    if (d.user.role !== "admin") {
-      document.body.innerHTML = '<div style="padding:3rem;text-align:center;color:#E1000F;font-size:1.1rem">⛔ Kein Zugriff — nur für Admins</div>';
-      return;
+function setupFileInput(inputId, nameId, btnId, zoneId) {
+  const input = document.getElementById(inputId);
+  const nameEl = document.getElementById(nameId);
+  const btn    = document.getElementById(btnId);
+  const zone   = document.getElementById(zoneId);
+
+  input.addEventListener('change', () => {
+    if (input.files[0]) {
+      nameEl.textContent = '📄 ' + input.files[0].name;
+      btn.disabled = false;
     }
-    currentUser = d.user;
-    document.getElementById("topUser").textContent = d.user.name;
-    document.getElementById("loginOverlay").style.display = "none";
-    loadStatus();
-    loadUrls();
-  } catch { showLogin(); }
+  });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      nameEl.textContent = '📄 ' + file.name;
+      btn.disabled = false;
+    }
+  });
 }
 
-function showLogin() {
-  document.getElementById("loginOverlay").style.display = "flex";
-}
+setupFileInput('kurs-file', 'kurs-file-name', 'kurs-upload-btn', 'kurs-zone');
+setupFileInput('plan-file', 'plan-file-name', 'plan-upload-btn', 'plan-zone');
 
-async function doLogin() {
-  const u = document.getElementById("loginUser").value.trim();
-  const p = document.getElementById("loginPass").value;
-  const r = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username:u,password:p}) });
-  const d = await r.json();
-  if (!d.ok) { document.getElementById("loginErr").style.display = "block"; return; }
-  if (d.user.role !== "admin") {
-    document.getElementById("loginErr").textContent = "Kein Admin-Zugriff";
-    document.getElementById("loginErr").style.display = "block"; return;
+// ── KURSPROGRAMM UPLOAD ──────────────────────────────────────
+
+async function uploadKursprogramm() {
+  const file = document.getElementById('kurs-file').files[0];
+  if (!file) return;
+
+  const btn      = document.getElementById('kurs-upload-btn');
+  const status   = document.getElementById('kurs-status');
+  const progress = document.getElementById('kurs-progress');
+  const fill     = document.getElementById('kurs-progress-fill');
+  const label    = document.getElementById('kurs-progress-label');
+
+  btn.disabled = true;
+  setStatus(status, 'loading', '⏳ Datei wird hochgeladen …');
+  progress.classList.add('visible');
+  fill.style.width = '15%';
+  label.textContent = 'Wird hochgeladen …';
+
+  const formData = new FormData();
+  formData.append('kursprogramm', file);
+
+  try {
+    // Simulate progress
+    let pct = 15;
+    const ticker = setInterval(() => {
+      pct = Math.min(pct + 5, 85);
+      fill.style.width = pct + '%';
+    }, 300);
+
+    const res = await fetch('/admin/upload-kursprogramm', {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(ticker);
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      fill.style.width = '100%';
+      label.textContent = 'Abgeschlossen';
+      setStatus(status, 'success', `✓ ${data.count} Kurse importiert`);
+      showKursInfo(data);
+    } else {
+      fill.style.width = '0%';
+      setStatus(status, 'error', '⚠ Fehler: ' + (data.error || 'Unbekannter Fehler'));
+    }
+  } catch (err) {
+    fill.style.width = '0%';
+    setStatus(status, 'error', '⚠ Verbindungsfehler: ' + err.message);
+  } finally {
+    btn.disabled = false;
   }
-  currentUser = d.user;
-  document.getElementById("topUser").textContent = d.user.name;
-  document.getElementById("loginOverlay").style.display = "none";
-  document.getElementById("loginErr").style.display = "none";
-  loadStatus();
-  loadUrls();
 }
 
-async function doLogout() {
-  await fetch("/api/logout", { method:"POST" });
-  location.href = "/";
+function showKursInfo(data) {
+  const info = document.getElementById('kurs-info');
+  info.style.display = 'block';
+  document.getElementById('kurs-date').textContent  = new Date().toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('kurs-count').textContent = data.count + ' Kurse';
+  document.getElementById('kurs-cats').textContent  = (data.kategorien || []).join(', ') || '–';
 }
 
-document.getElementById("loginPass").addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
+// ── REDAKTIONSPLAN UPLOAD ───────────────────────────────────
 
-async function loadStatus() {
+async function uploadRedaktionsplan() {
+  const file = document.getElementById('plan-file').files[0];
+  if (!file) return;
+
+  const btn    = document.getElementById('plan-upload-btn');
+  const status = document.getElementById('plan-status');
+
+  btn.disabled = true;
+  setStatus(status, 'loading', '⏳ Wird hochgeladen …');
+
+  const formData = new FormData();
+  formData.append('redaktionsplan', file);
+
   try {
-    const r = await fetch("/api/admin/status");
-    const d = await r.json();
-    if (d.kursprogramm) {
-      const dt = new Date(d.kursprogramm.uploaded).toLocaleDateString("de-DE");
-      document.getElementById("statKurs").textContent = dt;
-      document.getElementById("statusKurs").textContent =
-        `✓ ${d.kursprogramm.filename} · hochgeladen ${dt} von ${d.kursprogramm.uploadedBy} · ${Math.round(d.kursprogramm.chars/1000)}k Zeichen im KI-Kontext`;
-      document.getElementById("statusKurs").className = "status-bar ok";
+    const res  = await fetch('/admin/upload-redaktionsplan', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      setStatus(status, 'success', '✓ Redaktionsplan importiert');
+    } else {
+      setStatus(status, 'error', '⚠ ' + (data.error || 'Fehler'));
     }
-    if (d.redaktionsplan && d.redaktionsplan.lastFileUpload) {
-      const dt = new Date(d.redaktionsplan.lastFileUpload.uploaded).toLocaleDateString("de-DE");
-      document.getElementById("statPlan").textContent = dt;
-      document.getElementById("statusPlan").textContent =
-        `✓ ${d.redaktionsplan.lastFileUpload.filename} · ${dt} · ${Math.round(d.redaktionsplan.lastFileUpload.size/1024)}KB`;
-      document.getElementById("statusPlan").className = "status-bar ok";
-    }
-    if (d.redaktionsplan) {
-      document.getElementById("statUrls").textContent = (d.redaktionsplan.urls||[]).length;
-    }
-  } catch(e) { console.error(e); }
+  } catch (err) {
+    setStatus(status, 'error', '⚠ ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
+
+// ── EXTERNE URLs ─────────────────────────────────────────────
+
+let urls = [];
 
 async function loadUrls() {
   try {
-    const r = await fetch("/api/admin/redaktionsplan-urls");
-    const d = await r.json();
-    const urls = d.urls || [];
-    const list = document.getElementById("urlList");
-    list.innerHTML = "";
-    urlCount = 0;
-    if (urls.length === 0) {
-      addUrlField();
-    } else {
-      urls.forEach(u => addUrlField(u));
-    }
-  } catch(e) { console.error(e); }
-}
-
-function addUrlField(value="") {
-  urlCount++;
-  const id = "url_" + urlCount;
-  const item = document.createElement("div");
-  item.className = "url-item";
-  item.id = "urlitem_" + urlCount;
-  item.innerHTML = `<input type="text" id="${id}" placeholder="https://..." value="${value}">
-    <button onclick="removeUrl('urlitem_${urlCount}')">✕</button>`;
-  document.getElementById("urlList").appendChild(item);
-}
-
-function removeUrl(itemId) {
-  const el = document.getElementById(itemId);
-  if (el) el.remove();
-}
-
-async function saveUrls() {
-  const inputs = document.querySelectorAll("#urlList input[type=text]");
-  const urls = Array.from(inputs).map(i => i.value.trim()).filter(u => u.startsWith("http"));
-  const r = await fetch("/api/admin/redaktionsplan-urls", {
-    method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({urls})
-  });
-  const d = await r.json();
-  if (d.ok) {
-    showToast("URLs gespeichert ✓", "ok");
-    document.getElementById("statUrls").textContent = urls.length;
-  } else {
-    showToast("Fehler: " + d.error, "err");
+    const res  = await fetch('/admin/urls');
+    const data = await res.json();
+    urls = data.urls || [];
+    renderUrls();
+  } catch {
+    document.getElementById('url-list').innerHTML = '<li><span style="color:#aaa">Keine URLs gefunden</span></li>';
   }
 }
 
-async function uploadFile(type, inputId, statusId) {
-  const fileInput = document.getElementById(inputId);
-  if (!fileInput.files.length) { showToast("Bitte Datei auswählen", "err"); return; }
-  const file = fileInput.files[0];
-  const formData = new FormData();
-  formData.append("type", type);
-  formData.append("file", file);
-  const statusEl = document.getElementById(statusId);
-  statusEl.textContent = "Wird hochgeladen…";
-  statusEl.className = "status-bar warn";
+function renderUrls() {
+  const list = document.getElementById('url-list');
+  if (!urls.length) {
+    list.innerHTML = '<li><span style="color:#aaa; font-style:italic">Noch keine URLs eingetragen</span></li>';
+    return;
+  }
+  list.innerHTML = urls.map((url, i) => `
+    <li>
+      <span class="url-text"><a href="${escHtml(url)}" target="_blank">${escHtml(url)}</a></span>
+      <button class="btn-remove" onclick="removeUrl(${i})">✕ entfernen</button>
+    </li>`).join('');
+}
+
+async function addUrl() {
+  const input = document.getElementById('url-input');
+  const status = document.getElementById('url-status');
+  const url = input.value.trim();
+  if (!url || !url.startsWith('http')) {
+    setStatus(status, 'error', '⚠ Bitte eine gültige URL eingeben (https://…)');
+    return;
+  }
+  urls.push(url);
+  await saveUrls(status);
+  input.value = '';
+}
+
+async function removeUrl(i) {
+  urls.splice(i, 1);
+  await saveUrls(document.getElementById('url-status'));
+}
+
+async function saveUrls(status) {
   try {
-    const r = await fetch("/api/admin/upload", { method:"POST", body:formData });
-    const d = await r.json();
-    if (d.ok) {
-      showToast(file.name + " erfolgreich hochgeladen ✓", "ok");
-      statusEl.textContent = `✓ ${d.filename} · ${Math.round(d.size/1024)}KB · gerade hochgeladen`;
-      statusEl.className = "status-bar ok";
-      fileInput.value = "";
-      loadStatus();
+    const res = await fetch('/admin/urls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setStatus(status, 'success', '✓ Gespeichert');
+      renderUrls();
+      setTimeout(() => status.classList.remove('visible'), 2000);
     } else {
-      statusEl.textContent = "Fehler: " + d.error;
-      statusEl.className = "status-bar warn";
-      showToast("Fehler: " + d.error, "err");
+      setStatus(status, 'error', '⚠ ' + (data.error || 'Fehler'));
     }
-  } catch(e) {
-    statusEl.textContent = "Upload fehlgeschlagen";
-    statusEl.className = "status-bar warn";
-    showToast("Upload fehlgeschlagen", "err");
+  } catch (err) {
+    setStatus(status, 'error', '⚠ ' + err.message);
   }
 }
 
-function showToast(msg, type="") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast " + type + " show";
-  setTimeout(() => t.className = "toast " + type, 3000);
+// ── UTILS ────────────────────────────────────────────────────
+
+function setStatus(el, type, msg) {
+  el.className = 'status visible ' + type;
+  el.textContent = msg;
 }
 
-checkAuth();
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+loadUrls();
 </script>
 </body>
 </html>

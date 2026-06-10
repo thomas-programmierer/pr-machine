@@ -1,113 +1,93 @@
 @echo off
-REM ============================================================
-REM VHS Spandau PR-Maschine — Deploy-Skript (Windows)
-REM ============================================================
 setlocal enabledelayedexpansion
-title VHS Spandau PR-Maschine · Deploy
 
 echo.
-echo  ==========================================
-echo   VHS Spandau PR-Maschine ^| Deploy
-echo  ==========================================
+echo ===================================================
+echo   VHS Spandau PR-Maschine -- Deployment
+echo ===================================================
 echo.
 
-REM ── Git prüfen ──────────────────────────────────────────────
-where git >nul 2>&1
-if errorlevel 1 (
-  echo  [FEHLER] Git nicht gefunden: https://git-scm.com
-  pause & exit /b 1
+:: Projektordner = Speicherort dieser .bat
+set PROJDIR=%~dp0
+if "!PROJDIR:~-1!"=="\" set PROJDIR=!PROJDIR:~0,-1!
+
+:: ZIP suchen: zuerst als Argument, dann im selben Ordner, dann in Downloads
+set ZIPFILE=%~1
+if "!ZIPFILE!"=="" (
+    if exist "!PROJDIR!\vhs-update.zip" set ZIPFILE=!PROJDIR!\vhs-update.zip
+)
+if "!ZIPFILE!"=="" (
+    if exist "%USERPROFILE%\Downloads\vhs-update.zip" set ZIPFILE=%USERPROFILE%\Downloads\vhs-update.zip
+)
+if "!ZIPFILE!"=="" (
+    echo FEHLER: vhs-update.zip nicht gefunden.
+    echo Bitte vhs-update.zip in den Projektordner legen:
+    echo   !PROJDIR!
+    echo.
+    pause
+    exit /b 1
 )
 
-REM ── ZIP-Pfad ────────────────────────────────────────────────
-set "ZIP_FILE=%~1"
-if "%ZIP_FILE%"=="" (
-  echo  Keine ZIP angegeben.
-  set /p ZIP_FILE="  Pfad zur ZIP-Datei eingeben: "
-)
-
-if not exist "%ZIP_FILE%" (
-  echo  [FEHLER] Datei nicht gefunden: %ZIP_FILE%
-  pause & exit /b 1
-)
-
-REM ── Repo-Verzeichnis ────────────────────────────────────────
-set "REPO_DIR=%~dp0"
-cd /d "%REPO_DIR%"
-
-if not exist ".git" (
-  echo  [FEHLER] Kein Git-Repository in: %REPO_DIR%
-  pause & exit /b 1
-)
-
-echo  Repo : %REPO_DIR%
-echo  ZIP  : %ZIP_FILE%
+echo Verwende ZIP: !ZIPFILE!
+echo Projektordner: !PROJDIR!
 echo.
 
-REM ── Alles per PowerShell erledigen ──────────────────────────
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$zip = '%ZIP_FILE%';" ^
-  "$repo = '%REPO_DIR%'.TrimEnd('\');" ^
-  "$tmp = Join-Path $env:TEMP ('vhs_' + [System.IO.Path]::GetRandomFileName());" ^
-  "Write-Host '  Entpacke ZIP...';" ^
-  "Expand-Archive -Path $zip -DestinationPath $tmp -Force;" ^
-  "$src = $tmp;" ^
-  "$sub = Get-ChildItem $tmp -Directory;" ^
-  "if ($sub.Count -eq 1 -and (Test-Path (Join-Path $sub[0].FullName 'server.js'))) { $src = $sub[0].FullName };" ^
-  "Write-Host ('  Quelle: ' + $src);" ^
-  "$protect = @('.git','deploy.bat','deploy.sh','.env');" ^
-  "Get-ChildItem $src | ForEach-Object {" ^
-  "  if ($protect -notcontains $_.Name) {" ^
-  "    $dest = Join-Path $repo $_.Name;" ^
-  "    if (Test-Path $dest) { Remove-Item $dest -Recurse -Force };" ^
-  "    Copy-Item $_.FullName $dest -Recurse -Force;" ^
-  "    Write-Host ('  + ' + $_.Name);" ^
-  "  }" ^
-  "};" ^
-  "Remove-Item $tmp -Recurse -Force;" ^
-  "Write-Host '  Dateien kopiert.'"
+:: Temp-Ordner
+set TMPDIR=%TEMP%\vhs_deploy_%RANDOM%
+mkdir "!TMPDIR!"
 
-if errorlevel 1 (
-  echo  [FEHLER] Kopieren fehlgeschlagen.
-  pause & exit /b 1
+:: Entpacken
+echo Entpacke ...
+powershell -NoProfile -Command "Expand-Archive -Path '!ZIPFILE!' -DestinationPath '!TMPDIR!' -Force"
+if errorlevel 1 ( echo FEHLER beim Entpacken. & pause & exit /b 1 )
+
+:: Quellpfad ermitteln
+set SRCDIR=
+if exist "!TMPDIR!\server_admin_routes.js" ( set SRCDIR=!TMPDIR! )
+if exist "!TMPDIR!\public\kursliste.html"  ( set SRCDIR=!TMPDIR! )
+if "!SRCDIR!"=="" (
+    for /d %%D in ("!TMPDIR!\*") do (
+        if exist "%%D\public\kursliste.html"  set SRCDIR=%%D
+        if exist "%%D\server_admin_routes.js" set SRCDIR=%%D
+    )
 )
+if "!SRCDIR!"=="" ( echo FEHLER: Paketinhalt nicht erkannt. & rmdir /s /q "!TMPDIR!" & pause & exit /b 1 )
 
-REM ── Git commit & push ────────────────────────────────────────
+:: Dateien kopieren
+echo Kopiere Dateien ...
+robocopy "!SRCDIR!" "!PROJDIR!" /E /XF .env deploy.bat /XD .git /NFL /NDL /NJH /NJS
+
+:: npm-Pakete
+echo Pruefe npm-Pakete ...
+cd /d "!PROJDIR!"
+node -e "require('multer')" 2>nul
+if errorlevel 1 ( echo Installiere multer ... & npm install multer --save --silent )
+node -e "require('xlsx')" 2>nul
+if errorlevel 1 ( echo Installiere xlsx ... & npm install xlsx --save --silent )
+echo npm OK.
+
+:: server.js patchen
 echo.
-echo  Git Status:
+echo Patche server.js ...
+node "!PROJDIR!\apply_server_patch.js"
+if errorlevel 1 ( echo FEHLER beim Patchen. & rmdir /s /q "!TMPDIR!" & pause & exit /b 1 )
+
+:: Git
+echo.
+echo Git commit und push ...
+cd /d "!PROJDIR!"
 git add -A
-git status --short
-
-git diff --cached --quiet 2>nul
-if not errorlevel 1 (
-  echo.
-  echo  Keine Aenderungen — nichts zu committen.
-  pause & exit /b 0
-)
-
-echo.
-set "DATUM=%DATE:~6,4%.%DATE:~3,2%.%DATE:~0,2%"
-set "UHRZEIT=%TIME:~0,5%"
-set "DEFAULT_MSG=Update %DATUM% %UHRZEIT%"
-set /p COMMIT_MSG="  Commit-Nachricht [%DEFAULT_MSG%]: "
-if "%COMMIT_MSG%"=="" set "COMMIT_MSG=%DEFAULT_MSG%"
-
-git commit -m "%COMMIT_MSG%"
-
-echo.
-echo  Push nach GitHub...
+git commit -m "Update Kursliste + Admin %DATE%"
 git push origin main
-if errorlevel 1 (
-  echo  [FEHLER] Push fehlgeschlagen.
-  pause & exit /b 1
-)
+if errorlevel 1 ( echo FEHLER beim Push. & rmdir /s /q "!TMPDIR!" & pause & exit /b 1 )
+
+:: Aufraeumen
+rmdir /s /q "!TMPDIR!"
 
 echo.
-echo  ==========================================
-echo   Erfolgreich deployt!
-echo   Railway startet automatisch neu.
-echo  ==========================================
-echo.
-echo  Commit : %COMMIT_MSG%
-echo  Zeit   : %DATUM% %UHRZEIT%
+echo ===================================================
+echo   Fertig! Railway deployt automatisch.
+echo   Browser-Cache: Strg+Shift+R
+echo ===================================================
 echo.
 pause

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>③ Kursliste – VHS Spandau PR-Maschine</title>
+<style>
+  /* === RESET & BASE === */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f4f6f9; color: #1A2943; font-size: 14px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* === NAV === */
+  nav { background: #00285A; display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 46px; flex-shrink: 0; overflow-x: auto; white-space: nowrap; }
+  nav a { color: #fff; text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 4px; opacity: 0.75; transition: opacity .2s, background .2s; }
+  nav a:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+  nav a.active { background: #FAB90F; color: #00285A; opacity: 1; font-weight: bold; }
+
+  /* === TOOLBAR === */
+  .toolbar { background: #fff; border-bottom: 1px solid #dde2ea; padding: 10px 16px; display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+  .toolbar-title { font-size: 15px; font-weight: bold; color: #00285A; margin-right: 8px; }
+  .search-wrap { flex: 1; min-width: 200px; max-width: 360px; position: relative; }
+  .search-wrap input { width: 100%; padding: 7px 10px 7px 32px; border: 1px solid #c8d0db; border-radius: 6px; font-size: 13px; outline: none; }
+  .search-wrap input:focus { border-color: #00285A; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #888; pointer-events: none; }
+  .cat-select { padding: 7px 10px; border: 1px solid #c8d0db; border-radius: 6px; font-size: 13px; background: #fff; color: #1A2943; cursor: pointer; outline: none; }
+  .cat-select:focus { border-color: #00285A; }
+  .count-badge { font-size: 12px; color: #69829B; margin-left: auto; white-space: nowrap; }
+
+  /* === SPLIT LAYOUT === */
+  .split { display: flex; flex: 1; overflow: hidden; }
+
+  /* === LEFT PANEL — KURSLISTE === */
+  .panel-list { width: 44%; min-width: 260px; border-right: 2px solid #dde2ea; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+  .panel-list-inner { overflow-y: auto; flex: 1; }
+
+  /* === KURS ITEM === */
+  .kurs-item { padding: 11px 14px; border-bottom: 1px solid #eef0f4; cursor: pointer; transition: background .15s; display: flex; flex-direction: column; gap: 3px; }
+  .kurs-item:hover { background: #f0f4ff; }
+  .kurs-item.active { background: #E6EBF0; border-left: 3px solid #00285A; padding-left: 11px; }
+  .kurs-item .kurs-titel { font-size: 13px; font-weight: bold; color: #1A2943; line-height: 1.3; }
+  .kurs-item .kurs-meta { font-size: 11px; color: #69829B; display: flex; gap: 8px; flex-wrap: wrap; }
+  .kurs-item .kurs-id { font-size: 11px; color: #888; font-family: monospace; }
+  .tag { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .tag-Gesundheit        { background: #e8f4e8; color: #2a7a2a; }
+  .tag-Sprachen          { background: #fff3cd; color: #856404; }
+  .tag-Beruf             { background: #d4edff; color: #004f8c; }
+  .tag-EDV               { background: #e0d4ff; color: #4a1f8c; }
+  .tag-Kulturelle        { background: #fde8cc; color: #7a3800; }
+  .tag-Gesellschaft      { background: #fce8e8; color: #7a0000; }
+  .tag-Grundbildung      { background: #e8fce8; color: #005500; }
+  .tag-Sonstiges         { background: #efefef; color: #555; }
+
+  /* === RIGHT PANEL — DETAIL === */
+  .panel-detail { flex: 1; overflow-y: auto; padding: 0; background: #f7f9fc; }
+
+  .detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #aab; font-size: 14px; gap: 12px; }
+  .detail-empty svg { opacity: 0.25; }
+
+  .detail-card { padding: 24px 28px; max-width: 700px; }
+  .detail-header { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 2px solid #E6EBF0; }
+  .detail-id { font-size: 11px; font-family: monospace; color: #888; margin-bottom: 4px; }
+  .detail-titel { font-size: 19px; font-weight: bold; color: #00285A; line-height: 1.3; margin-bottom: 8px; }
+  .detail-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+  .detail-field { background: #fff; border: 1px solid #dde2ea; border-radius: 8px; padding: 10px 14px; }
+  .detail-field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: #69829B; margin-bottom: 3px; }
+  .detail-field span { font-size: 14px; color: #1A2943; font-weight: bold; }
+  .detail-field.full { grid-column: 1 / -1; }
+
+  .detail-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #69829B; margin-bottom: 8px; margin-top: 18px; }
+  .detail-beschreibung { background: #fff; border: 1px solid #dde2ea; border-radius: 8px; padding: 14px 16px; font-size: 13px; line-height: 1.7; color: #333; white-space: pre-line; }
+
+  .auslastung-bar { background: #E6EBF0; border-radius: 100px; height: 6px; margin-top: 6px; overflow: hidden; }
+  .auslastung-fill { height: 100%; border-radius: 100px; background: #00285A; transition: width .4s; }
+  .auslastung-fill.voll { background: #E1000F; }
+  .auslastung-fill.fast { background: #FAB90F; }
+
+  .btn-use { margin-top: 18px; background: #FAB90F; border: none; color: #00285A; font-weight: bold; font-size: 13px; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: background .2s; }
+  .btn-use:hover { background: #e6a800; }
+
+  /* === LOADER === */
+  .loader { text-align: center; padding: 40px; color: #69829B; font-size: 13px; }
+  .spinner { width: 28px; height: 28px; border: 3px solid #E6EBF0; border-top-color: #00285A; border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .no-results { text-align: center; padding: 40px; color: #aab; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a href="/kalender.html">① Redaktionsplan</a>
+  <a href="/kursvorschlaege.html">② Kursvorschläge</a>
+  <a href="/kursliste.html" class="active">③ Kursliste</a>
+  <a href="/redaktion.html">④ Redaktion</a>
+  <a href="/editor.html">⑤ Grafik-Studio</a>
+  <a href="/freigabe.html">⑥ Freigabe</a>
+  <a href="/dashboard.html">⑦ Dashboard</a>
+  <a href="/performance.html">⑧ Performance</a>
+  <a href="/admin">⚙ Administration</a>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="toolbar-title">③ Kursliste</span>
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+      </svg>
+    </span>
+    <input type="text" id="search-input" placeholder="Kurs suchen …" autocomplete="off">
+  </div>
+  <select id="cat-select" class="cat-select">
+    <option value="alle">Alle Kategorien</option>
+  </select>
+  <span class="count-badge" id="count-badge">Lädt …</span>
+</div>
+
+<!-- SPLIT LAYOUT -->
+<div class="split">
+
+  <!-- LEFT: KURSLISTE -->
+  <div class="panel-list">
+    <div class="panel-list-inner" id="kurs-list">
+      <div class="loader"><div class="spinner"></div>Kursprogramm wird geladen …</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: DETAIL -->
+  <div class="panel-detail" id="kurs-detail">
+    <div class="detail-empty">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="#00285A" stroke-width="2">
+        <rect x="12" y="8" width="40" height="48" rx="3"/>
+        <line x1="20" y1="20" x2="44" y2="20"/>
+        <line x1="20" y1="28" x2="44" y2="28"/>
+        <line x1="20" y1="36" x2="36" y2="36"/>
+      </svg>
+      <span>Kurs auswählen für Detailansicht</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let allKurse    = [];
+let filtered    = [];
+let activeId    = null;
+let searchTimer = null;
+const PAGE_SIZE = 150; // render in chunks for performance
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadKurse();
+  initSearch();
+});
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadKurse() {
+  try {
+    const res = await fetch('/api/kurse?limit=5000');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    allKurse = data.kurse || data; // handle both {kurse:[]} and direct array
+    buildCategoryFilter();
+    filtered = allKurse;
+    renderList();
+  } catch (err) {
+    document.getElementById('kurs-list').innerHTML =
+      `<div class="loader" style="color:#E1000F">⚠ Fehler beim Laden: ${err.message}<br><small>Kursdaten nicht verfügbar</small></div>`;
+    document.getElementById('count-badge').textContent = 'Fehler';
+  }
+}
+
+// ============================================================
+// CATEGORY FILTER BUILD
+// ============================================================
+function buildCategoryFilter() {
+  const cats = [...new Set(allKurse.map(k => k.kategorie))].sort();
+  const sel = document.getElementById('cat-select');
+  cats.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', applyFilter);
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+function initSearch() {
+  const inp = document.getElementById('search-input');
+  inp.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilter, 220);
+  });
+}
+
+function applyFilter() {
+  const q   = document.getElementById('search-input').value.toLowerCase().trim();
+  const cat = document.getElementById('cat-select').value;
+
+  filtered = allKurse.filter(k => {
+    const matchCat = !cat || cat === 'alle' || k.kategorie === cat;
+    const matchQ   = !q ||
+      k.titel.toLowerCase().includes(q) ||
+      k.id.toLowerCase().includes(q) ||
+      (k.beschreibung && k.beschreibung.toLowerCase().includes(q));
+    return matchCat && matchQ;
+  });
+
+  renderList();
+}
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function renderList() {
+  const container = document.getElementById('kurs-list');
+  const badge     = document.getElementById('count-badge');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="no-results">Keine Kurse gefunden</div>';
+    badge.textContent   = '0 Kurse';
+    return;
+  }
+
+  badge.textContent = `${filtered.length} Kurs${filtered.length !== 1 ? 'e' : ''}`;
+
+  // Build HTML string for performance
+  const html = filtered.map((k, idx) => {
+    const active = k.id === activeId ? ' active' : '';
+    const tagClass = tagCssClass(k.kategorie);
+    const datum = k.beginn ? formatDate(k.beginn) : '–';
+    return `<div class="kurs-item${active}" data-idx="${idx}" data-id="${escHtml(k.id)}">
+      <span class="kurs-titel">${escHtml(k.titel)}</span>
+      <span class="kurs-meta">
+        <span class="kurs-id">${escHtml(k.id)}</span>
+        <span class="tag ${tagClass}">${escHtml(k.kategorie)}</span>
+        <span>ab ${datum}</span>
+      </span>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = html;
+
+  // Single delegated click handler
+  container.addEventListener('click', handleListClick, { once: true });
+
+  // Re-attach after each render
+  function handleListClick(e) {
+    const item = e.target.closest('.kurs-item');
+    if (!item) {
+      container.addEventListener('click', handleListClick, { once: true });
+      return;
+    }
+    const idx = Number(item.dataset.idx);
+    const kurs = filtered[idx];
+    selectKurs(kurs, item);
+    container.addEventListener('click', handleListClick, { once: true });
+  }
+
+  // If previously active item still in filtered, scroll to it
+  if (activeId) {
+    const activeEl = container.querySelector(`.kurs-item.active`);
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// ============================================================
+// SELECT KURS → DETAIL
+// ============================================================
+function selectKurs(kurs, clickedEl) {
+  // Update active state in list
+  activeId = kurs.id;
+  document.querySelectorAll('.kurs-item').forEach(el => el.classList.remove('active'));
+  if (clickedEl) clickedEl.classList.add('active');
+
+  renderDetail(kurs);
+}
+
+function renderDetail(k) {
+  const detail = document.getElementById('kurs-detail');
+
+  const auslPct  = k.maximum > 0 ? Math.round((k.angemeldet / k.maximum) * 100) : 0;
+  const auslClass = auslPct >= 100 ? 'voll' : (auslPct >= 80 ? 'fast' : '');
+  const auslText  = k.maximum > 0 ? `${k.angemeldet} / ${k.maximum} (${auslPct}%)` : '–';
+
+  const beschr = k.beschreibung
+    ? escHtml(k.beschreibung).replace(/\n/g, '\n')
+    : '<em style="color:#aaa">Keine Beschreibung vorhanden.</em>';
+
+  detail.innerHTML = `
+    <div class="detail-card">
+      <div class="detail-header">
+        <div class="detail-id">${escHtml(k.id)}</div>
+        <div class="detail-titel">${escHtml(k.titel)}</div>
+        <div class="detail-tags">
+          <span class="tag ${tagCssClass(k.kategorie)}">${escHtml(k.kategorie)}</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-field">
+          <label>Beginn</label>
+          <span>${k.beginn ? formatDate(k.beginn) : '–'}</span>
+        </div>
+        <div class="detail-field">
+          <label>Ende</label>
+          <span>${k.ende ? formatDate(k.ende) : '–'}</span>
+        </div>
+        <div class="detail-field full">
+          <label>Auslastung</label>
+          <span>${auslText}</span>
+          ${k.maximum > 0 ? `
+          <div class="auslastung-bar">
+            <div class="auslastung-fill ${auslClass}" style="width:${Math.min(auslPct,100)}%"></div>
+          </div>` : ''}
+        </div>
+      </div>
+
+      <div class="detail-section-title">Kursbeschreibung</div>
+      <div class="detail-beschreibung">${beschr}</div>
+
+      <button class="btn-use" onclick="useKurs('${escHtml(k.id)}')">
+        ④ Für Redaktion verwenden →
+      </button>
+    </div>
+  `;
+}
+
+// ============================================================
+// USE IN REDAKTION
+// ============================================================
+function useKurs(id) {
+  const kurs = allKurse.find(k => k.id === id);
+  if (!kurs) return;
+  const params = new URLSearchParams({
+    kursId:   kurs.id,
+    kursTitel: kurs.titel,
+    kursBeschr: (kurs.beschreibung || '').slice(0, 500)
+  });
+  window.location.href = `/redaktion.html?${params}`;
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function formatDate(s) {
+  if (!s) return '–';
+  const [y, m, d] = s.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function tagCssClass(kat) {
+  if (!kat) return 'tag-Sonstiges';
+  if (kat.startsWith('Gesundheit'))   return 'tag-Gesundheit';
+  if (kat.startsWith('Sprachen'))     return 'tag-Sprachen';
+  if (kat.startsWith('Beruf'))        return 'tag-Beruf';
+  if (kat.startsWith('EDV'))          return 'tag-EDV';
+  if (kat.startsWith('Kulturelle'))   return 'tag-Kulturelle';
+  if (kat.startsWith('Gesellschaft')) return 'tag-Gesellschaft';
+  if (kat.startsWith('Grundbildung')) return 'tag-Grundbildung';
+  return 'tag-Sonstiges';
+}
+</script>
+</body>
+</html>
