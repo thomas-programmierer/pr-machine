@@ -221,10 +221,32 @@ const server = http.createServer(async (req, res) => {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
     const posts = loadJSON(POSTS_FILE, []);
-    const neu = { id:String(Date.now()), ...b, erstellt:new Date().toISOString(), autor:sess.user.name };
+    const neu = { id:String(Date.now()), ...b, erstellt:new Date().toISOString(), autor:sess.user.name, autorId:sess.user.id };
     posts.push(neu);
     saveJSON(POSTS_FILE, posts);
     return jsonRes(res, 201, { ok:true, post:neu });
+  }
+
+  if (req.method === "PUT" && url.startsWith("/api/posts/")) {
+    if (!sess || !["admin","redakteur"].includes(sess.user.role))
+      return jsonRes(res, 403, { error:"Kein Zugriff" });
+    const id = url.split("/")[3];
+    const b = await readBody(req);
+    const posts = loadJSON(POSTS_FILE, []);
+    const idx = posts.findIndex(p => p.id === id);
+    if (idx === -1) return jsonRes(res, 404, { error:"Post nicht gefunden" });
+    posts[idx] = { ...posts[idx], ...b };
+    saveJSON(POSTS_FILE, posts);
+    return jsonRes(res, 200, { ok:true, post: posts[idx] });
+  }
+
+  if (req.method === "DELETE" && url.startsWith("/api/posts/")) {
+    if (!sess || !["admin","redakteur"].includes(sess.user.role))
+      return jsonRes(res, 403, { error:"Kein Zugriff" });
+    const id = url.split("/")[3];
+    const posts = loadJSON(POSTS_FILE, []).filter(p => p.id !== id);
+    saveJSON(POSTS_FILE, posts);
+    return jsonRes(res, 200, { ok:true });
   }
 
   // ── PERFORMANCE ───────────────────────────────────────────────────────────
@@ -256,7 +278,9 @@ const server = http.createServer(async (req, res) => {
 
   // ── EINREICHUNGEN ─────────────────────────────────────────────────────────
   if (req.method === "GET" && url === "/api/einreichungen") {
-    if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
+    // Admins + Redakteure dürfen alle Einreichungen sehen
+    if (!sess || !["admin","redakteur"].includes(sess.user.role))
+      return jsonRes(res, 403, { error:"Kein Zugriff" });
     return jsonRes(res, 200, loadJSON(EINR_FILE, []));
   }
 
@@ -264,13 +288,23 @@ const server = http.createServer(async (req, res) => {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
     const einr = loadJSON(EINR_FILE, []);
-    einr.push({ id:String(Date.now()), ...b, eingereicht:new Date().toISOString(), autor:sess.user.name });
+    const neu = {
+      id: String(Date.now()),
+      ...b,
+      status: "neu",               // neu | angenommen | abgelehnt
+      eingereicht: new Date().toISOString(),
+      autor: sess.user.name,
+      autorId: sess.user.id,
+      pb: sess.user.pb || "alle"
+    };
+    einr.push(neu);
     saveJSON(EINR_FILE, einr);
-    return jsonRes(res, 201, { ok:true });
+    return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
   if (req.method === "PUT" && url.startsWith("/api/einreichungen/")) {
-    if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
+    if (!sess || !["admin","redakteur"].includes(sess.user.role))
+      return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
     const b = await readBody(req);
     const einr = loadJSON(EINR_FILE, []);
@@ -278,7 +312,7 @@ const server = http.createServer(async (req, res) => {
     if (idx === -1) return jsonRes(res, 404, { error:"Nicht gefunden" });
     einr[idx] = { ...einr[idx], ...b };
     saveJSON(EINR_FILE, einr);
-    return jsonRes(res, 200, { ok:true });
+    return jsonRes(res, 200, { ok:true, einreichung: einr[idx] });
   }
 
   // ── ADMIN INPUT: Redaktionsplan-URLs ─────────────────────────────────────
