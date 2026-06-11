@@ -200,6 +200,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .dm-btn.reject{color:var(--rot);border-color:var(--rot)}.dm-btn.reject:hover{background:#FCEBEB}
 .dm-btn.del{color:var(--blau60);border-color:#dde2e9}.dm-btn.del:hover{background:#f8f8f8}
 
+/* PBL-EINREICHUNGS-CHIPS */
+.chip-einreichung{background:#f0fce8;color:#2d6e0a;border-left:3px solid var(--gruen)}
+.chip-einreichung-pending{background:#FFF0E6;color:#8B4000;border-left:3px solid var(--orange)}
+
+/* PBL-VORSCHLAG MODAL */
+.pbl-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+.pbl-modal-overlay.open{display:flex}
+.pbl-modal{background:#fff;border-radius:14px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pbl-modal-head{background:var(--blau);padding:16px 20px;display:flex;align-items:center;gap:10px}
+.pbl-modal-title{font-size:14px;font-weight:700;color:#fff;flex:1}
+.pbl-modal-close{background:rgba(255,255,255,.15);border:none;border-radius:6px;color:#fff;font-size:14px;cursor:pointer;padding:3px 9px}
+.pbl-modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.pbl-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.pbl-input,.pbl-textarea,.pbl-select{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s}
+.pbl-input:focus,.pbl-textarea:focus{border-color:var(--blau)}
+.pbl-textarea{resize:vertical;min-height:60px;line-height:1.5}
+.pbl-modal-foot{padding:12px 20px 16px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
+.pbl-cancel{padding:8px 14px;border-radius:7px;font-size:12px;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif}
+.pbl-submit{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+
 /* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -455,6 +476,38 @@ async function extLogout() {
   </div>
 </div>
 
+<!-- PBL-VORSCHLAG MODAL -->
+<div class="pbl-modal-overlay" id="pbl-modal-overlay" onclick="closePblModal(event)">
+  <div class="pbl-modal">
+    <div class="pbl-modal-head">
+      <div style="font-size:20px">📬</div>
+      <div class="pbl-modal-title">Vorschlag an Redaktion</div>
+      <button class="pbl-modal-close" onclick="closePblModalDirect()">✕</button>
+    </div>
+    <div class="pbl-modal-body">
+      <div style="background:var(--blau10);border-radius:8px;padding:10px 13px;font-size:11px;color:var(--blau60);line-height:1.5">
+        📅 <strong id="pbl-modal-datum"></strong> · <span id="pbl-modal-hook" style="color:var(--orange)"></span>
+      </div>
+      <div>
+        <div class="pbl-label">Kurs / Inhalt <span style="color:var(--rot)">*</span></div>
+        <input class="pbl-input" id="pbl-kurs" type="text" placeholder="z. B. Yoga Grundkurs — Sp3.316-W">
+      </div>
+      <div>
+        <div class="pbl-label">Kursnummer (optional)</div>
+        <input class="pbl-input" id="pbl-nr" type="text" placeholder="z. B. Sp3.316-W">
+      </div>
+      <div>
+        <div class="pbl-label">Idee / Bezug zum Anlass</div>
+        <textarea class="pbl-textarea" id="pbl-idee" placeholder="Was ist der Aufhänger? Welcher Aspekt des Kurses passt zum Datum?"></textarea>
+      </div>
+    </div>
+    <div class="pbl-modal-foot">
+      <button class="pbl-cancel" onclick="closePblModalDirect()">Abbrechen</button>
+      <button class="pbl-submit" onclick="pblVorschlagEinreichen()">📬 Einreichen</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
 
@@ -467,6 +520,25 @@ let view = 'monat';
 let editingPostId = null;
 let currentUser = null;
 let postsCache = [];
+let einreichungenCache = []; // eigene Einreichungen der PBL
+let pblDatumContext = null;  // Datum für offenes PBL-Modal
+
+async function ladeEigeneEinreichungen() {
+  if (!currentUser || currentUser.role !== 'pbl') return;
+  try {
+    // PBL-User darf nur eigene sehen — Server gibt 403 wenn kein Redakteur
+    // Wir nutzen den öffentlichen POST-Endpunkt und cachen lokal
+    // Vorhandene eigene Einreichungen aus LocalStorage laden (Fallback)
+    const lokal = localStorage.getItem('pbl_einreichungen_' + currentUser.id);
+    if (lokal) einreichungenCache = JSON.parse(lokal);
+  } catch {}
+}
+
+function cacheEinreichungLokal(einr) {
+  if (!currentUser) return;
+  einreichungenCache.push(einr);
+  try { localStorage.setItem('pbl_einreichungen_' + currentUser.id, JSON.stringify(einreichungenCache)); } catch {}
+}
 
 // Posts — Server-API mit lokalem Cache
 async function ladePosts() {
@@ -474,14 +546,18 @@ async function ladePosts() {
     const r = await fetch('/api/posts', { credentials:'include' });
     if (!r.ok) return;
     const d = await r.json();
-    postsCache = d.posts || [];
+    // API liefert direkt ein Array
+    postsCache = Array.isArray(d) ? d : (d.posts || []);
   } catch {}
 }
 function loadPosts() { return postsCache; }
 async function savePost_server(post) {
   try {
-    await fetch('/api/posts', {
-      method:'POST', credentials:'include',
+    const isUpdate = post.id && postsCache.some(p => p.id === post.id);
+    const url    = isUpdate ? '/api/posts/' + post.id : '/api/posts';
+    const method = isUpdate ? 'PUT' : 'POST';
+    await fetch(url, {
+      method, credentials:'include',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(post)
     });
@@ -719,6 +795,7 @@ window.addEventListener('load', async () => {
   } catch { window.location.href = '/'; return; }
 
   await ladePosts();
+  await ladeEigeneEinreichungen();
   if (postsCache.length === 0) { await ladeDemoPosts(); return; }
   renderKalender();
 });
@@ -912,6 +989,26 @@ function renderMonat(monat, jahr, allePosts) {
       if (tagPosts.length > MAX) {
         html += `<div class="mehr-btn" onclick="event.stopPropagation();setView('liste')">+${tagPosts.length-MAX} weitere</div>`;
       }
+
+      // Eigene PBL-Einreichungen für diesen Tag anzeigen
+      if (currentUser && currentUser.role === 'pbl') {
+        const eigene = einreichungenCache.filter(e => e.datum === datStr);
+        eigene.forEach(e => {
+          const cls = e.status === 'angenommen' ? 'chip-einreichung' : 'chip-einreichung-pending';
+          const icon = e.status === 'angenommen' ? '✅' : '📬';
+          html += `<div class="post-chip ${cls}" title="${esc(e.kurs||'')} — ${e.status==='angenommen'?'Angenommen':'Eingereicht'}"
+            onclick="event.stopPropagation()">
+            ${icon} ${esc((e.kurs||'Vorschlag').slice(0,22))}
+          </div>`;
+        });
+        // "Vorschlag"-Button nur auf Tagen mit Hook oder Zulieferung
+        if (hook || (ZULIEFERUNGEN[datStr]||[]).length) {
+          html += `<div class="post-chip" style="background:var(--blau10);color:var(--blau60);border-left:3px solid var(--blau20);cursor:pointer"
+            onclick="event.stopPropagation();openPblModal('${datStr}')">
+            + Vorschlag
+          </div>`;
+        }
+      }
       html += '</div>';
     });
   }
@@ -1080,7 +1177,10 @@ function renderTag(datum, allePosts) {
       ${feiertagInfo ? `<div style="font-size:11px;background:rgba(250,185,15,.2);color:var(--gelb);padding:3px 10px;border-radius:10px;font-weight:600">${feiertagInfo.typ==='feiertag'?'🔔':'🏖️'} ${esc(feiertagInfo.label)}</div>` : ''}
       <div style="margin-left:auto;display:flex;gap:6px">
         ${tagPosts.length > 0 ? `<span style="font-size:12px;color:rgba(255,255,255,.7)">${tagPosts.length} Post${tagPosts.length>1?'s':''}</span>` : ''}
-        <button onclick="openPostModal(null,'${datStr}')" style="background:var(--gelb);color:var(--blau);border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋ Post planen</button>
+        ${currentUser && currentUser.role === 'pbl'
+          ? `<button onclick="openPblModal('${datStr}')" style="background:var(--gruen);color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📬 Vorschlag einreichen</button>`
+          : `<button onclick="openPostModal(null,'${datStr}')" style="background:var(--gelb);color:var(--blau);border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋ Post planen</button>`
+        }
       </div>
     </div>`;
 
@@ -1254,8 +1354,56 @@ function copyText(id) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// UTILS
+// PBL-VORSCHLAG MODAL
 // ══════════════════════════════════════════════════════════════════════════════
+function openPblModal(datStr) {
+  pblDatumContext = datStr;
+  const hook = HOOKS[datStr] || '';
+  const [j,m,d] = datStr.split('-');
+  const datLabel = new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('pbl-modal-datum').textContent = datLabel;
+  document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
+  document.getElementById('pbl-kurs').value  = '';
+  document.getElementById('pbl-nr').value    = '';
+  document.getElementById('pbl-idee').value  = '';
+  document.getElementById('pbl-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('pbl-kurs').focus(), 50);
+}
+function closePblModal(e) { if (e.target === document.getElementById('pbl-modal-overlay')) closePblModalDirect(); }
+function closePblModalDirect() { document.getElementById('pbl-modal-overlay').classList.remove('open'); }
+
+async function pblVorschlagEinreichen() {
+  const kurs = document.getElementById('pbl-kurs').value.trim();
+  if (!kurs) { document.getElementById('pbl-kurs').focus(); return; }
+  const nr   = document.getElementById('pbl-nr').value.trim();
+  const idee = document.getElementById('pbl-idee').value.trim();
+  const hook = HOOKS[pblDatumContext] || '';
+
+  const payload = {
+    anlass:   (hook || 'Kalender-Vorschlag') + (pblDatumContext ? ' · ' + pblDatumContext : ''),
+    anlassId: 'kalender-' + pblDatumContext,
+    datum:    pblDatumContext,
+    kurs, kursNr: nr, idee,
+    pb:       currentUser?.pb || 'alle',
+  };
+
+  try {
+    const r = await fetch('/api/einreichungen', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) { showToast('⚠️ Fehler beim Einreichen'); return; }
+    const d = await r.json();
+    // Lokal cachen damit der Chip sofort erscheint
+    cacheEinreichungLokal({ ...payload, id: d.einreichung?.id || Date.now(), status:'neu' });
+    closePblModalDirect();
+    showToast('📬 Vorschlag an die Redaktion gesendet!');
+    renderKalender(); // Chip sofort sichtbar machen
+  } catch { showToast('⚠️ Server nicht erreichbar'); }
+}
+
+
 function today() {
   const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
