@@ -481,15 +481,17 @@ async function extLogout() {
   <div class="pbl-modal">
     <div class="pbl-modal-head">
       <div style="font-size:20px">📬</div>
-      <div class="pbl-modal-title">Vorschlag an Redaktion</div>
+      <div class="pbl-modal-title" id="pbl-modal-title">Vorschlag an Redaktion</div>
       <button class="pbl-modal-close" onclick="closePblModalDirect()">✕</button>
     </div>
     <div class="pbl-modal-body">
       <div style="background:var(--blau10);border-radius:8px;padding:10px 13px;font-size:11px;color:var(--blau60);line-height:1.5">
         📅 <strong id="pbl-modal-datum"></strong> · <span id="pbl-modal-hook" style="color:var(--orange)"></span>
       </div>
+      <!-- Status-Badge (nur im Ansehen-Modus) -->
+      <div id="pbl-readonly-hint" style="display:none;border-radius:8px;padding:8px 13px;font-size:11px;font-weight:600"></div>
       <div>
-        <div class="pbl-label">Kurs / Inhalt <span style="color:var(--rot)">*</span></div>
+        <div class="pbl-label">Kurs / Inhalt <span id="pbl-kurs-req" style="color:var(--rot)">*</span></div>
         <input class="pbl-input" id="pbl-kurs" type="text" placeholder="z. B. Yoga Grundkurs — Sp3.316-W">
       </div>
       <div>
@@ -502,8 +504,8 @@ async function extLogout() {
       </div>
     </div>
     <div class="pbl-modal-foot">
-      <button class="pbl-cancel" onclick="closePblModalDirect()">Abbrechen</button>
-      <button class="pbl-submit" onclick="pblVorschlagEinreichen()">📬 Einreichen</button>
+      <button class="pbl-cancel" onclick="closePblModalDirect()">Schließen</button>
+      <button class="pbl-submit" id="pbl-submit-btn" onclick="pblVorschlagEinreichen()">📬 Einreichen</button>
     </div>
   </div>
 </div>
@@ -997,7 +999,7 @@ function renderMonat(monat, jahr, allePosts) {
           const cls = e.status === 'angenommen' ? 'chip-einreichung' : 'chip-einreichung-pending';
           const icon = e.status === 'angenommen' ? '✅' : '📬';
           html += `<div class="post-chip ${cls}" title="${esc(e.kurs||'')} — ${e.status==='angenommen'?'Angenommen':'Eingereicht'}"
-            onclick="event.stopPropagation()">
+            onclick="event.stopPropagation();openPblDetail('${esc(e.id||'')}')">
             ${icon} ${esc((e.kurs||'Vorschlag').slice(0,22))}
           </div>`;
         });
@@ -1357,18 +1359,73 @@ function copyText(id) {
 // PBL-VORSCHLAG MODAL
 // ══════════════════════════════════════════════════════════════════════════════
 function openPblModal(datStr) {
+  // Neuer Vorschlag
   pblDatumContext = datStr;
   const hook = HOOKS[datStr] || '';
   const [j,m,d] = datStr.split('-');
   const datLabel = new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
   document.getElementById('pbl-modal-datum').textContent = datLabel;
   document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
+  document.getElementById('pbl-modal-title').textContent = 'Vorschlag an Redaktion';
   document.getElementById('pbl-kurs').value  = '';
   document.getElementById('pbl-nr').value    = '';
   document.getElementById('pbl-idee').value  = '';
+
+  // Felder editierbar
+  ['pbl-kurs','pbl-nr','pbl-idee'].forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = false;
+    el.style.background = '';
+  });
+  document.getElementById('pbl-submit-btn').style.display = 'inline-block';
+  document.getElementById('pbl-readonly-hint').style.display = 'none';
+
   document.getElementById('pbl-modal-overlay').classList.add('open');
   setTimeout(() => document.getElementById('pbl-kurs').focus(), 50);
 }
+
+function openPblDetail(einrId) {
+  // Vorhandenen Vorschlag ansehen (read-only)
+  const e = einreichungenCache.find(x => String(x.id) === String(einrId));
+  if (!e) return;
+
+  pblDatumContext = e.datum;
+  const hook = e.datum ? (HOOKS[e.datum] || '') : '';
+  const datLabel = e.datum
+    ? (() => { const [j,m,d] = e.datum.split('-'); return new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); })()
+    : '';
+
+  document.getElementById('pbl-modal-datum').textContent = datLabel;
+  document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
+  document.getElementById('pbl-modal-title').textContent = 'Mein Vorschlag';
+
+  document.getElementById('pbl-kurs').value = e.kurs  || '';
+  document.getElementById('pbl-nr').value   = e.kursNr || '';
+  document.getElementById('pbl-idee').value = e.idee  || '';
+
+  // Felder schreibgeschützt anzeigen
+  ['pbl-kurs','pbl-nr','pbl-idee'].forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = true;
+    el.style.background = '#f8fafc';
+  });
+
+  // Status-Badge einblenden, Submit ausblenden
+  const STATUS_LABEL = { neu:'📬 Eingereicht — wartet auf Redaktion', angenommen:'✅ Angenommen', abgelehnt:'↩️ Abgelehnt' };
+  const STATUS_COLOR = { neu:'#8B4000', angenommen:'#3B6D11', abgelehnt:'#791F1F' };
+  const STATUS_BG    = { neu:'#FFF0E6', angenommen:'#EAF3DE', abgelehnt:'#FCEBEB' };
+  const status = e.status || 'neu';
+  const hint = document.getElementById('pbl-readonly-hint');
+  hint.textContent = STATUS_LABEL[status] || status;
+  hint.style.color = STATUS_COLOR[status] || '#333';
+  hint.style.background = STATUS_BG[status] || '#f0f0f0';
+  hint.style.display = 'block';
+  document.getElementById('pbl-submit-btn').style.display = 'none';
+
+  document.getElementById('pbl-modal-overlay').classList.add('open');
+}
+
 function closePblModal(e) { if (e.target === document.getElementById('pbl-modal-overlay')) closePblModalDirect(); }
 function closePblModalDirect() { document.getElementById('pbl-modal-overlay').classList.remove('open'); }
 
