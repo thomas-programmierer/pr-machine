@@ -3,494 +3,407 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Freigabe — VHS Spandau</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Freigabe — VHS Spandau PR-Maschine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --blau:#00285A;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --blau:#00285A;--blau80:#375578;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
   --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
   --grau:#f4f5f7;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh;display:flex;flex-direction:column}
 
 /* HEADER */
-.header{background:var(--blau);height:54px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-mark{display:flex;align-items:center}
-.logo-text{color:#fff;font-size:13px;font-weight:600;line-height:1.2}
-.logo-sub{color:var(--blau60);font-size:10px}
-.ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 18px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
-.ext-nav-tab{padding:10px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}
-.ext-nav-tab:hover{color:#fff}
-.ext-nav-tab.active{color:#fff;border-bottom-color:var(--gelb,#FAB90F)}
-.ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.5);padding:0 6px;flex-shrink:0}
-.ext-logout-btn{margin-left:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;flex-shrink:0}
-.ext-logout-btn:hover{background:rgba(255,255,255,.18);color:#fff}
-
-/* STATS */
-.stats-bar{background:#fff;border-bottom:1px solid #dde2e9;padding:12px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-.stat{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--blau60)}
-.stat-n{font-size:18px;font-weight:700;color:var(--blau)}
-.stat-dot{width:10px;height:10px;border-radius:50%}
-
-/* FILTER */
-.filter-bar{background:#fff;border-bottom:1px solid #eef1f6;padding:10px 22px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.fchip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);transition:all .15s}
-.fchip:hover{border-color:var(--blau60)}
-.fchip.on{background:var(--blau);border-color:var(--blau);color:#fff}
-.fchip.f-neu.on{background:#185FA5;border-color:#185FA5}
-.fchip.f-freigabe.on{background:var(--orange);border-color:var(--orange)}
-.fchip.f-freigegeben.on{background:var(--gruen);border-color:var(--gruen)}
-.fchip.f-abgelehnt.on{background:var(--rot);border-color:var(--rot)}
-.filter-right{margin-left:auto;display:flex;gap:8px}
-.neue-btn{padding:7px 14px;border-radius:8px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px}
-.neue-btn:hover{background:#001f47}
+.topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 20px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
+.tb-logo{display:flex;align-items:center;gap:8px}
+.tb-title{font-size:13px;font-weight:700;color:#fff}
+.tb-tag{font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-back{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 11px;color:rgba(255,255,255,.7);font-size:11px;font-weight:500;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb-back:hover{background:rgba(255,255,255,.16);color:#fff}
+.user-info{font-size:11px;color:rgba(255,255,255,.5)}
 
 /* MAIN */
-.main{flex:1;padding:20px 22px;max-width:960px;margin:0 auto;width:100%}
+.main{flex:1;padding:20px 22px;max-width:1100px;width:100%;margin:0 auto}
 
-/* EINREICHUNGS-KARTEN */
-.einr-liste{display:flex;flex-direction:column;gap:12px}
-.einr-karte{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;transition:border-color .15s}
-.einr-karte:hover{border-color:var(--blau20)}
-.einr-karte.st-neu{border-left:4px solid #64B9E6}
-.einr-karte.st-freigabe{border-left:4px solid var(--orange)}
-.einr-karte.st-freigegeben{border-left:4px solid var(--gruen)}
-.einr-karte.st-abgelehnt{border-left:4px solid var(--rot);opacity:.7}
-.einr-karte.st-veroeffentlicht{border-left:4px solid var(--blau60);opacity:.6}
+/* TABS */
+.tabs{display:flex;gap:2px;background:#fff;border:1.5px solid #dde2e9;border-radius:10px;padding:4px;margin-bottom:18px;width:fit-content}
+.tab-btn{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--blau60);transition:all .15s;font-family:'DM Sans',sans-serif}
+.tab-btn.active{background:var(--blau);color:#fff}
+.tab-count{background:var(--gelb);color:var(--blau);border-radius:8px;padding:0 5px;font-size:10px;margin-left:4px;font-weight:700}
 
-.ek-head{padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
-.ek-status{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
-.st-neu .ek-status{background:#E6F1FB}
-.st-freigabe .ek-status{background:#FEF3DA}
-.st-freigegeben .ek-status{background:#EAF3DE}
-.st-abgelehnt .ek-status{background:#FCEBEB}
-.st-veroeffentlicht .ek-status{background:var(--blau10)}
-.ek-info{flex:1;min-width:0}
-.ek-anlass{font-size:14px;font-weight:700;color:var(--blau);margin-bottom:2px}
-.ek-meta{font-size:11px;color:var(--blau60);display:flex;gap:10px;flex-wrap:wrap}
-.ek-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
-.pill-neu{background:#E6F1FB;color:#185FA5}
-.pill-freigabe{background:#FEF3DA;color:#996B00}
+/* STATS BAR */
+.stats-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.stat-pill{background:#fff;border:1.5px solid #dde2e9;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--blau60);display:flex;align-items:center;gap:6px}
+.stat-pill span{font-size:13px;font-weight:700;color:var(--blau)}
+.stat-pill.orange{border-color:var(--orange);background:#fff8f2}
+.stat-pill.orange span{color:var(--orange)}
+.stat-pill.green{border-color:var(--gruen);background:#f9fce8}
+.stat-pill.green span{color:#3B6D11}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+
+/* POST CARD */
+.post-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
+.post-card:hover{box-shadow:0 4px 16px rgba(0,40,90,.1)}
+.post-card.warten{border-top:3px solid var(--orange)}
+.post-card.freigegeben{border-top:3px solid var(--gruen)}
+.post-card.abgelehnt{border-top:3px solid var(--rot);opacity:.75}
+
+.pc-head{padding:12px 14px 8px;display:flex;align-items:flex-start;gap:10px}
+.pc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.s-warten{background:var(--orange)}
+.s-freigegeben{background:var(--gruen)}
+.s-abgelehnt{background:var(--rot)}
+.pc-meta{flex:1;min-width:0}
+.pc-anlass{font-size:13px;font-weight:600;color:var(--blau);line-height:1.3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-sub{font-size:10px;color:var(--blau60);display:flex;gap:8px;flex-wrap:wrap}
+.pc-pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
+.pill-warten{background:#FFF0E6;color:#8B4000}
 .pill-freigegeben{background:#EAF3DE;color:#3B6D11}
-.pill-abgelehnt{background:#FCEBEB;color:var(--rot)}
-.pill-veroeffentlicht{background:var(--blau10);color:var(--blau60)}
+.pill-abgelehnt{background:#FCEBEB;color:#791F1F}
 
-.ek-body{padding:0 16px 12px 56px}
-.ek-kurs{font-size:12px;color:var(--blau);font-weight:500;margin-bottom:4px}
-.ek-idee{font-size:12px;color:var(--blau60);line-height:1.55;margin-bottom:8px}
-.ek-kommentar{background:#FEF9EC;border:1px solid var(--gelb);border-radius:6px;padding:8px 12px;font-size:11px;color:#6B4800;margin-bottom:8px}
-.ek-kommentar strong{font-weight:600}
+/* PREVIEW */
+.pc-preview{margin:0 14px 10px;border-radius:8px;overflow:hidden;background:var(--blau10);min-height:60px;max-height:180px;display:flex;align-items:center;justify-content:center;position:relative}
+.pc-preview img{width:100%;height:180px;object-fit:cover;display:block}
+.pc-preview-placeholder{font-size:28px;color:var(--blau20);padding:20px}
 
-.ek-actions{display:flex;gap:7px;flex-wrap:wrap}
-.ea-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1.5px solid;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px}
-.ea-btn.gen{color:var(--blau);border-color:var(--blau20)}.ea-btn.gen:hover{background:var(--blau10)}
-.ea-btn.approve{color:#3B6D11;border-color:var(--gruen)}.ea-btn.approve:hover{background:#EAF3DE}
-.ea-btn.publish{color:#fff;background:var(--gruen);border-color:var(--gruen)}
-.ea-btn.reject{color:var(--rot);border-color:var(--rot)}.ea-btn.reject:hover{background:#FCEBEB}
-.ea-btn.politik{color:#996B00;border-color:var(--orange)}.ea-btn.politik:hover{background:#FEF3DA}
+/* TEXT */
+.pc-text{padding:0 14px 10px;font-size:11px;color:var(--blau60);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
-/* MODAL für Kommentar/Ablehnung */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
-.modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
-@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.modal-head{padding:16px 20px 12px;border-bottom:1px solid #eef1f6;display:flex;justify-content:space-between;align-items:center}
-.modal-title{font-size:14px;font-weight:700;color:var(--blau)}
-.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--blau60)}
-.modal-body{padding:16px 20px}
-.ml{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
-.mt{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s;resize:vertical;min-height:80px;line-height:1.5}
-.mt:focus{border-color:var(--blau)}
-.modal-foot{padding:12px 20px 16px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
-.mc{padding:8px 14px;border-radius:7px;font-size:12px;font-weight:500;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif}
-.ms{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
-.ms.ablehnen{background:var(--rot)}.ms.ablehnen:hover{background:#b30000}
-.ms.freigeben{background:var(--gruen)}.ms.freigeben:hover{background:#8aa004}
+/* FOOTER ACTIONS */
+.pc-foot{padding:10px 14px 12px;border-top:1px solid #eef1f6;display:flex;gap:7px;align-items:center}
+.pc-autor{font-size:10px;color:var(--blau60);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-datum{font-size:10px;color:var(--blau60)}
+.btn-approve{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer;transition:background .15s}
+.btn-approve:hover{background:#8faa04}
+.btn-reject{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;transition:all .15s}
+.btn-reject:hover{border-color:var(--rot);color:var(--rot)}
+.btn-undo{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer}
 
-/* NEUE EINREICHUNG MODAL */
-.neue-modal{max-width:520px}
-.nf{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff;margin-bottom:0}
-.nf:focus{border-color:var(--blau)}
-.nf-ta{resize:vertical;min-height:70px;line-height:1.5}
-.nf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.nf-group{display:flex;flex-direction:column;gap:4px}
-.nf-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px}
+/* DETAIL MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.modal-head{padding:16px 20px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;gap:10px}
+.modal-title{font-size:15px;font-weight:600;color:var(--blau);flex:1}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--blau60);padding:2px 6px}
+.modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.ml{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.modal-preview-wrap{border-radius:8px;overflow:hidden;background:var(--blau10);display:flex;align-items:center;justify-content:center;min-height:80px}
+.modal-preview-wrap img{max-width:100%;max-height:300px;object-fit:contain;display:block}
+.modal-text{font-size:12px;color:var(--blau);line-height:1.7;background:var(--blau10);border-radius:8px;padding:12px;white-space:pre-wrap}
+.modal-foot{padding:14px 20px 18px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
+.btn-modal-approve{padding:9px 22px;border-radius:8px;font-size:12px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer}
+.btn-modal-reject{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer}
 
 /* EMPTY */
 .empty{text-align:center;padding:60px 20px;color:var(--blau60)}
-.empty-icon{font-size:44px;margin-bottom:10px}
-.empty-title{font-size:14px;font-weight:600;color:var(--blau);margin-bottom:4px}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:600;color:var(--blau);margin-bottom:5px}
 
 /* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid var(--gelb)}
 .toast.show{transform:translateX(-50%) translateY(0)}
-.t-dot{width:16px;height:16px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+
+/* LOGIN REDIRECT */
+#login-required{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:40px;text-align:center;color:var(--blau60)}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="logo">
-        <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
+<div class="topbar">
+  <div class="tb-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="32" viewBox="0 0 160 32">
+      <text x="0" y="22" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#fff">vhs</text>
+      <circle cx="52" cy="9" r="4" fill="#9BAAB8"/>
+      <circle cx="60" cy="6" r="5" fill="#FAB90F"/>
+      <circle cx="69" cy="10" r="4" fill="#64B9E6"/>
+      <circle cx="53" cy="18" r="5" fill="#E1000F"/>
+      <circle cx="65" cy="21" r="3" fill="#9BAAB8"/>
+      <text x="78" y="13" font-family="Arial,sans-serif" font-size="9" font-weight="400" fill="rgba(255,255,255,.55)">Volkshochschule</text>
+      <text x="78" y="26" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#fff">Spandau</text>
+    </svg>
   </div>
-  
-</div>
-
-<div class="ext-nav-bar" id="ext-nav-bar">
-  <a href="/" class="ext-nav-tab">← App</a>
-</div>
-<script>
-(async function() {
-  try {
-    const r = await fetch('/api/me', { credentials:'include' });
-    if (!r.ok) return;
-    const { user } = await r.json();
-    const role = user.role;
-    const PAGES = [
-      { label:'📅 Redaktionsplan', url:'/kalender',           roles:['admin','redakteur','pbl'] },
-      { label:'📬 Kursvorschläge',  url:'/?screen=pbl',        roles:['admin','pbl'] },
-      { label:'📚 Kursliste',        url:'/?screen=kurse',      roles:['admin','redakteur','pbl'] },
-      { label:'✏️ Redaktion',        url:'/?screen=redakteur',  roles:['admin','redakteur'] },
-      { label:'🎨 Grafik-Studio',    url:'/editor',             roles:['admin','redakteur'] },
-      { label:'✅ Freigabe',          url:'/freigabe',           roles:['admin','redakteur'] },
-      { label:'📊 Dashboard',        url:'/?screen=direktion',  roles:['admin','redakteur','direktion'] },
-      { label:'📈 Performance',      url:'/performance',        roles:['admin','redakteur','direktion'] },
-      { label:'⚙️ Admin',            url:'/?screen=admin',      roles:['admin'] },
-    
-    
-    ];
-    const nav = PAGES
-      .filter(p => p.roles.includes(role))
-      .map(p => {
-        const isActive = !p.url.startsWith('/?') && window.location.pathname === p.url;
-        return '<a href="'+p.url+'" class="ext-nav-tab'+(isActive?' active':'')+'">'+p.label+'</a>';
-      }).join('');
-    document.getElementById('ext-nav-bar').innerHTML = nav +
-      '<span class="ext-nav-user">👤 '+user.name.split(' ')[0]+'</span>' +
-      '<button class="ext-logout-btn" onclick="extLogout()">Abmelden</button>';
-  } catch(e) {}
-})();
-async function extLogout() {
-  await fetch('/api/logout', { method:'POST', credentials:'include' });
-  window.location.href = '/';
-}
-</script>
-
-
-<!-- STATS -->
-<div class="stats-bar" id="stats-bar">
-  <div class="stat"><div class="stat-dot" style="background:#64B9E6"></div><div><div class="stat-n" id="s-neu">–</div><div>Neu</div></div></div>
-  <div class="stat"><div class="stat-dot" style="background:var(--orange)"></div><div><div class="stat-n" id="s-freigabe">–</div><div>Freigabe nötig</div></div></div>
-  <div class="stat"><div class="stat-dot" style="background:var(--gruen)"></div><div><div class="stat-n" id="s-freigegeben">–</div><div>Freigegeben</div></div></div>
-  <div class="stat"><div class="stat-dot" style="background:var(--rot)"></div><div><div class="stat-n" id="s-abgelehnt">–</div><div>Abgelehnt</div></div></div>
-</div>
-
-<!-- FILTER -->
-<div class="filter-bar">
-  <div class="fchip on"          onclick="setFilter('alle')">Alle</div>
-  <div class="fchip f-neu"       onclick="setFilter('neu')">🔵 Neu</div>
-  <div class="fchip f-freigabe"  onclick="setFilter('freigabe')">🟠 Freigabe nötig</div>
-  <div class="fchip f-freigegeben" onclick="setFilter('freigegeben')">🟢 Freigegeben</div>
-  <div class="fchip f-abgelehnt" onclick="setFilter('abgelehnt')">🔴 Abgelehnt</div>
-  <div class="filter-right">
-    <button class="neue-btn" onclick="openNeueModal()">＋ Neue Einreichung</button>
+  <div class="tb-tag">⑥ Freigabe</div>
+  <div class="tb-right">
+    <span class="user-info" id="hdr-user"></span>
+    <a href="/" class="tb-back">← Zurück zur App</a>
+    <button class="tb-back" onclick="doLogout()">Abmelden</button>
   </div>
 </div>
 
-<div class="main">
-  <div class="einr-liste" id="einr-liste">
-    <div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Lädt…</div></div>
-  </div>
+<div id="login-required">
+  <div style="font-size:48px">🔐</div>
+  <div style="font-size:16px;font-weight:600;color:var(--blau)">Bitte zuerst anmelden</div>
+  <div style="font-size:13px">Du wirst in 2 Sekunden weitergeleitet …</div>
 </div>
 
-<!-- KOMMENTAR / ABLEHNUNG MODAL -->
-<div class="modal-overlay" id="modal-kommentar" onclick="closeKommentarModal(event)">
+<div class="main" id="main-content" style="display:none">
+
+  <div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
+    <div style="font-size:12px;color:var(--blau60)">Posts prüfen, freigeben oder ablehnen — bevor sie veröffentlicht werden.</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <!-- FILTER TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-alle"     onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
+    <button class="tab-btn"        id="tab-warten"   onclick="setFilter('freigabe_ausstehend')">Ausstehend <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+    <button class="tab-btn"        id="tab-frei"     onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
+    <button class="tab-btn"        id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid" id="cards-grid">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+  </div>
+
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="modal-kommentar-title">Einreichung ablehnen</div>
-      <button class="modal-close" onclick="closeKommentarModalDirect()">✕</button>
+      <div class="modal-title" id="modal-title">Post-Details</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="ml">Kommentar / Begründung</div>
-      <textarea class="mt" id="kommentar-text" placeholder="Bitte kurz begründen — wird an die PBL weitergeleitet …"></textarea>
-    </div>
-    <div class="modal-foot">
-      <button class="mc" onclick="closeKommentarModalDirect()">Abbrechen</button>
-      <button class="ms ablehnen" id="kommentar-btn" onclick="submitKommentar()">Ablehnen</button>
-    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
   </div>
 </div>
 
-<!-- NEUE EINREICHUNG MODAL -->
-<div class="modal-overlay" id="modal-neue" onclick="closeNeueModal(event)">
-  <div class="modal neue-modal">
-    <div class="modal-head">
-      <div class="modal-title">Neue Einreichung</div>
-      <button class="modal-close" onclick="closeNeueModalDirect()">✕</button>
-    </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px">
-      <div class="nf-group">
-        <div class="nf-label">Anlass / Hook</div>
-        <input class="nf" id="nf-anlass" type="text" placeholder="z. B. Internationaler Yogatag — 21. Juni 2026">
-      </div>
-      <div class="nf-row">
-        <div class="nf-group">
-          <div class="nf-label">Anlass-Datum</div>
-          <input class="nf" id="nf-datum" type="date">
-        </div>
-        <div class="nf-group">
-          <div class="nf-label">Kursnummer (opt.)</div>
-          <input class="nf" id="nf-kursnr" type="text" placeholder="z. B. Sp3.316-W">
-        </div>
-      </div>
-      <div class="nf-group">
-        <div class="nf-label">Kurs / Inhalt</div>
-        <input class="nf" id="nf-kurs" type="text" placeholder="Yoga Grundkurs, Qi Gong …">
-      </div>
-      <div class="nf-group">
-        <div class="nf-label">Idee / Bezug zum Anlass</div>
-        <textarea class="nf nf-ta" id="nf-idee" placeholder="Was soll der Post vermitteln? Warum passt dieser Kurs?"></textarea>
-      </div>
-      <div class="nf-group">
-        <div class="nf-label">Hashtag-Wunsch (opt.)</div>
-        <input class="nf" id="nf-hashtags" type="text" placeholder="#vhsspandau #yoga …">
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="mc" onclick="closeNeueModalDirect()">Abbrechen</button>
-      <button class="ms freigeben" onclick="submitNeue()">📬 Einreichen</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
+<div class="toast" id="toast"><div id="toast-msg"></div></div>
 
 <script>
 let currentUser = null;
-let alleEinr    = [];
-let aktFilter   = 'alle';
-let kommentarId = null;
-let kommentarAktion = null;
+let allePosts   = [];
+let currentFilter = 'alle';
+let modalPostId = null;
 
-const STATUS_ICONS  = {neu:'🔵',freigabe:'🟠',freigegeben:'🟢',abgelehnt:'🔴',veroeffentlicht:'⚫'};
-const STATUS_LABELS = {neu:'Neu',freigabe:'Freigabe nötig',freigegeben:'Freigegeben',abgelehnt:'Abgelehnt',veroeffentlicht:'Veröffentlicht'};
-const STATUS_PILLS  = {neu:'pill-neu',freigabe:'pill-freigabe',freigegeben:'pill-freigegeben',abgelehnt:'pill-abgelehnt',veroeffentlicht:'pill-veroeffentlicht'};
-
-window.addEventListener('load', async () => {
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function init() {
   try {
     const r = await fetch('/api/me', { credentials:'include' });
-    if (!r.ok) { window.location.href = '/'; return; }
+    if (!r.ok) { redirectLogin(); return; }
     const d = await r.json();
     currentUser = d.user;
-    const hdrSub = document.getElementById('hdr-sub'); if (hdrSub) hdrSub.textContent = currentUser.name + ' · ' + currentUser.role;
-  } catch { window.location.href = '/'; return; }
+    const ROLE_LABELS = { admin:'Admin', redakteur:'Redakteur', pbl:'Programmbereichsleitung', direktion:'Direktion' };
+    document.getElementById('hdr-user').textContent = currentUser.name + ' · ' + (ROLE_LABELS[currentUser.role]||'');
+    document.getElementById('login-required').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
 
-  // Demo-Einreichungen laden falls leer
-  await ladeEinreichungen();
-  if (alleEinr.length === 0) await ladeDemoEinreichungen();
-  await ladeEinreichungen();
-});
-
-async function ladeEinreichungen() {
-  const r = await fetch('/api/einreichungen', { credentials:'include' });
-  if (!r.ok) return;
-  const d = await r.json();
-  alleEinr = d.einreichungen || [];
-  updateStats();
-  renderListe();
+    // Nur Admins und Redakteure dürfen Aktionen ausführen
+    if (!['admin','redakteur'].includes(currentUser.role)) {
+      // Direktion / PBL dürfen lesen, aber nicht freigeben — Buttons ausblenden
+      document.querySelectorAll('.btn-approve,.btn-reject,.btn-undo,.btn-modal-approve,.btn-modal-reject')
+        .forEach(b => b.style.display = 'none');
+    }
+    await ladePosts();
+  } catch { redirectLogin(); }
 }
 
-async function ladeDemoEinreichungen() {
-  const demos = [
-    {anlass:'Internationaler Yogatag — 21. Juni 2026', anlassDatum:'2026-06-21', kurs:'Yoga Grundkurs, Qi Gong, Pilates', kursNr:'Sp3.316-W', idee:'Wer kennt das nicht: Der Alltag hetzt, der Körper kämpft mit. Yoga bei uns bringt den Ausgleich — kein Leistungsdruck.', hashtags:'#vhsspandau #yogatag #yoga'},
-    {anlass:'Fête de la Musique — 21. Juni 2026',      anlassDatum:'2026-06-21', kurs:'Trommelkurs, Percussion', kursNr:'Sp2.731-H', idee:'Berlin klingt an einem Tag wie ein großes Konzert. Wir spielen mit.', hashtags:'#vhsspandau #fetemusique'},
-    {anlass:'Welt-Fototag — 10. August 2026',          anlassDatum:'2026-08-10', kurs:'Naturfotografie', kursNr:'Sp2.610-S', idee:'Ein Tag für alle, die die Welt durch ein Objektiv sehen.', hashtags:'#vhsspandau #weltfototag'},
-    {anlass:'Mauerfall-Jahrestag — 9. November 2026',  anlassDatum:'2026-11-09', kurs:'Geschichte & politische Bildung, DonnersTALK', kursNr:'', idee:'Erinnerung ist Haltung. Was der 9. November bedeutet — und was wir daraus lernen.', hashtags:'#vhsspandau #mauerfall #politischebildung'},
-  ];
-  for (const d of demos) {
-    await fetch('/api/einreichungen', {
-      method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(d)
-    });
-  }
-  // Zweiten als "freigabe" markieren
-  await ladeEinreichungen();
-  if (alleEinr.length >= 2) {
-    await fetch(`/api/einreichungen/${alleEinr[1].id}`, {
-      method:'PUT', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({status:'freigabe'})
-    });
-  }
+function redirectLogin() {
+  document.getElementById('login-required').style.display = 'flex';
+  setTimeout(() => { window.location.href = '/?screen=freigabe'; }, 2000);
 }
 
-function updateStats() {
-  const z = s => alleEinr.filter(e => e.status === s).length;
-  document.getElementById('s-neu').textContent        = z('neu');
-  document.getElementById('s-freigabe').textContent   = z('freigabe');
-  document.getElementById('s-freigegeben').textContent= z('freigegeben');
-  document.getElementById('s-abgelehnt').textContent  = z('abgelehnt');
+async function doLogout() {
+  await fetch('/api/logout', { method:'POST', credentials:'include' });
+  window.location.href = '/';
+}
+
+// ── DATEN ─────────────────────────────────────────────────────────────────────
+async function ladePosts() {
+  try {
+    const r = await fetch('/api/posts', { credentials:'include' });
+    if (!r.ok) return;
+    allePosts = await r.json();
+    // Neueste zuerst
+    allePosts.sort((a, b) => (b.erstellt||'').localeCompare(a.erstellt||''));
+    updateCounts();
+    renderCards();
+  } catch(e) { console.error(e); }
+}
+
+function updateCounts() {
+  const cnt = (s) => allePosts.filter(p => !s || p.status === s).length;
+  document.getElementById('cnt-alle').textContent     = cnt('');
+  document.getElementById('cnt-warten').textContent   = cnt('freigabe_ausstehend');
+  document.getElementById('cnt-frei').textContent     = cnt('freigegeben');
+  document.getElementById('cnt-abgelehnt').textContent = cnt('abgelehnt');
+
+  // Stats bar
+  document.getElementById('stats-bar').innerHTML = [
+    `<div class="stat-pill orange"><span>${cnt('freigabe_ausstehend')}</span> warten auf Freigabe</div>`,
+    `<div class="stat-pill green"><span>${cnt('freigegeben')}</span> freigegeben</div>`,
+    `<div class="stat-pill"><span>${cnt('')}</span> Posts gesamt</div>`,
+  ].join('');
 }
 
 function setFilter(f) {
-  aktFilter = f;
-  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('on'));
-  const chips = document.querySelectorAll('.fchip');
-  const map = ['alle','neu','freigabe','freigegeben','abgelehnt'];
-  chips[map.indexOf(f)]?.classList.add('on');
-  renderListe();
+  currentFilter = f;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const map = { alle:'tab-alle', freigabe_ausstehend:'tab-warten', freigegeben:'tab-frei', abgelehnt:'tab-abgelehnt' };
+  document.getElementById(map[f])?.classList.add('active');
+  renderCards();
 }
 
-function renderListe() {
-  const isAdmin = currentUser && ['admin','redakteur'].includes(currentUser.role);
-  let liste = aktFilter === 'alle' ? alleEinr : alleEinr.filter(e => e.status === aktFilter);
-  liste = [...liste].sort((a,b) => {
-    const ord = {freigabe:0,neu:1,freigegeben:2,abgelehnt:3,veroeffentlicht:4};
-    return (ord[a.status]??5) - (ord[b.status]??5) || b.datum.localeCompare(a.datum);
-  });
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  const gefiltert = currentFilter === 'alle'
+    ? allePosts
+    : allePosts.filter(p => p.status === currentFilter);
 
-  if (!liste.length) {
-    document.getElementById('einr-liste').innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Keine Einreichungen${aktFilter !== 'alle' ? ' in diesem Status' : ''}</div></div>`;
+  if (!gefiltert.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">${currentFilter === 'freigabe_ausstehend' ? 'Nichts wartet auf Freigabe' : 'Keine Posts in dieser Kategorie'}</div>
+      <div style="font-size:12px">${currentFilter === 'freigabe_ausstehend' ? 'Sobald ein Redakteur einen Post einreicht, erscheint er hier.' : ''}</div>
+    </div>`;
     return;
   }
 
-  document.getElementById('einr-liste').innerHTML = liste.map(e => {
-    const dat = e.anlassDatum ? new Date(e.anlassDatum+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'}) : '';
-    const eingereichtAm = new Date(e.datum).toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
+  const STATUS = {
+    freigabe_ausstehend: { label:'Wartet', pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
+    freigegeben:         { label:'✓ Freigegeben', pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
+    abgelehnt:           { label:'Abgelehnt', pill:'pill-abgelehnt', dot:'s-abgelehnt',  cls:'abgelehnt' },
+    geplant:             { label:'Geplant', pill:'',                dot:'s-warten',     cls:'warten' },
+  };
 
-    let actions = '';
-    if (isAdmin) {
-      if (e.status === 'neu' || e.status === 'freigabe') {
-        actions += `<button class="ea-btn gen" onclick="zuGenerator('${e.id}')">✨ Post generieren</button>`;
-        actions += `<button class="ea-btn approve" onclick="statusAendern('${e.id}','freigegeben')">✅ Freigeben</button>`;
-        // Politische Themen
-        const politisch = (e.kurs||'').toLowerCase().includes('politi') || (e.anlass||'').toLowerCase().includes('politi') || (e.anlass||'').toLowerCase().includes('mauerfall');
-        if (politisch) {
-          actions += `<button class="ea-btn politik" onclick="showToast('⚠️ Politisches Thema — bitte Marion Altendorf um Freigabe bitten')">⚠️ Politisch → Direktion</button>`;
-        }
-        actions += `<button class="ea-btn reject" onclick="openKommentarModal('${e.id}','ablehnen')">✕ Ablehnen</button>`;
-      }
-      if (e.status === 'freigegeben') {
-        actions += `<button class="ea-btn gen" onclick="zuGenerator('${e.id}')">✨ Post generieren</button>`;
-        actions += `<button class="ea-btn publish" onclick="statusAendern('${e.id}','veroeffentlicht')">🚀 Veröffentlicht</button>`;
-        actions += `<button class="ea-btn reject" onclick="openKommentarModal('${e.id}','ablehnen')">✕ Zurückziehen</button>`;
-      }
-    }
+  const canAct = ['admin','redakteur'].includes(currentUser?.role);
 
-    return `<div class="einr-karte st-${e.status}">
-      <div class="ek-head">
-        <div class="ek-status">${STATUS_ICONS[e.status]||'⚪'}</div>
-        <div class="ek-info">
-          <div class="ek-anlass">${esc(e.anlass)}</div>
-          <div class="ek-meta">
-            <span class="ek-pill ${STATUS_PILLS[e.status]||''}">${STATUS_LABELS[e.status]||e.status}</span>
-            ${dat?`<span>📅 ${dat}</span>`:''}
-            <span>👤 ${esc(e.vonName)}</span>
-            ${e.pb&&e.pb!=='alle'?`<span>🏷 ${esc(e.pb)}</span>`:''}
-            <span style="color:#ccc">Eingereicht: ${eingereichtAm}</span>
+  grid.innerHTML = gefiltert.map(p => {
+    const s = STATUS[p.status] || STATUS.geplant;
+    const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' }) : '';
+    const hasPreview = p.preview && p.preview.startsWith('data:image');
+
+    const aktionen = p.status === 'freigabe_ausstehend' && canAct
+      ? `<button class="btn-approve" onclick="event.stopPropagation();freigeben('${p.id}')">✅ Freigeben</button>
+         <button class="btn-reject"  onclick="event.stopPropagation();ablehnen('${p.id}')">✕ Ablehnen</button>`
+      : p.status === 'freigegeben' && canAct
+      ? `<button class="btn-undo" onclick="event.stopPropagation();zurueck('${p.id}')">↩ Rückgängig</button>`
+      : '';
+
+    return `<div class="post-card ${s.cls}" onclick="openDetail('${p.id}')">
+      <div class="pc-head">
+        <div class="pc-status ${s.dot}"></div>
+        <div class="pc-meta">
+          <div class="pc-anlass">${esc(p.anlass||'Unbenannter Post')}</div>
+          <div class="pc-sub">
+            <span>${esc(p.kanal||'')}</span>
+            <span>${esc(p.format||'')}</span>
+            <span>${datum}</span>
           </div>
         </div>
+        <span class="pc-pill ${s.pill}">${s.label}</span>
       </div>
-      <div class="ek-body">
-        ${e.kurs?`<div class="ek-kurs">📚 ${esc(e.kurs)}${e.kursNr?' · '+esc(e.kursNr):''}</div>`:''}
-        ${e.idee?`<div class="ek-idee">${esc(e.idee)}</div>`:''}
-        ${e.kommentar?`<div class="ek-kommentar"><strong>Kommentar:</strong> ${esc(e.kommentar)}</div>`:''}
-        ${actions?`<div class="ek-actions">${actions}</div>`:''}
+      ${hasPreview
+        ? `<div class="pc-preview"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>`
+        : `<div class="pc-preview"><div class="pc-preview-placeholder">🖼</div></div>`}
+      ${p.headline||p.text ? `<div class="pc-text">${esc(p.headline||p.text||'')}</div>` : ''}
+      <div class="pc-foot">
+        <div class="pc-autor">von ${esc(p.autor||'')}</div>
+        ${aktionen}
       </div>
     </div>`;
   }).join('');
 }
 
-async function statusAendern(id, status, kommentar) {
-  const r = await fetch(`/api/einreichungen/${id}`, {
-    method:'PUT', credentials:'include',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ status, kommentar: kommentar || '' })
-  });
-  if (!r.ok) return;
-  const labels = {freigegeben:'✅ Freigegeben',abgelehnt:'✕ Abgelehnt',veroeffentlicht:'🚀 Veröffentlicht',freigabe:'🟠 Zur Freigabe weitergeleitet'};
-  showToast(labels[status] || 'Status geändert');
-  await ladeEinreichungen();
+// ── AKTIONEN ──────────────────────────────────────────────────────────────────
+async function freigeben(id) {
+  await setStatus(id, 'freigegeben');
+  showToast('✅ Post freigegeben');
+}
+async function ablehnen(id) {
+  await setStatus(id, 'abgelehnt');
+  showToast('↩️ Post abgelehnt');
+}
+async function zurueck(id) {
+  await setStatus(id, 'freigabe_ausstehend');
+  showToast('↩ Status zurückgesetzt');
+}
+async function setStatus(id, status) {
+  try {
+    const r = await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status, freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString() })
+    });
+    if (!r.ok) { showToast('⚠️ Fehler beim Speichern'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  const idx = allePosts.findIndex(p => p.id === id);
+  if (idx !== -1) allePosts[idx].status = status;
+  if (modalPostId === id) closeModalDirect();
+  updateCounts();
+  renderCards();
 }
 
-function zuGenerator(id) {
-  const e = alleEinr.find(x => x.id === id);
-  if (!e) return;
-  // Status auf "freigabe" setzen damit Redakteur es sieht
-  statusAendern(id, 'freigabe');
-  // Neuen Tab öffnen — Session bleibt hier erhalten
-  const params = new URLSearchParams({
-    einreichung: id,
-    anlass: e.anlass || '',
-    kurs:   e.kurs   || '',
-    kursNr: e.kursNr || '',
-    idee:   e.idee   || '',
-  });
-  window.open(`/?${params}`, '_blank');
+// ── DETAIL MODAL ──────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const p = allePosts.find(x => x.id === id);
+  if (!p) return;
+  modalPostId = id;
+  const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE') : '';
+  const canAct = ['admin','redakteur'].includes(currentUser?.role);
+  const hasPreview = p.preview && p.preview.startsWith('data:image');
+
+  document.getElementById('modal-title').textContent = p.anlass || 'Post-Details';
+  document.getElementById('modal-body').innerHTML = `
+    ${hasPreview ? `<div><div class="ml">Vorschau</div><div class="modal-preview-wrap"><img src="${p.preview}" alt="Vorschau"></div></div>` : ''}
+    <div>
+      <div class="ml">Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
+        <div><span style="color:var(--blau60)">Kanal:</span> ${esc(p.kanal||'—')}</div>
+        <div><span style="color:var(--blau60)">Format:</span> ${esc(p.format||'—')}</div>
+        <div><span style="color:var(--blau60)">Autor:</span> ${esc(p.autor||'—')}</div>
+        <div><span style="color:var(--blau60)">Eingereicht:</span> ${datum}</div>
+        ${p.datum ? `<div><span style="color:var(--blau60)">Geplant für:</span> ${esc(p.datum)}</div>` : ''}
+        ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
+      </div>
+    </div>
+    ${(p.headline||p.fulltext) ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.headline||'')}${p.fulltext ? '\n\n' + esc(p.fulltext) : ''}</div></div>` : ''}
+  `;
+
+  const foot = document.getElementById('modal-foot');
+  if (p.status === 'freigabe_ausstehend' && canAct) {
+    foot.innerHTML = `
+      <button class="btn-modal-reject" onclick="ablehnen('${id}')">✕ Ablehnen</button>
+      <button class="btn-modal-approve" onclick="freigeben('${id}')">✅ Freigeben</button>
+    `;
+  } else if (p.status === 'freigegeben' && canAct) {
+    foot.innerHTML = `<button class="btn-modal-reject" onclick="zurueck('${id}')">↩ Freigabe zurückziehen</button>`;
+  } else {
+    foot.innerHTML = '';
+  }
+
+  document.getElementById('modal-bg').classList.add('open');
 }
 
-// Kommentar-Modal
-function openKommentarModal(id, aktion) {
-  kommentarId = id;
-  kommentarAktion = aktion;
-  const btn = document.getElementById('kommentar-btn');
-  document.getElementById('modal-kommentar-title').textContent = aktion === 'ablehnen' ? 'Einreichung ablehnen' : 'Kommentar hinzufügen';
-  btn.textContent = aktion === 'ablehnen' ? 'Ablehnen' : 'Speichern';
-  btn.className = 'ms ' + (aktion === 'ablehnen' ? 'ablehnen' : 'freigeben');
-  document.getElementById('kommentar-text').value = '';
-  document.getElementById('modal-kommentar').classList.add('open');
-  setTimeout(() => document.getElementById('kommentar-text').focus(), 50);
-}
-function closeKommentarModal(e) { if (e.target === document.getElementById('modal-kommentar')) closeKommentarModalDirect(); }
-function closeKommentarModalDirect() { document.getElementById('modal-kommentar').classList.remove('open'); }
-async function submitKommentar() {
-  const kommentar = document.getElementById('kommentar-text').value.trim();
-  const status = kommentarAktion === 'ablehnen' ? 'abgelehnt' : 'neu';
-  await statusAendern(kommentarId, status, kommentar);
-  closeKommentarModalDirect();
+function closeModal(e) { if (e.target === document.getElementById('modal-bg')) closeModalDirect(); }
+function closeModalDirect() {
+  document.getElementById('modal-bg').classList.remove('open');
+  modalPostId = null;
 }
 
-// Neue Einreichung Modal
-function openNeueModal() {
-  ['nf-anlass','nf-datum','nf-kursnr','nf-kurs','nf-idee','nf-hashtags'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('modal-neue').classList.add('open');
-  setTimeout(() => document.getElementById('nf-anlass').focus(), 50);
-}
-function closeNeueModal(e) { if (e.target === document.getElementById('modal-neue')) closeNeueModalDirect(); }
-function closeNeueModalDirect() { document.getElementById('modal-neue').classList.remove('open'); }
-async function submitNeue() {
-  const anlass = document.getElementById('nf-anlass').value.trim();
-  if (!anlass) { document.getElementById('nf-anlass').focus(); return; }
-  const r = await fetch('/api/einreichungen', {
-    method:'POST', credentials:'include',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      anlass,
-      anlassDatum: document.getElementById('nf-datum').value,
-      kursNr:      document.getElementById('nf-kursnr').value.trim(),
-      kurs:        document.getElementById('nf-kurs').value.trim(),
-      idee:        document.getElementById('nf-idee').value.trim(),
-      hashtags:    document.getElementById('nf-hashtags').value.trim(),
-    })
-  });
-  if (!r.ok) return;
-  closeNeueModalDirect();
-  showToast('📬 Einreichung gespeichert');
-  await ladeEinreichungen();
-}
-
+// ── UTILS ─────────────────────────────────────────────────────────────────────
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// Auto-Refresh alle 30 Sekunden
+setInterval(ladePosts, 30000);
+
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
