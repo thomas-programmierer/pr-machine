@@ -586,28 +586,23 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div class="screen" id="screen-redakteur">
       <div class="red-left">
         <div>
-          <div class="sl">Einreichungen</div>
-          <div style="display:flex;flex-direction:column;gap:6px" id="inbox-list">
-            <div class="inbox-item sel" onclick="pickInbox(this,0)">
-              <div class="ii-icon">🧘</div>
-              <div class="ii-info"><div class="ii-anlass">Yogatag — 21. Jun</div><div class="ii-kurs">Yoga Grundkurs · Manuela L.</div></div>
-              <div class="ii-pill p-neu">Neu</div>
-            </div>
-            <div class="inbox-item" onclick="pickInbox(this,1)">
-              <div class="ii-icon">🎵</div>
-              <div class="ii-info"><div class="ii-anlass">Fête de la Musique</div><div class="ii-kurs">Trommelkurs · Kristina S.</div></div>
-              <div class="ii-pill p-neu">Neu</div>
-            </div>
-            <div class="inbox-item" onclick="pickInbox(this,2)">
-              <div class="ii-icon">📷</div>
-              <div class="ii-info"><div class="ii-anlass">Welt-Fototag — 10. Aug</div><div class="ii-kurs">Naturfotografie · Vanessa P.</div></div>
-              <div class="ii-pill p-ok">Bereit</div>
-            </div>
-            <div class="inbox-item" onclick="pickInbox(this,3)">
-              <div class="ii-icon">🗣</div>
-              <div class="ii-info"><div class="ii-anlass">Tag der Sprachen</div><div class="ii-kurs">9 Fremdsprachen · Thomas M.</div></div>
-              <div class="ii-pill p-neu">Neu</div>
-            </div>
+          <div class="sl" style="display:flex;align-items:center;justify-content:space-between">
+            Einreichungen
+            <span onclick="loadEinreichungen()" style="font-size:9px;color:var(--blau60);cursor:pointer;text-decoration:underline">↺ Aktualisieren</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px" id="red-inbox-list">
+            <div class="empty" style="padding:16px 0"><div class="empty-icon" style="font-size:28px">⏳</div><div style="font-size:12px">Wird geladen …</div></div>
+          </div>
+          <!-- Annehmen/Ablehnen Aktionsleiste — erscheint nach Auswahl -->
+          <div id="inbox-annehmen-btn" data-einr-id="" style="display:none;margin-top:8px;gap:5px">
+            <button onclick="einreichungAnnehmen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
+              style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer">
+              ✅ Annehmen
+            </button>
+            <button onclick="einreichungAblehnen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
+              style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer">
+              ↩️ Ablehnen
+            </button>
           </div>
         </div>
         <div><div class="sl">Hook / Anlass</div><input class="fi" id="i-anlass" value="Internationaler Yogatag — 21. Juni 2026"></div>
@@ -1480,7 +1475,9 @@ function showScreen(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('screen-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
-  if (name === 'admin') { loadAdminUsers(); loadAdminStatus(); }
+  if (name === 'admin')     { loadAdminUsers(); loadAdminStatus(); }
+  if (name === 'redakteur') { loadEinreichungen(); }
+  if (name === 'pbl')       { loadPBLEinreichungsStatus(); }
 }
 
 // Payload vom Generator ans Grafik-Studio übergeben
@@ -1554,47 +1551,167 @@ function openModal(id) {
 function closeModal(e){ if(e.target===document.getElementById('modal-bg')) closeModalDirect(); }
 function closeModalDirect(){ document.getElementById('modal-bg').classList.remove('open'); }
 
-function submitModal() {
-  const kurs = document.getElementById('mf-kurs').value.trim();
+async function submitModal() {
+  const kurs  = document.getElementById('mf-kurs').value.trim();
+  const nr    = document.getElementById('mf-nr').value.trim();
+  const idee  = document.getElementById('mf-idee').value.trim();
+  const tags  = document.getElementById('mf-tags').value.trim();
   if (!kurs) { document.getElementById('mf-kurs').focus(); return; }
+
+  const a = ANLAESSE.find(x => x.id === currentAnlassId);
+
+  // ── API-Call: Einreichung persistent speichern ──
+  try {
+    const r = await fetch('/api/einreichungen', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        anlass:  a.titel + ' — ' + a.datum,
+        anlassId: String(currentAnlassId),
+        kurs,
+        kursNr:  nr,
+        idee,
+        tags,
+        pb:      currentUser.pb || 'alle',
+      })
+    });
+    if (!r.ok) { showToast('⚠️ Server-Fehler beim Einreichen'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+
   submitted[currentAnlassId] = true;
   closeModalDirect();
   renderKarten();
+
   // Status-Liste aktualisieren
   const statusLabel = document.getElementById('status-label');
   const statusListe = document.getElementById('status-liste');
   statusLabel.style.display = 'block';
-  const a = ANLAESSE.find(x=>x.id===currentAnlassId);
   statusListe.innerHTML += `<div style="background:#fff;border-radius:9px;border:1.5px solid var(--gruen);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
     <div style="font-size:20px">${a.icon}</div>
     <div style="flex:1">
       <div style="font-size:12px;font-weight:600;color:var(--blau)">${a.titel}</div>
       <div style="font-size:11px;color:var(--blau60)">${kurs}</div>
     </div>
-    <div style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;background:#EAF3DE;color:#3B6D11">Eingereicht</div>
+    <div id="einr-status-${currentAnlassId}" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;background:#EAF3DE;color:#3B6D11">Eingereicht</div>
   </div>`;
   showToast('📬 Vorschlag eingereicht!');
   document.getElementById('nb-pbl').textContent = Object.keys(submitted).length;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// REDAKTEUR / KI-GENERATOR
-// ══════════════════════════════════════════════════════════════════════════════
-const INBOX_DATA = [
-  {anlass:'Internationaler Yogatag — 21. Juni 2026', kurs:'Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W', idee:'Wer kennt das nicht: Der Alltag hetzt, der Körper kämpft mit. Yoga bringt den Ausgleich — kein Leistungsdruck.'},
-  {anlass:'Fête de la Musique — 21. Juni 2026',      kurs:'Trommelkurs, Percussion für alle — Sp2.731-H', idee:'Berlin klingt an einem Tag wie ein großes Konzert. Wir spielen mit.'},
-  {anlass:'Welt-Fototag — 10. August 2026',          kurs:'Naturfotografie — Sp2.610-S',                  idee:'Ein Tag für alle, die die Welt durch ein Objektiv sehen.'},
-  {anlass:'Europ. Tag der Sprachen — 4. Sep 2026',   kurs:'9 Fremdsprachen an der VHS Spandau',           idee:'Spandau spricht viele Sprachen — zu Hause, im Kiez, im Freundeskreis.'},
-];
+// ── Einreichungen-Inbox: aus API laden ──────────────────────────────────────
+let einreichungenCache = [];
+
+async function loadEinreichungen() {
+  const listEl = document.getElementById('red-inbox-list');
+  if (!listEl) return;
+  try {
+    const r = await fetch('/api/einreichungen', { credentials:'include' });
+    if (!r.ok) return;
+    einreichungenCache = await r.json();
+    renderInbox(einreichungenCache);
+    // Badge auf Redakteur-Tab
+    const offene = einreichungenCache.filter(e => e.status === 'neu').length;
+    const nb = document.getElementById('nb-redakteur');
+    if (nb) nb.textContent = offene > 0 ? offene : '';
+  } catch(e) { console.error('Inbox laden:', e); }
+}
+
+function renderInbox(einr) {
+  const listEl = document.getElementById('red-inbox-list');
+  if (!listEl) return;
+  if (!einr.length) {
+    listEl.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">📭</div><div class="empty-title">Keine Einreichungen</div><div style="font-size:12px">Sobald eine PBL einen Vorschlag einreicht, erscheint er hier.</div></div>';
+    return;
+  }
+  const STATUS_PILL = {
+    neu:        '<span class="ii-pill p-neu">Neu</span>',
+    angenommen: '<span class="ii-pill p-ok">Angenommen</span>',
+    abgelehnt:  '<span class="ii-pill" style="background:#FCF0FA;color:#7A2A8C">Abgelehnt</span>',
+  };
+  const ICONS = { Gesundheit:'🧘', Fremdsprachen:'🗣', Kultur:'🎨', 'Deutsch und Integration':'📚', default:'📬' };
+  listEl.innerHTML = einr.map((e, idx) => {
+    const icon = Object.entries(ICONS).find(([k]) => (e.pb||'').includes(k))?.[1] || ICONS.default;
+    return `<div class="inbox-item" data-idx="${idx}" onclick="pickInbox(this,${idx})">
+      <div class="ii-icon">${icon}</div>
+      <div class="ii-info">
+        <div class="ii-anlass">${esc(e.anlass||'')}</div>
+        <div class="ii-kurs">${esc(e.kurs||'')}${e.kursNr?' · '+esc(e.kursNr):''}</div>
+        <div class="ii-kurs" style="color:var(--blau60);margin-top:1px">von ${esc(e.autor||'')} · ${e.pb||''}</div>
+      </div>
+      ${STATUS_PILL[e.status||'neu']||STATUS_PILL.neu}
+    </div>`;
+  }).join('');
+}
 
 function pickInbox(el, idx) {
-  document.querySelectorAll('.inbox-item').forEach(i=>i.classList.remove('sel'));
+  document.querySelectorAll('.inbox-item').forEach(i => i.classList.remove('sel'));
   el.classList.add('sel');
-  const d = INBOX_DATA[idx];
-  document.getElementById('i-anlass').value = d.anlass;
-  document.getElementById('i-kurs').value   = d.kurs;
-  document.getElementById('i-idee').value   = d.idee;
+  const d = einreichungenCache[idx];
+  document.getElementById('i-anlass').value = d.anlass  || '';
+  document.getElementById('i-kurs').value   = (d.kursNr ? d.kursNr + ' — ' : '') + (d.kurs || '');
+  document.getElementById('i-idee').value   = d.idee    || '';
   document.getElementById('red-right').innerHTML = '<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Bereit</div><div style="font-size:12px">Ton wählen und generieren</div></div>';
+  // "Annehmen"-Button einblenden
+  const aktBtn = document.getElementById('inbox-annehmen-btn');
+  if (aktBtn) {
+    aktBtn.dataset.einrId = d.id;
+    aktBtn.style.display = 'flex';
+  }
+}
+
+async function einreichungAnnehmen(id) {
+  if (!id) return;
+  await fetch('/api/einreichungen/' + id, {
+    method: 'PUT', credentials: 'include',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ status:'angenommen' })
+  });
+  showToast('✅ Einreichung angenommen');
+  loadEinreichungen();
+  // PBL-Feedback: Status-Badge aktualisieren wenn sichtbar
+  updatePBLStatusBadge(id, 'angenommen');
+}
+
+async function einreichungAblehnen(id) {
+  if (!id) return;
+  await fetch('/api/einreichungen/' + id, {
+    method: 'PUT', credentials: 'include',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ status:'abgelehnt' })
+  });
+  showToast('↩️ Einreichung abgelehnt');
+  loadEinreichungen();
+}
+
+// Aktualisiert das PBL-Status-Badge wenn der Screen gerade offen ist
+function updatePBLStatusBadge(einrId, status) {
+  const badge = document.querySelector(`[data-einr-id="${einrId}"]`);
+  if (!badge) return;
+  const labels = { angenommen:'✅ Angenommen', abgelehnt:'↩️ Abgelehnt', neu:'Eingereicht' };
+  const colors = { angenommen:'background:#EAF3DE;color:#3B6D11', abgelehnt:'background:#FCF0FA;color:#7A2A8C', neu:'background:#EAF3DE;color:#3B6D11' };
+  badge.textContent = labels[status] || status;
+  badge.style.cssText = `font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;${colors[status]||''}`;
+}
+
+// PBL: eigene Einreichungen beim nächsten Öffnen des Tabs aktualisieren
+async function loadPBLEinreichungsStatus() {
+  if (currentUser.role !== 'pbl') return;
+  try {
+    const r = await fetch('/api/einreichungen', { credentials:'include' });
+    // PBL darf nicht alle sehen — Server liefert 403, ignorieren
+    if (!r.ok) return;
+    const alle = await r.json();
+    const eigene = alle.filter(e => e.autorId === currentUser.id);
+    eigene.forEach(e => {
+      const badge = document.getElementById(`einr-status-${e.anlassId}`);
+      if (!badge) return;
+      const labels = { neu:'Eingereicht', angenommen:'✅ Angenommen', abgelehnt:'↩️ Abgelehnt' };
+      const colors = { neu:'background:#EAF3DE;color:#3B6D11', angenommen:'background:#EAF3DE;color:#3B6D11', abgelehnt:'background:#FCF0FA;color:#7A2A8C' };
+      badge.textContent = labels[e.status] || e.status;
+      badge.style.cssText = `font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;${colors[e.status]||''}`;
+    });
+  } catch {}
 }
 
 function setTon(el, t) {
@@ -2842,23 +2959,92 @@ function injectFreigabeCTA(anlass) {
     <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
       <div class="p-label" style="color:var(--gelb)">Schritt 6 — Freigabe</div>
       <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:10px">
-        Grafik fertig? PNG exportieren, dann direkt zur Freigabe weiterleiten.
+        PNG exportieren, dann Post zur Freigabe einreichen.
       </div>
-      <button class="exp-btn exp-main" onclick="exportPNG()">⬇ PNG exportieren</button>
-      <a href="/freigabe" target="_blank"
-         style="display:block;text-align:center;padding:8px;border-radius:6px;font-size:11px;font-weight:700;
-                border:1.5px solid var(--orange);color:var(--orange);text-decoration:none;
-                background:rgba(235,100,15,.08);margin-top:5px;transition:all .15s"
-         onmouseover="this.style.background='rgba(235,100,15,.18)'"
-         onmouseout="this.style.background='rgba(235,100,15,.08)'">
-        ✅ Weiter zur Freigabe ↗
-      </a>
+      <button class="exp-btn exp-main" onclick="exportUndFreigabe()" id="btn-freigabe-submit">
+        ⬇ PNG exportieren &amp; zur Freigabe
+      </button>
+      <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
     </div>
   `;
   expTab.prepend(cta);
-  // Export-Tab aktiv schalten damit CTA sichtbar
   setRTab(2);
   setTimeout(() => setRTab(0), 200);
+}
+
+async function exportUndFreigabe() {
+  const btn = document.getElementById('btn-freigabe-submit');
+  const statusEl = document.getElementById('freigabe-cta-status');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Wird erstellt …'; }
+
+  // 1. PNG rendern
+  const svgEl = document.getElementById('safe-zone-svg');
+  const wasVisible = safeZonesVisible;
+  if (wasVisible) svgEl.style.display = 'none';
+  const tb = document.getElementById('text-block');
+  tb.classList.remove('selected');
+  const frame = document.getElementById('canvas-frame');
+  const origT = frame.style.transform;
+  frame.style.transform = 'scale(1)';
+  const res = EXPORT_RES[currentFormatIdx] || { w:1080, h:1920 };
+  const f = FORMATS[currentFormatIdx];
+
+  let pngDataUrl = null;
+  try {
+    const canvas = await html2canvas(frame, {
+      scale: res.w / f.w, useCORS: true, allowTaint: true,
+      backgroundColor: null, logging: false, width: f.w, height: f.h,
+    });
+    pngDataUrl = canvas.toDataURL('image/png');
+    // Download
+    const link = document.createElement('a');
+    link.download = 'vhs-spandau-' + Date.now() + '.png';
+    link.href = pngDataUrl;
+    link.click();
+  } catch(err) {
+    showToast('❌ PNG-Export fehlgeschlagen');
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+    return;
+  } finally {
+    frame.style.transform = origT;
+    tb.classList.add('selected');
+    if (wasVisible) svgEl.style.display = 'block';
+  }
+
+  // 2. Post zur Freigabe einreichen
+  const anlass = document.getElementById('exp-anlass')?.value.trim() ||
+                 (redaktionPayload?.anlass) || 'Visueller Post';
+  const headline = document.getElementById('tf-headline')?.value || '';
+  const kanal = document.getElementById('exp-kanal')?.value || 'Instagram';
+  const datum = document.getElementById('exp-datum')?.value || '';
+
+  const post = {
+    anlass, headline, kanal, datum,
+    status: 'freigabe_ausstehend',
+    format: FORMATS[currentFormatIdx]?.label || 'Story',
+    // PNG als Vorschau (erste 100k Zeichen um Server nicht zu überlasten)
+    preview: pngDataUrl ? pngDataUrl.slice(0, 100000) : '',
+    fulltext: redaktionPayload?.fulltext || '',
+  };
+
+  try {
+    const r = await fetch('/api/posts', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(post)
+    });
+    if (r.ok) {
+      if (btn) { btn.textContent = '✅ Eingereicht!'; }
+      if (statusEl) statusEl.textContent = 'Post wartet auf Freigabe — Tab 6 öffnen.';
+      showToast('✅ PNG gespeichert · Post zur Freigabe eingereicht');
+    } else {
+      showToast('⚠️ PNG ok, aber Freigabe-Speicherung fehlgeschlagen');
+      if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+    }
+  } catch {
+    showToast('⚠️ Server nicht erreichbar');
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+  }
 }
 function showToast(msg){
   const t=document.getElementById('toast');
