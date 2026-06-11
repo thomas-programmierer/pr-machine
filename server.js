@@ -278,10 +278,16 @@ const server = http.createServer(async (req, res) => {
 
   // ── EINREICHUNGEN ─────────────────────────────────────────────────────────
   if (req.method === "GET" && url === "/api/einreichungen") {
-    // Admins + Redakteure dürfen alle Einreichungen sehen
-    if (!sess || !["admin","redakteur"].includes(sess.user.role))
-      return jsonRes(res, 403, { error:"Kein Zugriff" });
-    return jsonRes(res, 200, loadJSON(EINR_FILE, []));
+    if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
+    const alle = loadJSON(EINR_FILE, []);
+    // Admins + Redakteure sehen alle; PBL nur eigene
+    if (["admin","redakteur"].includes(sess.user.role)) {
+      return jsonRes(res, 200, alle);
+    }
+    if (sess.user.role === "pbl") {
+      return jsonRes(res, 200, alle.filter(e => e.autorId === sess.user.id));
+    }
+    return jsonRes(res, 403, { error:"Kein Zugriff" });
   }
 
   if (req.method === "POST" && url === "/api/einreichungen") {
