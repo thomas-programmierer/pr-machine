@@ -528,12 +528,19 @@ let pblDatumContext = null;  // Datum für offenes PBL-Modal
 async function ladeEigeneEinreichungen() {
   if (!currentUser || currentUser.role !== 'pbl') return;
   try {
-    // PBL-User darf nur eigene sehen — Server gibt 403 wenn kein Redakteur
-    // Wir nutzen den öffentlichen POST-Endpunkt und cachen lokal
-    // Vorhandene eigene Einreichungen aus LocalStorage laden (Fallback)
-    const lokal = localStorage.getItem('pbl_einreichungen_' + currentUser.id);
-    if (lokal) einreichungenCache = JSON.parse(lokal);
-  } catch {}
+    const r = await fetch('/api/einreichungen', { credentials:'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    einreichungenCache = Array.isArray(d) ? d : [];
+    // LocalStorage als Fallback aktualisieren
+    try { localStorage.setItem('pbl_einreichungen_' + currentUser.id, JSON.stringify(einreichungenCache)); } catch {}
+  } catch {
+    // Server nicht erreichbar → LocalStorage-Fallback
+    try {
+      const lokal = localStorage.getItem('pbl_einreichungen_' + currentUser.id);
+      if (lokal) einreichungenCache = JSON.parse(lokal);
+    } catch {}
+  }
 }
 
 function cacheEinreichungLokal(einr) {
