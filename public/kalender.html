@@ -1494,11 +1494,29 @@ async function pblVorschlagEinreichen() {
     // Bild als base64 lesen falls vorhanden, dann alles als JSON senden
     let bildDataUrl = null;
     if (hasBild) {
+      // Bild komprimieren auf max 800px und ~300KB
       bildDataUrl = await new Promise((resolve) => {
+        const file = bildInput.files[0];
         const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX = 800;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.onerror = () => resolve(null);
+          img.src = e.target.result;
+        };
         reader.onerror = () => resolve(null);
-        reader.readAsDataURL(bildInput.files[0]);
+        reader.readAsDataURL(file);
       });
     }
     const payload = { anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
