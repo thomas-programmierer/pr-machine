@@ -327,7 +327,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url === "/api/einreichungen") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
-    const einr = loadJSON(EINR_FILE, []);
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
     const neu = {
       id: String(Date.now()),
       ...b,
@@ -346,7 +346,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
-    const einr = loadJSON(EINR_FILE, []);
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
     const neu = {
       id: String(Date.now()),
       anlass:   b.anlass   || "",
@@ -372,7 +372,7 @@ const server = http.createServer(async (req, res) => {
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
     const b = await readBody(req);
-    const einr = loadJSON(EINR_FILE, []);
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
     const idx = einr.findIndex(e => e.id === id);
     if (idx === -1) return jsonRes(res, 404, { error:"Nicht gefunden" });
     einr[idx] = { ...einr[idx], ...b };
