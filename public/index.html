@@ -1549,6 +1549,23 @@ function openStudio(payload) {
   showScreen('editor');
   // initStudio setzt Drag+Drop und lädt Template (loadTemplate liest redaktionPayload)
   initStudio();
+  // Bild aus Einreichung als Hintergrundfoto laden
+  if (payload && payload.bild) {
+    setTimeout(() => {
+      fotoDataUrl = payload.bild;
+      const fotoEl = document.getElementById('cl-foto');
+      if (fotoEl) fotoEl.style.backgroundImage = `url(${fotoDataUrl})`;
+      const previewImg = document.getElementById('foto-preview-img');
+      if (previewImg) previewImg.src = fotoDataUrl;
+      const vorschau = document.getElementById('foto-vorschau');
+      if (vorschau) vorschau.style.display = 'block';
+      const hint = document.getElementById('no-foto-hint');
+      if (hint) hint.style.display = 'none';
+      const zone = document.getElementById('upload-zone');
+      if (zone) zone.style.display = 'none';
+      showToast('📷 Bild aus Einreichung geladen');
+    }, 300); // kurz warten bis Studio initialisiert ist
+  }
 }
 
 
@@ -1906,7 +1923,7 @@ async function generate() {
     // Schriftgröße an Headline-Länge anpassen
     const autoHlSize = headline.length > 60 ? 14 : headline.length > 40 ? 16 : headline.length > 25 ? 18 : 22;
 
-    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize };
+    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null };
 
     // ── Vorschau was ins Grafik-Template geht ──
     const previewHl  = window._lastStudioPayload.hl  || '';
