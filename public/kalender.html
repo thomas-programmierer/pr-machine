@@ -1491,26 +1491,24 @@ async function pblVorschlagEinreichen() {
 
   try {
     let r, d;
+    // Bild als base64 lesen falls vorhanden, dann alles als JSON senden
+    let bildDataUrl = null;
     if (hasBild) {
-      // Multipart-Upload mit Bild
-      const fd = new FormData();
-      fd.append('anlass', anlass);
-      fd.append('anlassId', anlassId);
-      fd.append('datum', pblDatumContext || '');
-      fd.append('kurs', kurs);
-      fd.append('kursNr', nr);
-      fd.append('idee', idee);
-      fd.append('bild', bildInput.files[0]);
-      r = await fetch('/api/einreichungen/mit-bild', {
-        method: 'POST', credentials: 'include', body: fd
-      });
-    } else {
-      r = await fetch('/api/einreichungen', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee, pb: currentUser?.pb || 'alle' })
+      bildDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(bildInput.files[0]);
       });
     }
+    const payload = { anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
+                      pb: currentUser?.pb || 'alle', bild: bildDataUrl };
+    const endpoint = bildDataUrl ? '/api/einreichungen/mit-bild' : '/api/einreichungen';
+    r = await fetch(endpoint, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
     if (!r.ok) { showToast('⚠️ Fehler beim Einreichen'); btn.disabled = false; btn.textContent = '📬 Einreichen'; return; }
     d = await r.json();
     // Lokal cachen damit der Chip sofort erscheint

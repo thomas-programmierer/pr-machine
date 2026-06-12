@@ -341,39 +341,29 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
-  // Einreichung mit Bild-Upload (multer)
+  // Einreichung mit Bild als base64 im JSON
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    const uploadMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 3*1024*1024 } });
-    uploadMem.single("bild")(req, { locals:{} }, async (err) => {
-      if (err) return jsonRes(res, 400, { error: "Upload-Fehler: " + err.message });
-      const b = req.body || {};
-      let bildDataUrl = null;
-      if (req.file) {
-        const mime = req.file.mimetype || "image/jpeg";
-        bildDataUrl = "data:" + mime + ";base64," + req.file.buffer.toString("base64");
-      }
-      const einr = loadJSON(EINR_FILE, []);
-      const neu = {
-        id: String(Date.now()),
-        anlass:   b.anlass   || "",
-        anlassId: b.anlassId || "",
-        datum:    b.datum    || "",
-        kurs:     b.kurs     || "",
-        kursNr:   b.kursNr   || "",
-        idee:     b.idee     || "",
-        pb:       sess.user.pb || "alle",
-        bild:     bildDataUrl,
-        status:   "neu",
-        eingereicht: new Date().toISOString(),
-        autor:    sess.user.name,
-        autorId:  sess.user.id,
-      };
-      einr.push(neu);
-      saveJSON(EINR_FILE, einr);
-      return jsonRes(res, 201, { ok:true, einreichung: neu });
-    });
-    return;
+    const b = await readBody(req);
+    const einr = loadJSON(EINR_FILE, []);
+    const neu = {
+      id: String(Date.now()),
+      anlass:   b.anlass   || "",
+      anlassId: b.anlassId || "",
+      datum:    b.datum    || "",
+      kurs:     b.kurs     || "",
+      kursNr:   b.kursNr   || "",
+      idee:     b.idee     || "",
+      pb:       sess.user.pb || "alle",
+      bild:     b.bild     || null,
+      status:   "neu",
+      eingereicht: new Date().toISOString(),
+      autor:    sess.user.name,
+      autorId:  sess.user.id,
+    };
+    einr.push(neu);
+    saveJSON(EINR_FILE, einr);
+    return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
   if (req.method === "PUT" && url.startsWith("/api/einreichungen/")) {
