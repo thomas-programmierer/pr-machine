@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voransicht — VHS Spandau PR-Maschine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau60:#69829B;--blau10:#E6EBF0;--blau20:#CDD7DC;
+  --gelb:#FAB90F;--gruen:#AFC805;--rot:#E1000F;--orange:#EB640F;--grau:#f4f5f7;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh;display:flex;flex-direction:column}
+
+.topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 20px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
+.tb-tag{font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 11px;color:rgba(255,255,255,.7);font-size:11px;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tb-btn:hover{background:rgba(255,255,255,.16);color:#fff}
+.tb-btn.primary{background:var(--gelb);color:var(--blau);border-color:var(--gelb);font-weight:700}
+.tb-btn.primary:hover{background:#e0a500}
+.user-info{font-size:11px;color:rgba(255,255,255,.5)}
+
+.main{flex:1;padding:24px 22px;max-width:900px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+
+/* HEADER SECTION */
+.page-header{display:flex;align-items:center;gap:14px;background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:18px 20px}
+.ph-icon{width:52px;height:52px;border-radius:12px;background:var(--blau10);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.ph-info{flex:1}
+.ph-title{font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px}
+.ph-sub{font-size:12px;color:var(--blau60)}
+.status-badge{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700}
+.sb-ausstehend{background:#FFF0E6;color:#8B4000}
+.sb-freigegeben{background:#EAF3DE;color:#3B6D11}
+.sb-abgelehnt{background:#FCEBEB;color:#791F1F}
+
+/* LAYOUT */
+.preview-layout{display:grid;grid-template-columns:1fr 340px;gap:16px}
+@media(max-width:700px){.preview-layout{grid-template-columns:1fr}}
+
+/* PREVIEW CARD */
+.preview-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden}
+.pc-head{background:var(--blau);padding:14px 18px;display:flex;align-items:center;gap:10px}
+.pc-head-title{font-size:13px;font-weight:600;color:#fff;flex:1}
+.kanal-badge{font-size:10px;background:rgba(255,255,255,.15);color:#fff;padding:2px 8px;border-radius:8px}
+.preview-image-wrap{background:var(--blau10);display:flex;align-items:center;justify-content:center;min-height:200px;max-height:400px;overflow:hidden}
+.preview-image-wrap img{max-width:100%;max-height:400px;object-fit:contain;display:block}
+.preview-placeholder{font-size:48px;color:var(--blau20);padding:40px}
+.preview-text-wrap{padding:16px 18px}
+.preview-headline{font-size:15px;font-weight:700;color:var(--blau);margin-bottom:8px;line-height:1.4}
+.preview-fulltext{font-size:12px;color:var(--blau60);line-height:1.7;white-space:pre-wrap;background:var(--blau10);border-radius:8px;padding:12px}
+
+/* DETAIL CARD */
+.detail-card{display:flex;flex-direction:column;gap:12px}
+.info-box{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:16px 18px}
+.ib-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--blau60);margin-bottom:10px}
+.ib-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid #f4f5f7}
+.ib-row:last-child{border-bottom:none}
+.ib-label{color:var(--blau60);width:80px;flex-shrink:0}
+.ib-val{color:var(--blau);font-weight:500;flex:1;word-break:break-word}
+
+/* ACTION BOX */
+.action-box{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.action-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--blau60);margin-bottom:4px}
+.btn-approve{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-approve:hover{background:#8faa04}
+.btn-approve:disabled{background:#ccc;cursor:not-allowed}
+.btn-reject{width:100%;padding:10px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-reject:hover{border-color:var(--rot);color:var(--rot)}
+.btn-undo{width:100%;padding:9px;border-radius:8px;font-size:11px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-studio{width:100%;padding:9px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(250,185,15,.1);color:var(--blau);border:1.5px solid var(--gelb);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;display:block;text-align:center}
+.btn-studio:hover{background:rgba(250,185,15,.2)}
+
+/* KOMMENTAR */
+.kommentar-box{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:16px 18px}
+.kommentar-input{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;resize:vertical;min-height:70px;transition:border-color .15s}
+.kommentar-input:focus{border-color:var(--blau)}
+.btn-kommentar{padding:7px 16px;border-radius:7px;font-size:11px;font-weight:600;background:var(--blau);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;border:1px solid var(--gelb)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* EMPTY / LOGIN */
+#login-required{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:40px;text-align:center;color:var(--blau60)}
+.empty{text-align:center;padding:60px 20px;color:var(--blau60);grid-column:1/-1}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:600;color:var(--blau);margin-bottom:5px}
+
+/* TIMELINE / BREADCRUMB */
+.pipeline-bar{display:flex;align-items:center;gap:0;background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;padding:10px 16px;overflow-x:auto;flex-wrap:nowrap}
+.pb-step{display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:10px;font-weight:600;color:var(--blau60);padding:2px 0}
+.pb-step.done{color:var(--gruen)}
+.pb-step.active{color:var(--blau);font-weight:700}
+.pb-step.active .pb-circle{background:var(--gelb);color:var(--blau)}
+.pb-step.done .pb-circle{background:var(--gruen);color:#fff}
+.pb-circle{width:20px;height:20px;border-radius:50%;background:var(--blau10);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--blau60);flex-shrink:0}
+.pb-arrow{color:#dde2e9;margin:0 6px;font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <svg xmlns="http://www.w3.org/2000/svg" width="140" height="30" viewBox="0 0 140 30">
+    <text x="0" y="21" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#fff">vhs</text>
+    <circle cx="48" cy="8" r="4" fill="#9BAAB8"/><circle cx="56" cy="5" r="5" fill="#FAB90F"/>
+    <circle cx="65" cy="9" r="4" fill="#64B9E6"/><circle cx="49" cy="17" r="5" fill="#E1000F"/>
+    <circle cx="61" cy="20" r="3" fill="#9BAAB8"/>
+    <text x="73" y="12" font-family="Arial,sans-serif" font-size="8" fill="rgba(255,255,255,.55)">Volkshochschule</text>
+    <text x="73" y="24" font-family="Arial,sans-serif" font-size="11" fill="#fff">Spandau</text>
+  </svg>
+  <div class="tb-tag">⑤ Voransicht & Freigabe</div>
+  <div class="tb-right">
+    <span class="user-info" id="hdr-user"></span>
+    <a href="/" class="tb-btn">← Zurück zur App</a>
+    <button class="tb-btn" onclick="doLogout()">Abmelden</button>
+  </div>
+</div>
+
+<div id="login-required">
+  <div style="font-size:48px">🔐</div>
+  <div style="font-size:16px;font-weight:600;color:var(--blau)">Bitte zuerst anmelden</div>
+  <div style="font-size:13px">Du wirst in 2 Sekunden weitergeleitet …</div>
+</div>
+
+<div class="main" id="main-content" style="display:none">
+
+  <!-- PIPELINE BAR -->
+  <div class="pipeline-bar">
+    <div class="pb-step done"><div class="pb-circle">✓</div> PBL Einreichung</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step done"><div class="pb-circle">✓</div> Redaktion</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step done"><div class="pb-circle">✓</div> KI-Generator</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step done"><div class="pb-circle">✓</div> Grafik-Studio</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step active"><div class="pb-circle">5</div> Voransicht</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step"><div class="pb-circle">6</div> Freigabe</div>
+    <div class="pb-arrow">›</div>
+    <div class="pb-step"><div class="pb-circle">7</div> Veröffentlicht</div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="ph-icon">👁</div>
+    <div class="ph-info">
+      <div class="ph-title">Voransicht — Posts zur Freigabe</div>
+      <div class="ph-sub">Alle Posts prüfen bevor sie zur Freigabe weitergehen · Admins und Redakteure können direkt freigeben</div>
+    </div>
+    <button class="tb-btn primary" onclick="window.open('/freigabe','_blank')">📋 Freigabe-Cockpit ↗</button>
+  </div>
+
+  <!-- FILTER -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div style="display:flex;gap:4px;background:#fff;border:1.5px solid #dde2e9;border-radius:9px;padding:3px">
+      <button class="filter-btn active" onclick="setFilter('alle')" id="fb-alle">Alle <span id="cnt-alle" style="background:var(--blau10);color:var(--blau60);border-radius:6px;padding:0 5px;font-size:10px">0</span></button>
+      <button class="filter-btn" onclick="setFilter('freigabe_ausstehend')" id="fb-warten">Ausstehend <span id="cnt-warten" style="background:#FFF0E6;color:#8B4000;border-radius:6px;padding:0 5px;font-size:10px">0</span></button>
+      <button class="filter-btn" onclick="setFilter('freigegeben')" id="fb-frei">Freigegeben <span id="cnt-frei" style="background:#EAF3DE;color:#3B6D11;border-radius:6px;padding:0 5px;font-size:10px">0</span></button>
+    </div>
+    <button onclick="ladePosts()" style="padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif">↺ Aktualisieren</button>
+  </div>
+
+  <!-- POSTS GRID -->
+  <div id="posts-container">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-msg"></span></div>
+
+<style>
+.filter-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;border:none;background:transparent;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.filter-btn.active{background:var(--blau);color:#fff}
+</style>
+
+<script>
+let currentUser = null;
+let allePosts   = [];
+let currentFilter = 'alle';
+
+async function init() {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (!r.ok) { redirectLogin(); return; }
+    const d = await r.json();
+    currentUser = d.user;
+    const ROLE_LABELS = { admin:'Admin', redakteur:'Redakteur', pbl:'PBL', direktion:'Direktion' };
+    document.getElementById('hdr-user').textContent = currentUser.name + ' · ' + (ROLE_LABELS[currentUser.role]||'');
+    document.getElementById('login-required').style.display = 'none';
+    document.getElementById('main-content').style.display = 'flex';
+    await ladePosts();
+  } catch { redirectLogin(); }
+}
+
+function redirectLogin() {
+  document.getElementById('login-required').style.display = 'flex';
+  setTimeout(() => { window.location.href = '/'; }, 2000);
+}
+
+async function doLogout() {
+  await fetch('/api/logout', { method:'POST', credentials:'include' });
+  window.location.href = '/';
+}
+
+async function ladePosts() {
+  try {
+    const r = await fetch('/api/posts', { credentials:'include' });
+    if (!r.ok) return;
+    allePosts = await r.json();
+    allePosts.sort((a,b) => (b.erstellt||'').localeCompare(a.erstellt||''));
+    updateCounts();
+    renderPosts();
+  } catch(e) { console.error(e); }
+}
+
+function updateCounts() {
+  document.getElementById('cnt-alle').textContent    = allePosts.length;
+  document.getElementById('cnt-warten').textContent  = allePosts.filter(p=>p.status==='freigabe_ausstehend').length;
+  document.getElementById('cnt-frei').textContent    = allePosts.filter(p=>p.status==='freigegeben').length;
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  const map = { alle:'fb-alle', freigabe_ausstehend:'fb-warten', freigegeben:'fb-frei' };
+  document.getElementById(map[f])?.classList.add('active');
+  renderPosts();
+}
+
+function renderPosts() {
+  const container = document.getElementById('posts-container');
+  const gefiltert = currentFilter === 'alle' ? allePosts
+    : allePosts.filter(p => p.status === currentFilter);
+
+  if (!gefiltert.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>
+      <div class="empty-title">${currentFilter==='freigabe_ausstehend'?'Keine Posts warten auf Freigabe':'Keine Posts in dieser Kategorie'}</div>
+      <div style="font-size:12px;margin-top:4px">Posts kommen aus dem Grafik-Studio wenn "PNG exportieren & zur Freigabe" geklickt wird.</div>
+    </div>`;
+    return;
+  }
+
+  const canAct = ['admin','redakteur'].includes(currentUser?.role);
+  const STATUS = {
+    freigabe_ausstehend: { label:'Wartet auf Freigabe', cls:'sb-ausstehend' },
+    freigegeben:         { label:'✓ Freigegeben',       cls:'sb-freigegeben' },
+    abgelehnt:           { label:'Abgelehnt',            cls:'sb-abgelehnt' },
+    geplant:             { label:'Geplant',               cls:'sb-ausstehend' },
+  };
+
+  container.innerHTML = gefiltert.map(p => {
+    const s = STATUS[p.status] || STATUS.geplant;
+    const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    const hasPreview = p.preview && p.preview.startsWith('data:image');
+    const kanal = p.kanal === 'ig' ? '📸 Instagram' : p.kanal === 'fb' ? '👥 Facebook' : p.kanal === 'beide' ? '📸👥 Beide' : (p.kanal||'');
+
+    // Action-Buttons
+    let actions = '';
+    if (p.status === 'freigabe_ausstehend' && canAct) {
+      actions = `
+        <button class="btn-approve" onclick="freigeben('${p.id}')">✅ Jetzt freigeben</button>
+        <button class="btn-reject" onclick="ablehnen('${p.id}')">✕ Ablehnen</button>`;
+    } else if (p.status === 'freigegeben' && canAct) {
+      actions = `<button class="btn-undo" onclick="zurueck('${p.id}')">↩ Freigabe zurückziehen</button>`;
+    } else if (p.status === 'freigabe_ausstehend') {
+      actions = `<div style="font-size:11px;color:var(--orange);font-weight:600">⏳ Wartet auf Freigabe durch Admin/Redakteur</div>`;
+    }
+
+    // Studio-Link
+    const studioParams = [
+      p.headline ? 'hl=' + encodeURIComponent(p.headline) : '',
+      p.anlass   ? 'anlass=' + encodeURIComponent(p.anlass) : '',
+      'from=voransicht'
+    ].filter(Boolean).join('&');
+
+    return `
+    <div class="preview-layout" style="margin-bottom:16px">
+      <!-- LINKE SEITE: Vorschau -->
+      <div class="preview-card">
+        <div class="pc-head">
+          <div class="pc-head-title">${esc(p.anlass||'Unbenannter Post')}</div>
+          <span class="kanal-badge">${esc(kanal)}</span>
+        </div>
+        ${hasPreview
+          ? `<div class="preview-image-wrap"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>`
+          : `<div class="preview-image-wrap"><div class="preview-placeholder">🖼</div></div>`}
+        <div class="preview-text-wrap">
+          ${p.headline ? `<div class="preview-headline">${esc(p.headline)}</div>` : ''}
+          ${p.fulltext ? `<div class="preview-fulltext">${esc(p.fulltext)}</div>` : ''}
+          ${!p.headline && !p.fulltext ? '<div style="font-size:12px;color:var(--blau60);font-style:italic">Kein Text übermittelt</div>' : ''}
+        </div>
+      </div>
+      <!-- RECHTE SEITE: Details & Aktionen -->
+      <div class="detail-card">
+        <div class="info-box">
+          <div class="ib-title">Post-Details</div>
+          <div class="ib-row"><span class="ib-label">Status</span><span class="ib-val"><span class="status-badge ${s.cls}">${s.label}</span></span></div>
+          <div class="ib-row"><span class="ib-label">Autor</span><span class="ib-val">${esc(p.autor||'—')}</span></div>
+          <div class="ib-row"><span class="ib-label">Erstellt</span><span class="ib-val">${datum}</span></div>
+          ${p.datum ? `<div class="ib-row"><span class="ib-label">Geplant</span><span class="ib-val">${esc(p.datum)}</span></div>` : ''}
+          ${p.format ? `<div class="ib-row"><span class="ib-label">Format</span><span class="ib-val">${esc(p.format)}</span></div>` : ''}
+          ${p.freigegeben_von ? `<div class="ib-row"><span class="ib-label">Freigabe</span><span class="ib-val">${esc(p.freigegeben_von)}</span></div>` : ''}
+        </div>
+        <div class="action-box">
+          <div class="action-title">Aktionen</div>
+          ${actions}
+          <a href="/editor?${studioParams}" target="_blank" class="btn-studio">🎨 Im Grafik-Studio öffnen</a>
+          ${canAct ? `<button class="btn-reject" onclick="loeschen('${p.id}')" style="color:var(--rot);border-color:var(--rot)">🗑 Post löschen</button>` : ''}
+        </div>
+        <div class="kommentar-box">
+          <div class="ib-title">Kommentar (intern)</div>
+          <textarea class="kommentar-input" id="komm-${p.id}" placeholder="Anmerkung für das Team …">${esc(p.kommentar||'')}</textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px">
+            <button class="btn-kommentar" onclick="kommentarSpeichern('${p.id}')">Speichern</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid #e2e7ef;margin-bottom:16px">`;
+  }).join('');
+}
+
+// ── AKTIONEN ──────────────────────────────────────────────────────────────────
+async function freigeben(id) {
+  await setStatus(id, 'freigegeben');
+  showToast('✅ Post freigegeben!');
+}
+async function ablehnen(id) {
+  await setStatus(id, 'abgelehnt');
+  showToast('↩️ Post abgelehnt');
+}
+async function zurueck(id) {
+  await setStatus(id, 'freigabe_ausstehend');
+  showToast('↩ Freigabe zurückgezogen');
+}
+async function loeschen(id) {
+  if (!confirm('Post wirklich löschen?')) return;
+  try {
+    await fetch('/api/posts/' + id, { method:'DELETE', credentials:'include' });
+    allePosts = allePosts.filter(p => p.id !== id);
+    updateCounts();
+    renderPosts();
+    showToast('🗑 Post gelöscht');
+  } catch { showToast('⚠️ Fehler'); }
+}
+
+async function setStatus(id, status) {
+  try {
+    const r = await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status, freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString() })
+    });
+    if (!r.ok) { showToast('⚠️ Fehler'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  const idx = allePosts.findIndex(p => p.id === id);
+  if (idx !== -1) allePosts[idx].status = status;
+  updateCounts();
+  renderPosts();
+}
+
+async function kommentarSpeichern(id) {
+  const text = document.getElementById('komm-' + id)?.value || '';
+  try {
+    await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kommentar: text })
+    });
+    showToast('💬 Kommentar gespeichert');
+  } catch { showToast('⚠️ Fehler'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+setInterval(ladePosts, 30000);
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

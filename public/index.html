@@ -542,6 +542,9 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div class="nav-tab studio" id="tab-editor" onclick="showScreen('editor')">
       <span class="nav-step">5</span>🎨 Grafik-Studio
     </div>
+    <div class="nav-tab" id="tab-voransicht"  onclick="window.open('/voransicht','_blank')">
+      <span class="nav-step">5b</span>👁 Voransicht ↗
+    </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-freigabe"    onclick="window.open('/freigabe','_blank')">
       <span class="nav-step">6</span>✅ Freigabe ↗
@@ -792,41 +795,29 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div class="screen" id="screen-direktion">
       <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1">
         <div>
-          <div class="section-label">Übersicht</div>
-          <div class="stat-grid">
-            <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-n">884</div><div class="stat-label">Beste Reichweite (IG)</div></div>
-            <div class="stat-card"><div class="stat-icon">👁</div><div class="stat-n">3.2k</div><div class="stat-label">Ø Reichweite / Monat</div></div>
-            <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-n">4.7%</div><div class="stat-label">Ø Engagement-Rate</div></div>
-            <div class="stat-card"><div class="stat-icon">🔗</div><div class="stat-n">128</div><div class="stat-label">Link-Klicks gesamt</div></div>
+          <div class="section-label">Pipeline-Übersicht <span id="dir-aktualisiert" style="font-size:10px;font-weight:400;color:var(--blau60)"></span></div>
+          <div class="stat-grid" id="dir-stats">
+            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-n" id="dir-n-warten">—</div><div class="stat-label">Warten auf Freigabe</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-n" id="dir-n-frei">—</div><div class="stat-label">Freigegeben</div></div>
+            <div class="stat-card"><div class="stat-icon">📬</div><div class="stat-n" id="dir-n-einr">—</div><div class="stat-label">Offene Einreichungen</div></div>
+            <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-n" id="dir-n-gesamt">—</div><div class="stat-label">Posts gesamt</div></div>
           </div>
         </div>
+        <!-- Freigegebene Posts -->
         <div style="background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:18px">
-          <div class="section-label" style="margin-bottom:12px">Kanal-Vergleich (Ø letzte 3 Monate)</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                <span>📸 Instagram</span><span style="font-weight:600;color:var(--blau)">Ø 412 Aufrufe</span>
-              </div>
-              <div style="height:10px;background:var(--blau10);border-radius:5px;overflow:hidden">
-                <div style="height:100%;width:78%;background:#E1306C;border-radius:5px"></div>
-              </div>
-            </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-                <span>👥 Facebook</span><span style="font-weight:600;color:var(--blau)">Ø 178 Aufrufe</span>
-              </div>
-              <div style="height:10px;background:var(--blau10);border-radius:5px;overflow:hidden">
-                <div style="height:100%;width:34%;background:#1877F2;border-radius:5px"></div>
-              </div>
-            </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="section-label" style="margin:0">✅ Freigegebene Posts — bereit zur Veröffentlichung</div>
+            <a href="/voransicht" target="_blank" style="font-size:10px;color:var(--blau60);text-decoration:none">Alle ansehen ↗</a>
           </div>
-          <div style="margin-top:12px;font-size:11px;color:var(--blau60)">Instagram erreicht durchschnittlich <strong style="color:var(--blau)">2,3× mehr</strong> Menschen als Facebook.</div>
+          <div id="dir-freigegeben-list">
+            <div style="font-size:12px;color:var(--blau60);text-align:center;padding:20px">Wird geladen …</div>
+          </div>
         </div>
+        <!-- Einreichungen im Überblick -->
         <div style="background:#fff;border-radius:11px;border:1.5px solid #e2e7ef;padding:18px">
-          <div class="section-label" style="margin-bottom:10px">Nur lesen — kein Bearbeiten</div>
-          <div style="font-size:13px;color:var(--blau60);line-height:1.6">
-            Das Dashboard zeigt alle KPIs in Echtzeit.<br>
-            Redaktionsplan und Einreichungen sind einsehbar,<br>aber nicht bearbeitbar für die Direktion.
+          <div class="section-label" style="margin-bottom:12px">📬 Neueste Einreichungen von PBL</div>
+          <div id="dir-einr-list">
+            <div style="font-size:12px;color:var(--blau60);text-align:center;padding:20px">Wird geladen …</div>
           </div>
         </div>
       </div>
@@ -1415,8 +1406,8 @@ function initApp() {
 
   // Sichtbarkeitsmatrix: Rolle → sichtbare Tab-IDs
   const NAV = {
-    admin:     ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-freigabe','tab-direktion','tab-performance','tab-admin'],
-    redakteur: ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-freigabe','tab-direktion','tab-performance'],
+    admin:     ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance','tab-admin'],
+    redakteur: ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance'],
     pbl:       ['tab-kalender','tab-pbl','tab-kurse'],
     direktion: ['tab-kalender','tab-direktion','tab-performance'],
   };
@@ -1478,6 +1469,76 @@ function showScreen(name) {
   if (name === 'admin')     { loadAdminUsers(); loadAdminStatus(); }
   if (name === 'redakteur') { loadEinreichungen(); }
   if (name === 'pbl')       { loadPBLEinreichungsStatus(); }
+  if (name === 'direktion') { loadDirektion(); }
+}
+
+// DASHBOARD DIREKTION
+async function loadDirektion() {
+  try {
+    const [rPosts, rEinr] = await Promise.all([
+      fetch('/api/posts', { credentials:'include' }),
+      fetch('/api/einreichungen', { credentials:'include' })
+    ]);
+    const posts = rPosts.ok ? await rPosts.json() : [];
+    const einr  = rEinr.ok  ? await rEinr.json()  : [];
+
+    // Stats
+    const warten  = posts.filter(p => p.status === 'freigabe_ausstehend').length;
+    const frei    = posts.filter(p => p.status === 'freigegeben').length;
+    const offeneE = einr.filter(e => e.status === 'neu').length;
+    document.getElementById('dir-n-warten').textContent  = warten;
+    document.getElementById('dir-n-frei').textContent    = frei;
+    document.getElementById('dir-n-einr').textContent    = offeneE;
+    document.getElementById('dir-n-gesamt').textContent  = posts.length;
+    document.getElementById('dir-aktualisiert').textContent = '· aktualisiert ' + new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+
+    // Freigegebene Posts
+    const freigegeben = posts.filter(p => p.status === 'freigegeben')
+      .sort((a,b) => (b.freigegeben_am||b.erstellt||'').localeCompare(a.freigegeben_am||a.erstellt||''));
+    const dirList = document.getElementById('dir-freigegeben-list');
+    if (!freigegeben.length) {
+      dirList.innerHTML = '<div style="font-size:12px;color:var(--blau60);text-align:center;padding:16px">Noch keine Posts freigegeben.</div>';
+    } else {
+      dirList.innerHTML = freigegeben.slice(0, 8).map(p => {
+        const hasImg = p.preview && p.preview.startsWith('data:image');
+        const kanal = p.kanal === 'ig' ? '📸' : p.kanal === 'fb' ? '👥' : p.kanal === 'beide' ? '📸👥' : '📄';
+        const dt = p.freigegeben_am ? new Date(p.freigegeben_am).toLocaleDateString('de-DE',{day:'2-digit',month:'short'}) : '';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f4f5f7">
+          ${hasImg ? `<img src="${p.preview}" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0">` : `<div style="width:44px;height:44px;border-radius:6px;background:var(--blau10);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🖼</div>`}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--blau);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.anlass||p.headline||'Post')}</div>
+            <div style="font-size:10px;color:var(--blau60)">${kanal} · von ${esc(p.autor||'')} · ${dt}</div>
+          </div>
+          <span style="background:#EAF3DE;color:#3B6D11;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0">✓ Freigegeben</span>
+        </div>`;
+      }).join('');
+    }
+
+    // Einreichungen
+    const einrSorted = [...einr].sort((a,b) => (b.eingereicht||'').localeCompare(a.eingereicht||'')).slice(0, 6);
+    const einrList = document.getElementById('dir-einr-list');
+    if (!einrSorted.length) {
+      einrList.innerHTML = '<div style="font-size:12px;color:var(--blau60);text-align:center;padding:16px">Noch keine Einreichungen.</div>';
+    } else {
+      const STATUS_STYLE = {
+        neu:        'background:#EAF3DE;color:#3B6D11',
+        angenommen: 'background:#E6F1FB;color:#185FA5',
+        abgelehnt:  'background:#FCEBEB;color:#791F1F'
+      };
+      const STATUS_LABEL = { neu:'Eingereicht', angenommen:'In Bearbeitung', abgelehnt:'Abgelehnt' };
+      einrList.innerHTML = einrSorted.map(e => {
+        const dt = e.eingereicht ? new Date(e.eingereicht).toLocaleDateString('de-DE',{day:'2-digit',month:'short'}) : '';
+        const st = e.status || 'neu';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f4f5f7">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--blau);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.kurs||'—')}</div>
+            <div style="font-size:10px;color:var(--blau60)">${esc(e.autor||'')} · ${esc(e.pb||'')} · ${dt}</div>
+          </div>
+          <span style="${STATUS_STYLE[st]||STATUS_STYLE.neu};font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;flex-shrink:0">${STATUS_LABEL[st]||st}</span>
+        </div>`;
+      }).join('');
+    }
+  } catch(e) { console.error('Dashboard laden:', e); }
 }
 
 // Payload vom Generator ans Grafik-Studio übergeben
