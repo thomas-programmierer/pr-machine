@@ -29,7 +29,23 @@ const USERS_FILE   = path.join(__dirname, "users.json");
 const POSTS_FILE   = path.join(__dirname, "posts.json");
 const PERF_FILE    = path.join(__dirname, "performance.json");
 const EINR_FILE    = path.join(__dirname, "einreichungen.json");
-const KONTEXT_FILE = path.join(__dirname, "kursprogramm_kontext.json");
+const KONTEXT_FILE = path.join(__dirname, 'kursprogramm_kontext.json');
+const PW_OVERRIDE_FILE = path.join(__dirname, 'passwords_override.json');
+
+// Passwort-Lookup: passwords_override.json hat Vorrang vor users.json
+function getPassword(userId) {
+  try {
+    const ov = JSON.parse(fs.readFileSync(PW_OVERRIDE_FILE, 'utf8'));
+    if (ov[userId]) return ov[userId];
+  } catch {}
+  return null;
+}
+function setPassword(userId, pw) {
+  let ov = {};
+  try { ov = JSON.parse(fs.readFileSync(PW_OVERRIDE_FILE, 'utf8')); } catch {}
+  ov[userId] = pw;
+  fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
+}
 const REDPLAN_FILE = path.join(__dirname, "redaktionsplan_meta.json");
 
 if (!API_KEY) { console.error("❌  ANTHROPIC_API_KEY fehlt."); process.exit(1); }
@@ -160,7 +176,11 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url === "/api/login") {
     const b = await readBody(req);
     const users = loadUsers();
-    const u = users.find(x => x.username === b.username && x.password === b.password && x.aktiv !== false);
+    const u = users.find(x => {
+    if (x.username !== b.username || x.aktiv === false) return false;
+    const pw = getPassword(x.id) || x.password;
+    return pw === b.password;
+  });
     if (!u) return jsonRes(res, 401, { error:"Ungültige Zugangsdaten" });
     const token = createSession(u);
     return jsonRes(res, 200, { ok:true, user:safeUser(u) },
@@ -207,6 +227,11 @@ const server = http.createServer(async (req, res) => {
     const users = loadUsers();
     const idx = users.findIndex(u => u.id === id);
     if (idx === -1) return jsonRes(res, 404, { error:"User nicht gefunden" });
+    // Passwort separat in Override-Datei speichern (deploy-sicher)
+    if (b.password) {
+      setPassword(id, b.password);
+      delete b.password; // nicht in users.json schreiben
+    }
     users[idx] = { ...users[idx], ...b, id };
     saveUsers(users);
     return jsonRes(res, 200, { ok:true, user:safeUser(users[idx]) });
