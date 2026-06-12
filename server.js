@@ -92,8 +92,9 @@ function saveUsers(u) { saveJSON(USERS_FILE, { users: u }); }
 function safeUser(u) { const { password:_, ...s } = u; return s; }
 async function readBody(req) {
   return new Promise((res, rej) => {
-    let b = "";
-    req.on("data", d => b += d);
+    let b = "", size = 0;
+    const MAX = 10 * 1024 * 1024;
+    req.on("data", d => { size += d.length; if (size > MAX) { req.destroy(); return; } b += d; });
     req.on("end", () => { try { res(JSON.parse(b)); } catch { res({}); } });
     req.on("error", rej);
   });
