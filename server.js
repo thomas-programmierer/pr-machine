@@ -14,7 +14,16 @@ const path   = require("path");
 
 const PORT     = process.env.PORT || 3000;
 const API_KEY  = process.env.ANTHROPIC_API_KEY || "";
-const SESSIONS = {};
+const SESSIONS_FILE = path.join(__dirname, 'sessions.json');
+let SESSIONS = {};
+try {
+  const raw = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  const now = Date.now();
+  Object.entries(raw).forEach(([k,v]) => { if (v.expires > now) SESSIONS[k] = v; });
+} catch {}
+function saveSessions() {
+  try { fs.writeFileSync(SESSIONS_FILE, JSON.stringify(SESSIONS), 'utf8'); } catch {} 
+}
 
 const USERS_FILE   = path.join(__dirname, "users.json");
 const POSTS_FILE   = path.join(__dirname, "posts.json");
@@ -37,6 +46,7 @@ const MIME = {
 function createSession(user) {
   const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
   SESSIONS[token] = { user, expires: Date.now() + 8*60*60*1000 };
+  saveSessions();
   return token;
 }
 function getToken(req) {
@@ -47,7 +57,7 @@ function getToken(req) {
 function getSession(token) {
   if (!token) return null;
   const s = SESSIONS[token];
-  if (!s || s.expires < Date.now()) { delete SESSIONS[token]; return null; }
+  if (!s || s.expires < Date.now()) { delete SESSIONS[token]; saveSessions(); return null; }
   return s;
 }
 
@@ -159,7 +169,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url === "/api/logout") {
     const t = getToken(req);
-    if (t) delete SESSIONS[t];
+    if (t) { delete SESSIONS[t]; saveSessions(); }
     return jsonRes(res, 200, { ok:true },
       { "Set-Cookie":"session=; HttpOnly; Max-Age=0" });
   }
@@ -306,48 +316,39 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
-  // NEU: Einreichung mit Bild-Upload (multipart)
+  // Einreichung mit Bild-Upload (multer)
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    const ct = req.headers["content-type"] || "";
-    const boundaryMatch = ct.match(/boundary=([^\s;]+)/);
-    if (!boundaryMatch) return jsonRes(res, 400, { error:"Kein multipart boundary" });
-    const rawBody = await readBodyRaw(req);
-    const parts = parseMultipart(rawBody, boundaryMatch[1]);
-
-    const getData = name => (parts.find(p => p.name === name && !p.filename)?.text || "");
-    const filePart = parts.find(p => p.filename);
-
-    let bildDataUrl = null;
-    if (filePart && filePart.data.length > 0) {
-      const ext = path.extname(filePart.filename).toLowerCase();
-      const mimeMap = { ".jpg":"image/jpeg", ".jpeg":"image/jpeg", ".png":"image/png", ".gif":"image/gif", ".webp":"image/webp" };
-      const mime = mimeMap[ext] || "image/jpeg";
-      // Bild als base64 Data-URL speichern (max 2MB)
-      if (filePart.data.length <= 2 * 1024 * 1024) {
-        bildDataUrl = `data:${mime};base64,` + filePart.data.toString("base64");
+    const uploadMem = multer({ storage: multer.memoryStorage(), limits: { fileSize: 3*1024*1024 } });
+    uploadMem.single("bild")(req, { locals:{} }, async (err) => {
+      if (err) return jsonRes(res, 400, { error: "Upload-Fehler: " + err.message });
+      const b = req.body || {};
+      let bildDataUrl = null;
+      if (req.file) {
+        const mime = req.file.mimetype || "image/jpeg";
+        bildDataUrl = "data:" + mime + ";base64," + req.file.buffer.toString("base64");
       }
-    }
-
-    const einr = loadJSON(EINR_FILE, []);
-    const neu = {
-      id: String(Date.now()),
-      anlass: getData("anlass"),
-      anlassId: getData("anlassId"),
-      datum: getData("datum"),
-      kurs: getData("kurs"),
-      kursNr: getData("kursNr"),
-      idee: getData("idee"),
-      pb: sess.user.pb || "alle",
-      bild: bildDataUrl,
-      status: "neu",
-      eingereicht: new Date().toISOString(),
-      autor: sess.user.name,
-      autorId: sess.user.id,
-    };
-    einr.push(neu);
-    saveJSON(EINR_FILE, einr);
-    return jsonRes(res, 201, { ok:true, einreichung: neu });
+      const einr = loadJSON(EINR_FILE, []);
+      const neu = {
+        id: String(Date.now()),
+        anlass:   b.anlass   || "",
+        anlassId: b.anlassId || "",
+        datum:    b.datum    || "",
+        kurs:     b.kurs     || "",
+        kursNr:   b.kursNr   || "",
+        idee:     b.idee     || "",
+        pb:       sess.user.pb || "alle",
+        bild:     bildDataUrl,
+        status:   "neu",
+        eingereicht: new Date().toISOString(),
+        autor:    sess.user.name,
+        autorId:  sess.user.id,
+      };
+      einr.push(neu);
+      saveJSON(EINR_FILE, einr);
+      return jsonRes(res, 201, { ok:true, einreichung: neu });
+    });
+    return;
   }
 
   if (req.method === "PUT" && url.startsWith("/api/einreichungen/")) {
@@ -624,5 +625,3 @@ server.listen(PORT, () => {
   console.log(`  🌐  http://localhost:${PORT}`);
   console.log("  🔑  API-Key: aktiv\n  Stoppen: Strg+C\n");
 });
-
-// multer-fix deployed
