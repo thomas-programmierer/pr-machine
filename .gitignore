@@ -8,3 +8,7 @@ server.js.backup_*
 *.backup_*
 vhs-pr-maschine-update.zip
 users.json
+FORCE_UPDATE.bat
+update.ps1
+update2.ps1
+gitignore
