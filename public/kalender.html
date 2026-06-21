@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -1554,3 +1555,1561 @@ function showToast(msg) {
 </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redaktionsplan — VHS Spandau</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau80:#375578;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
+  --grau:#f4f5f7;
+  --ig:#E1306C;--fb:#1877F2;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.header{background:var(--blau);height:54px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{display:flex;align-items:center}
+.logo-text{color:#fff;font-size:13px;font-weight:600;line-height:1.2}
+.logo-sub{color:var(--blau60);font-size:10px}
+.header-right{display:flex;align-items:center;gap:8px}
+.ext-nav-bar{background:#0a1e3d;border-bottom:1px solid rgba(255,255,255,.1);padding:0 18px;display:flex;align-items:center;gap:2px;overflow-x:auto;flex-shrink:0}
+.ext-nav-tab{padding:10px 14px;font-size:12px;font-weight:500;color:rgba(255,255,255,.6);text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent;transition:color .15s}
+.ext-nav-tab:hover{color:#fff}
+.ext-nav-tab.active{color:#fff;border-bottom-color:var(--gelb,#FAB90F)}
+.ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.5);padding:0 6px;flex-shrink:0}
+.ext-logout-btn{margin-left:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;flex-shrink:0}
+.ext-logout-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+
+/* ── TOOLBAR ── */
+.toolbar{background:#fff;border-bottom:1px solid #dde2e9;padding:10px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.month-nav{display:flex;align-items:center;gap:8px}
+.mnav-btn{width:30px;height:30px;border-radius:7px;border:1.5px solid #dde2e9;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--blau60);transition:all .15s}
+.mnav-btn:hover{border-color:var(--blau);color:var(--blau)}
+.month-label{font-size:15px;font-weight:700;color:var(--blau);min-width:140px;text-align:center}
+.view-chips{display:flex;gap:5px;margin-left:auto}
+.vchip{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;border:1.5px solid #dde2e9;cursor:pointer;background:#fff;color:var(--blau60);transition:all .15s}
+.vchip.on{background:var(--blau);border-color:var(--blau);color:#fff}
+.add-post-btn{padding:8px 14px;border-radius:8px;background:var(--blau);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s}
+.add-post-btn:hover{background:#001f47}
+
+/* ── LEGENDE ── */
+.legende{display:flex;gap:12px;align-items:center;padding:8px 22px;background:#fff;border-bottom:1px solid #eef1f6;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--blau60)}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* ── KALENDER ── */
+.kalender-wrap{flex:1;overflow:auto;padding:16px 22px}
+
+/* MONATSANSICHT */
+.monat-grid{display:grid;grid-template-columns:38px repeat(7,1fr);gap:1px;background:#dde2e9;border-radius:10px;overflow:hidden}
+.kw-header{background:var(--blau);color:rgba(255,255,255,.5);text-align:center;padding:8px 2px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.kw-zelle{background:#F0F3F6;display:flex;align-items:flex-start;justify-content:center;padding:6px 2px;cursor:default}
+.kw-zelle-leer{background:#F0F3F6}
+.kw-label{font-size:9px;font-weight:700;color:#9BAAB8;text-align:center;line-height:1.2;margin-top:2px;white-space:nowrap}
+.kw-nr{font-size:12px;font-weight:700;color:#69829B;display:block}
+.wochentag-header{background:var(--blau);color:#fff;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.tag{background:#fff;min-height:110px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .1s;position:relative}
+.tag:hover{background:#f8fafc}
+.tag.heute{background:#fffbec}
+.tag.anderer-monat{background:#f8f8f8}
+.tag.anderer-monat .tag-nr{color:#ccc}
+.tag-nr{font-size:11px;font-weight:600;color:var(--blau60);margin-bottom:2px;line-height:1}
+.tag.heute .tag-nr{color:var(--blau);background:var(--gelb);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
+.tag-hook{font-size:9px;color:var(--orange);font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* POST-CHIP im Kalender */
+.post-chip{border-radius:4px;padding:2px 5px;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s;margin-bottom:1px;line-height:1.4}
+.post-chip:hover{opacity:.8}
+.chip-ig{background:#fce4ee;color:#b0154e;border-left:3px solid var(--ig)}
+.chip-fb{background:#e3eeff;color:#1255b0;border-left:3px solid var(--fb)}
+.chip-beide{background:#f0e8ff;color:#5522aa;border-left:3px solid #7c3aed}
+.chip-geplant{}
+.chip-freigabe{border-style:dashed}
+.chip-veroeffentlicht{opacity:.7}
+.mehr-btn{font-size:9px;color:var(--blau60);cursor:pointer;padding:1px 4px}
+.mehr-btn:hover{color:var(--blau)}
+
+/* WOCHENANSICHT */
+.woche-wrap{display:grid;grid-template-columns:60px repeat(7,1fr);gap:1px;background:#dde2e9;border-radius:10px;overflow:hidden}
+.woche-zeit{background:#fff;padding:6px 4px;font-size:10px;color:var(--blau60);text-align:right;font-family:'DM Mono',monospace}
+.woche-header{background:var(--blau);color:#fff;text-align:center;padding:8px 4px;font-size:11px;font-weight:700}
+.woche-cell{background:#fff;min-height:60px;padding:4px;border-top:1px solid #f0f0f0}
+
+/* LISTEN-ANSICHT */
+.liste-wrap{display:flex;flex-direction:column;gap:8px}
+.liste-gruppe{background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;overflow:hidden}
+.liste-datum{padding:10px 16px;background:var(--blau10);font-size:12px;font-weight:700;color:var(--blau);display:flex;align-items:center;gap:8px}
+.liste-datum .hook-badge{font-size:10px;font-weight:600;color:var(--orange);background:#FEF3DA;padding:1px 7px;border-radius:8px}
+.liste-post{padding:12px 16px;border-top:1px solid #eef1f6;display:flex;align-items:flex-start;gap:12px}
+.lp-kanal{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.lp-ig{background:#fce4ee}
+
+/* WOCHEN-ANSICHT */
+.woche-grid{display:grid;grid-template-columns:52px repeat(7,1fr);gap:1px;background:#dde2e9;border-radius:10px;overflow:hidden;min-height:400px}
+.woche-time-col{background:#f4f5f7;display:flex;flex-direction:column}
+.woche-time-header{background:var(--blau);height:56px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase}
+.woche-time-slot{height:50px;border-top:1px solid #e2e7ef;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;color:#aaa;font-family:monospace}
+.woche-day-col{background:#fff;display:flex;flex-direction:column;min-width:0}
+.woche-day-header{background:var(--blau);height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;gap:1px}
+.woche-day-header.heute-col{background:#00408a}
+.woche-day-name{font-size:9px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px}
+.woche-day-nr{font-size:18px;font-weight:700;color:#fff;line-height:1}
+.woche-day-nr.heute-nr{background:var(--gelb);color:var(--blau);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.woche-slot{height:50px;border-top:1px solid #f0f0f0;padding:2px 3px;position:relative;cursor:pointer;transition:background .1s;background:#fff}
+.woche-slot.col-odd{background:#faf6ee}
+.woche-slot:hover{background:#f0f5ff !important}
+.woche-slot.hat-hooks{background:#fffbf0}
+.woche-day-header.col-odd{filter:brightness(1.08) sepia(0.12)}
+.woche-post-pill{background:var(--blau10);border-left:3px solid var(--blau);border-radius:0 4px 4px 0;padding:2px 5px;font-size:9px;font-weight:600;color:var(--blau);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px;transition:background .1s}
+.woche-post-pill:hover{background:var(--blau20)}
+.woche-post-pill.pill-ig{border-color:#E1306C;color:#E1306C;background:#fce4ee}
+.woche-post-pill.pill-fb{border-color:#1877F2;color:#1877F2;background:#e8f0fe}
+.woche-post-pill.pill-beide{border-color:var(--orange);color:var(--orange);background:#FEF3DA}
+.woche-slot.feiertag-slot{background:#fff8ee}
+
+/* TAG-ANSICHT */
+.tag-view-wrap{background:#fff;border-radius:10px;border:1.5px solid #e2e7ef;overflow:hidden}
+.tag-view-header{background:var(--blau);padding:16px 20px;display:flex;align-items:center;gap:14px}
+.tag-view-datum{font-size:22px;font-weight:700;color:#fff}
+.tag-view-wochentag{font-size:13px;color:rgba(255,255,255,.7)}
+.tag-view-kw{font-size:11px;background:rgba(255,255,255,.15);color:#fff;padding:2px 9px;border-radius:10px}
+.tag-view-body{display:grid;grid-template-columns:60px 1fr;min-height:480px}
+.tag-stunden{border-right:1px solid #eef1f6;display:flex;flex-direction:column}
+.tag-stunde-row{height:60px;border-bottom:1px solid #f5f5f5;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 10px 0 0;font-size:9px;color:#bbb;font-family:monospace;flex-shrink:0}
+.tag-events{padding:0;position:relative;display:flex;flex-direction:column}
+.tag-event-row{height:60px;border-bottom:1px solid #f5f5f5;padding:4px 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;cursor:pointer}
+.tag-event-row:hover{background:#f8fafc}
+.tag-event-row.hat-post{background:#f0f5ff}
+.tag-post-card{background:var(--blau);border-radius:6px;padding:5px 10px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .15s}
+.tag-post-card:hover{background:#001f47}
+.tag-post-card.card-ig{background:#E1306C}
+.tag-post-card.card-ig:hover{background:#c01050}
+.tag-post-card.card-fb{background:#1877F2}
+.tag-post-card.card-fb:hover{background:#0d5cc7}
+.tag-post-card.card-beide{background:var(--orange)}
+.tag-post-time{font-size:10px;font-weight:700;color:rgba(255,255,255,.8);font-family:monospace;min-width:36px}
+.tag-post-text{font-size:11px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.tag-empty-slot{font-size:10px;color:#ccc;font-style:italic;padding:2px 0}
+.tag-hook-row{background:#fffbf0;border-left:3px solid var(--gelb);border-radius:0 5px 5px 0;padding:3px 8px;font-size:10px;color:var(--orange);margin:3px 0}
+.lp-fb{background:#e3eeff}
+.lp-beide{background:#f0e8ff}
+.lp-info{flex:1;min-width:0}
+.lp-titel{font-size:12px;font-weight:600;color:var(--blau);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-text{font-size:11px;color:var(--blau60);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lp-meta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+.lp-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px}
+.st-geplant{background:#E6F1FB;color:#185FA5}
+.st-freigabe{background:#FEF3DA;color:#996B00}
+.st-veroeffentlicht{background:#EAF3DE;color:#3B6D11}
+.st-abgelehnt{background:#FCEBEB;color:var(--rot)}
+.lp-uhr{font-size:10px;color:var(--blau60);font-family:'DM Mono',monospace}
+.lp-actions{display:flex;gap:5px;flex-shrink:0}
+.lp-btn{padding:4px 9px;border-radius:6px;font-size:10px;font-weight:600;border:1.5px solid #dde2e9;background:#fff;cursor:pointer;color:var(--blau60);transition:all .15s;font-family:'DM Sans',sans-serif}
+.lp-btn:hover{border-color:var(--blau);color:var(--blau)}
+.lp-btn.ok{color:#3B6D11;border-color:var(--gruen)}.lp-btn.ok:hover{background:#EAF3DE}
+.lp-btn.del{color:var(--rot);border-color:var(--rot)}.lp-btn.del:hover{background:#FCEBEB}
+
+/* ── POST MODAL ── */
+.pmodal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.pmodal-overlay.open{display:flex}
+.pmodal{background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pmodal-head{padding:16px 20px 12px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.pmodal-title{font-size:14px;font-weight:700;color:var(--blau)}
+.pmodal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--blau60)}
+.pmodal-body{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.pf-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.pf-input,.pf-select,.pf-textarea{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff}
+.pf-input:focus,.pf-select:focus,.pf-textarea:focus{border-color:var(--blau)}
+.pf-textarea{resize:vertical;min-height:100px;line-height:1.6}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pmodal-foot{padding:12px 20px 16px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+.pf-cancel{padding:8px 14px;border-radius:7px;font-size:12px;font-weight:500;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif}
+.pf-save{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pf-save:hover{background:#001f47}
+
+/* DETAIL MODAL */
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.detail-overlay.open{display:flex}
+.detail-modal{background:#fff;border-radius:14px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+.dm-head{padding:16px 20px 12px;border-bottom:1px solid #eef1f6;display:flex;gap:12px;align-items:flex-start}
+.dm-kanal-badge{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.dm-info{flex:1}
+.dm-titel{font-size:14px;font-weight:700;color:var(--blau)}
+.dm-meta{font-size:11px;color:var(--blau60);margin-top:2px;font-family:'DM Mono',monospace}
+.dm-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--blau60)}
+.dm-body{padding:16px 20px}
+.dm-text{font-size:13px;line-height:1.7;color:var(--blau);white-space:pre-wrap;background:var(--blau10);border-radius:8px;padding:12px;margin-bottom:12px}
+.dm-tags{font-size:11px;color:var(--hellblau);font-family:'DM Mono',monospace;margin-bottom:14px}
+.dm-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dm-btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1.5px solid;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px}
+.dm-btn.copy{color:var(--blau);border-color:var(--blau20)}.dm-btn.copy:hover{background:var(--blau10)}
+.dm-btn.approve{color:#3B6D11;border-color:var(--gruen)}.dm-btn.approve:hover{background:#EAF3DE}
+.dm-btn.publish{color:#fff;background:var(--gruen);border-color:var(--gruen)}
+.dm-btn.reject{color:var(--rot);border-color:var(--rot)}.dm-btn.reject:hover{background:#FCEBEB}
+.dm-btn.del{color:var(--blau60);border-color:#dde2e9}.dm-btn.del:hover{background:#f8f8f8}
+
+/* PBL-EINREICHUNGS-CHIPS */
+.chip-einreichung{background:#f0fce8;color:#2d6e0a;border-left:3px solid var(--gruen)}
+.chip-einreichung-pending{background:#FFF0E6;color:#8B4000;border-left:3px solid var(--orange)}
+
+/* PBL-VORSCHLAG MODAL */
+.pbl-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:16px}
+.pbl-modal-overlay.open{display:flex}
+.pbl-modal{background:#fff;border-radius:14px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.pbl-modal-head{background:var(--blau);padding:16px 20px;display:flex;align-items:center;gap:10px}
+.pbl-modal-title{font-size:14px;font-weight:700;color:#fff;flex:1}
+.pbl-modal-close{background:rgba(255,255,255,.15);border:none;border-radius:6px;color:#fff;font-size:14px;cursor:pointer;padding:3px 9px}
+.pbl-modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.pbl-label{font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.pbl-input,.pbl-textarea,.pbl-select{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s}
+.pbl-input:focus,.pbl-textarea:focus{border-color:var(--blau)}
+.pbl-textarea{resize:vertical;min-height:60px;line-height:1.5}
+.pbl-modal-foot{padding:12px 20px 16px;border-top:1px solid #eef1f6;display:flex;gap:8px;justify-content:flex-end}
+.pbl-cancel{padding:8px 14px;border-radius:7px;font-size:12px;background:#fff;border:1.5px solid #dde2e9;color:var(--blau60);cursor:pointer;font-family:'DM Sans',sans-serif}
+.pbl-submit{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.t-dot{width:16px;height:16px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px;color:var(--blau60)}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--blau);margin-bottom:4px}
+
+/* ── HOOK / ZULIEFERUNG OVERLAY ── */
+.tag-hook{font-size:9px;color:var(--orange);font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .3s}
+.tag-hook.hidden-layer{display:none}
+.zulieferung-chip{border-radius:3px;padding:2px 5px;font-size:9px;font-weight:500;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid;transition:opacity .3s;line-height:1.4}
+.zulieferung-chip.hidden-layer{display:none}
+.zl-jahrestag{background:#fff8e6;color:#7a5200;border-color:var(--orange)}
+.zl-veranstaltung{background:#fff0fa;color:#7a2a5a;border-color:#e040a0}
+.zl-kursstart{background:#e8fce8;color:#1a5c1a;border-color:var(--gruen)}
+.zl-anlass{background:#f0f0ff;color:#3322aa;border-color:#6655ee}
+
+/* ── FEIERTAGE / SCHULFERIEN LAYER ── */
+.tag.feiertag-bg{background:#FFEBCD !important}
+.tag.feiertag-bg.heute{background:#FFF0C8 !important}
+.feiertag-chip{border-radius:3px;padding:2px 5px;font-size:9px;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:2px solid;line-height:1.4;transition:opacity .3s}
+.feiertag-chip.hidden-layer{display:none}
+.ft-feiertag{background:#FFD59E;color:#7a3800;border-color:#E8900A}
+.ft-ferien{background:#FFE8C4;color:#7a5a00;border-color:#C8A000}
+.tag.feiertag-bg .tag-nr{color:#996633}
+.tag.feiertag-bg.heute .tag-nr{color:var(--blau)}
+
+/* ── SCHIEBEREGLER ── */
+.toggle-wrap{display:flex;align-items:center;gap:8px;padding:6px 14px;background:var(--blau10);border-radius:20px;border:1px solid var(--blau20)}
+.toggle-label{font-size:11px;font-weight:600;color:var(--blau);white-space:nowrap}
+.toggle-group{display:flex;align-items:center;gap:6px}
+.toggle-sub{font-size:10px;color:var(--blau60)}
+/* iOS-style switch */
+.switch{position:relative;display:inline-block;width:34px;height:19px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#dde2e9;transition:.25s;border-radius:19px}
+.slider:before{position:absolute;content:"";height:13px;width:13px;left:3px;bottom:3px;background:#fff;transition:.25s;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--orange)}
+input:checked+.slider.hooks{background:var(--orange)}
+input:checked+.slider.zulieferung{background:var(--gruen)}
+input:checked+.slider.feiertage{background:#C8A000}
+input:checked+.slider:before{transform:translateX(15px)}
+.divider-v{width:1px;height:18px;background:var(--blau20)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark"><svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40"><text x="0" y="28" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#ffffff">vhs</text><circle cx="68" cy="12" r="5" fill="#9BAAB8"/><circle cx="78" cy="8" r="6" fill="#FAB90F"/><circle cx="89" cy="13" r="5" fill="#64B9E6"/><circle cx="70" cy="23" r="6" fill="#E1000F"/><circle cx="83" cy="26" r="4" fill="#9BAAB8"/><text x="100" y="17" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#8BAABF">Volkshochschule</text><text x="100" y="32" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#ffffff">Spandau</text></svg></div>
+  </div>
+</div>
+
+<div class="ext-nav-bar" id="ext-nav-bar">
+  <a href="/" class="ext-nav-tab">← App</a>
+</div>
+<script>
+(async function() {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (!r.ok) return;
+    const { user } = await r.json();
+    const role = user.role;
+    const PAGES = [
+      { label:'📅 Redaktionsplan', url:'/kalender',           roles:['admin','redakteur','pbl'] },
+      { label:'📬 Kursvorschläge',  url:'/?screen=pbl',        roles:['admin','pbl'] },
+      { label:'📚 Kursliste',        url:'/?screen=kurse',      roles:['admin','redakteur','pbl'] },
+      { label:'✏️ Redaktion',        url:'/?screen=redakteur',  roles:['admin','redakteur'] },
+      { label:'🎨 Grafik-Studio',    url:'/editor',             roles:['admin','redakteur'] },
+      { label:'✅ Freigabe',          url:'/freigabe',           roles:['admin','redakteur'] },
+      { label:'📊 Dashboard',        url:'/?screen=direktion',  roles:['admin','redakteur','direktion'] },
+      { label:'📈 Performance',      url:'/performance',        roles:['admin','redakteur','direktion'] },
+      { label:'⚙️ Admin',            url:'/?screen=admin',      roles:['admin'] },
+    
+    
+    ];
+    const nav = PAGES
+      .filter(p => p.roles.includes(role))
+      .map(p => {
+        const isActive = !p.url.startsWith('/?|') && window.location.pathname === p.url;
+        return '<a href="'+p.url+'" class="ext-nav-tab'+(isActive?' active':'')+'">'+p.label+'</a>';
+      }).join('');
+    document.getElementById('ext-nav-bar').innerHTML = nav +
+      '<span class="ext-nav-user">👤 '+user.name.split(' ')[0]+'</span>' +
+      '<button class="ext-logout-btn" onclick="extLogout()">Abmelden</button>';
+  } catch(e) {}
+})();
+async function extLogout() {
+  await fetch('/api/logout', { method:'POST', credentials:'include' });
+  window.location.href = '/';
+}
+</script>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="month-nav">
+    <button class="mnav-btn" onclick="changeMonth(-1)">‹</button>
+    <div class="month-label" id="month-label">Juni 2026</div>
+    <button class="mnav-btn" onclick="changeMonth(1)">›</button>
+  </div>
+  <button class="mnav-btn" onclick="goToday()" title="Heute" style="font-size:11px;font-weight:700;width:auto;padding:0 10px">Heute</button>
+  <div class="view-chips">
+    <div class="vchip on" id="vchip-monat" onclick="setView('monat')">Monat</div>
+    <div class="vchip" id="vchip-woche" onclick="setView('woche')">Woche</div>
+    <div class="vchip" id="vchip-tag" onclick="setView('tag')">Tag</div>
+    <div class="vchip" id="vchip-liste" onclick="setView('liste')">Liste</div>
+  </div>
+  <div class="toggle-wrap">
+    <div class="toggle-group">
+      <label class="switch"><input type="checkbox" id="toggle-hooks" checked onchange="toggleLayer('hooks')"><span class="slider hooks"></span></label>
+      <span class="toggle-sub">Hooks</span>
+    </div>
+    <div class="divider-v"></div>
+    <div class="toggle-group">
+      <label class="switch"><input type="checkbox" id="toggle-zulieferung" checked onchange="toggleLayer('zulieferung')"><span class="slider zulieferung"></span></label>
+      <span class="toggle-sub">Content-Zulieferung</span>
+    </div>
+    <div class="divider-v"></div>
+    <div class="toggle-group">
+      <label class="switch"><input type="checkbox" id="toggle-feiertage" checked onchange="toggleLayer('feiertage')"><span class="slider feiertage"></span></label>
+      <span class="toggle-sub">Feiertage & Ferien</span>
+    </div>
+  </div>
+  <button class="add-post-btn" onclick="openPostModal()">＋ Post planen</button>
+</div>
+
+<!-- LEGENDE -->
+<div class="legende">
+  <div class="leg-item"><div class="leg-dot" style="background:#E1306C"></div>Instagram</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#1877F2"></div>Facebook</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Beide</div>
+  <div class="leg-item" style="margin-left:12px">
+    <div class="leg-dot" style="background:#E6F1FB;border:1px solid #185FA5"></div>Geplant
+  </div>
+  <div class="leg-item"><div class="leg-dot" style="background:#FEF3DA;border:1px solid #996B00"></div>Freigabe</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#EAF3DE;border:1px solid #3B6D11"></div>Veröffentlicht</div>
+  <div class="leg-item" style="margin-left:12px"><div class="leg-dot" style="background:#FFEBCD;border:1px solid #C8A000"></div>Feiertag / Ferien</div>
+  <div style="margin-left:auto;font-size:11px;color:var(--blau60)" id="post-count"></div>
+</div>
+
+<!-- KALENDER -->
+<div class="kalender-wrap" id="kalender-wrap"></div>
+
+<!-- POST ANLEGEN MODAL -->
+<div class="pmodal-overlay" id="pmodal-overlay" onclick="closePModal(event)">
+  <div class="pmodal">
+    <div class="pmodal-head">
+      <div class="pmodal-title" id="pmodal-title">Post planen</div>
+      <button class="pmodal-close" onclick="closePModalDirect()">✕</button>
+    </div>
+    <div class="pmodal-body">
+      <input type="hidden" id="pf-id">
+      <div class="pf-row">
+        <div>
+          <div class="pf-label">Datum</div>
+          <input class="pf-input" id="pf-datum" type="date">
+        </div>
+        <div>
+          <div class="pf-label">Uhrzeit</div>
+          <input class="pf-input" id="pf-uhrzeit" type="time" value="17:00">
+        </div>
+      </div>
+      <div class="pf-row">
+        <div>
+          <div class="pf-label">Kanal</div>
+          <select class="pf-select" id="pf-kanal">
+            <option value="ig">📸 Instagram</option>
+            <option value="fb">👥 Facebook</option>
+            <option value="beide">📸👥 Beide</option>
+          </select>
+        </div>
+        <div>
+          <div class="pf-label">Ziel</div>
+          <select class="pf-select" id="pf-ziel">
+            <option>Reichweite</option>
+            <option>Engagement</option>
+            <option>Conversion</option>
+            <option>Community</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="pf-label">Anlass / Hook</div>
+        <input class="pf-input" id="pf-anlass" type="text" placeholder="z. B. Internationaler Yogatag">
+      </div>
+      <div>
+        <div class="pf-label">Postingtext</div>
+        <textarea class="pf-textarea" id="pf-text" placeholder="Postingtext hier eingeben oder aus dem KI-Generator einfügen …"></textarea>
+      </div>
+      <div>
+        <div class="pf-label">Hashtags</div>
+        <input class="pf-input" id="pf-tags" type="text" placeholder="#vhsspandau #spandau …">
+      </div>
+      <div class="pf-row">
+        <div>
+          <div class="pf-label">Status</div>
+          <select class="pf-select" id="pf-status">
+            <option value="geplant">Geplant</option>
+            <option value="freigabe">Freigabe nötig</option>
+            <option value="veroeffentlicht">Veröffentlicht</option>
+          </select>
+        </div>
+        <div>
+          <div class="pf-label">Freigabe durch</div>
+          <select class="pf-select" id="pf-freigabe">
+            <option value="">— keine —</option>
+            <option>Thomas Mochalski</option>
+            <option>Katja Schubert-Linder</option>
+            <option>Marion Altendorf</option>
+            <option>Manuela Linke</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="pf-label">Ziel-URL (optional)</div>
+        <input class="pf-input" id="pf-url" type="text" placeholder="https://vhsit.berlin.de/…">
+      </div>
+      <div>
+        <div class="pf-label">Paid-Post?</div>
+        <select class="pf-select" id="pf-paid">
+          <option value="nein">Nein — organisch</option>
+          <option value="ja">Ja — bezahlte Werbung</option>
+        </select>
+      </div>
+    </div>
+    <div class="pmodal-foot">
+      <button class="pf-cancel" onclick="closePModalDirect()">Abbrechen</button>
+      <button class="pf-save" onclick="savePost()">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-modal">
+    <div class="dm-head">
+      <div class="dm-kanal-badge" id="dm-kanal-badge"></div>
+      <div class="dm-info">
+        <div class="dm-titel" id="dm-titel"></div>
+        <div class="dm-meta" id="dm-meta"></div>
+      </div>
+      <button class="pmodal-close" onclick="closeDetailDirect()">✕</button>
+    </div>
+    <div class="dm-body">
+      <div class="dm-text" id="dm-text"></div>
+      <div class="dm-tags" id="dm-tags"></div>
+      <div class="dm-actions" id="dm-actions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PBL-VORSCHLAG MODAL -->
+<div class="pbl-modal-overlay" id="pbl-modal-overlay" onclick="closePblModal(event)">
+  <div class="pbl-modal">
+    <div class="pbl-modal-head">
+      <div style="font-size:20px">📬</div>
+      <div class="pbl-modal-title" id="pbl-modal-title">Vorschlag an Redaktion</div>
+      <button class="pbl-modal-close" onclick="closePblModalDirect()">✕</button>
+    </div>
+    <div class="pbl-modal-body">
+      <div style="background:var(--blau10);border-radius:8px;padding:10px 13px;font-size:11px;color:var(--blau60);line-height:1.5">
+        📅 <strong id="pbl-modal-datum"></strong> · <span id="pbl-modal-hook" style="color:var(--orange)"></span>
+      </div>
+      <!-- Status-Badge (nur im Ansehen-Modus) -->
+      <div id="pbl-readonly-hint" style="display:none;border-radius:8px;padding:8px 13px;font-size:11px;font-weight:600"></div>
+      <div>
+        <div class="pbl-label">Kurs / Inhalt <span id="pbl-kurs-req" style="color:var(--rot)">*</span></div>
+        <input class="pbl-input" id="pbl-kurs" type="text" placeholder="z. B. Yoga Grundkurs — Sp3.316-W">
+      </div>
+      <div>
+        <div class="pbl-label">Kursnummer (optional)</div>
+        <input class="pbl-input" id="pbl-nr" type="text" placeholder="z. B. Sp3.316-W">
+      </div>
+      <div>
+        <div class="pbl-label">Idee / Bezug zum Anlass</div>
+        <textarea class="pbl-textarea" id="pbl-idee" placeholder="Was ist der Aufhänger? Welcher Aspekt des Kurses passt zum Datum?"></textarea>
+      </div>
+      <div>
+        <div class="pbl-label">Bild / Foto (optional)</div>
+        <div id="pbl-bild-wrap" style="border:1.5px dashed #dde2e9;border-radius:7px;padding:10px 12px;text-align:center;cursor:pointer;transition:border-color .15s" onclick="document.getElementById('pbl-bild-input').click()">
+          <div id="pbl-bild-placeholder" style="font-size:11px;color:var(--blau60)">📷 Bild auswählen oder hier klicken</div>
+          <img id="pbl-bild-preview" src="" alt="" style="display:none;max-width:100%;max-height:120px;border-radius:5px;margin-top:4px">
+        </div>
+        <input type="file" id="pbl-bild-input" accept="image/*" style="display:none" onchange="pblBildVorschau(this)">
+        <div id="pbl-bild-name" style="font-size:10px;color:var(--blau60);margin-top:3px"></div>
+      </div>
+    </div>
+    <div class="pbl-modal-foot">
+      <button class="pbl-cancel" onclick="closePblModalDirect()">Schließen</button>
+      <button class="pbl-submit" id="pbl-submit-btn" onclick="pblVorschlagEinreichen()">📬 Einreichen</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let aktuellesDatum = new Date(2026, 5, 1); // Juni 2026 — für Monat/Liste (Tag 1)
+let view = 'monat';
+let editingPostId = null;
+let currentUser = null;
+let postsCache = [];
+let einreichungenCache = []; // eigene Einreichungen der PBL
+let pblDatumContext = null;  // Datum für offenes PBL-Modal
+
+async function ladeEigeneEinreichungen() {
+  if (!currentUser || currentUser.role !== 'pbl') return;
+  try {
+    const r = await fetch('/api/einreichungen', { credentials:'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    einreichungenCache = Array.isArray(d) ? d : [];
+    // LocalStorage als Fallback aktualisieren
+    try { localStorage.setItem('pbl_einreichungen_' + currentUser.id, JSON.stringify(einreichungenCache)); } catch {}
+  } catch {
+    // Server nicht erreichbar → LocalStorage-Fallback
+    try {
+      const lokal = localStorage.getItem('pbl_einreichungen_' + currentUser.id);
+      if (lokal) einreichungenCache = JSON.parse(lokal);
+    } catch {}
+  }
+}
+
+function cacheEinreichungLokal(einr) {
+  if (!currentUser) return;
+  einreichungenCache.push(einr);
+  try { localStorage.setItem('pbl_einreichungen_' + currentUser.id, JSON.stringify(einreichungenCache)); } catch {}
+}
+
+// Posts — Server-API mit lokalem Cache
+async function ladePosts() {
+  try {
+    const r = await fetch('/api/posts', { credentials:'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    // API liefert direkt ein Array
+    postsCache = Array.isArray(d) ? d : (d.posts || []);
+  } catch {}
+}
+function loadPosts() { return postsCache; }
+async function savePost_server(post) {
+  try {
+    const isUpdate = post.id && postsCache.some(p => p.id === post.id);
+    const url    = isUpdate ? '/api/posts/' + post.id : '/api/posts';
+    const method = isUpdate ? 'PUT' : 'POST';
+    await fetch(url, {
+      method, credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(post)
+    });
+    await ladePosts();
+  } catch {}
+}
+async function deletePost_server(id) {
+  try {
+    await fetch('/api/posts/'+id, { method:'DELETE', credentials:'include' });
+    await ladePosts();
+  } catch {}
+}
+
+// Hooks aus dem Redaktionsplan (vollständig)
+const HOOKS = {
+  '2026-01-24': 'Tag der Bildung',
+  '2026-01-27': 'Holocaust-Gedenktag',
+  '2026-02-14': 'Valentinstag',
+  '2026-02-21': 'Muttersprachen-Tag',
+  '2026-02-22': 'Pokémon-Tag',
+  '2026-03-08': 'Weltfrauentag',
+  '2026-03-14': 'Pi-Tag',
+  '2026-03-20': 'Frühlingsanfang',
+  '2026-03-21': 'Welt-Poesie-Tag',
+  '2026-04-02': 'Welt-Autismus-Tag',
+  '2026-04-07': 'Weltgesundheitstag',
+  '2026-04-22': 'Earth Day',
+  '2026-04-23': 'Welt-Buch-Tag',
+  '2026-05-04': 'Star Wars Tag',
+  '2026-05-12': 'Krankenpflege-Tag',
+  '2026-05-15': 'Tag der Familie',
+  '2026-05-17': 'Welt-Hochstaplerei',
+  '2026-05-25': 'Towel Day',
+  '2026-06-05': 'Umwelttag',
+  '2026-06-21': 'Yogatag + Fête de la Musique',
+  '2026-06-27': 'Tag der Architektur',
+  '2026-07-04': 'Sommerferien Berlin',
+  '2026-07-30': 'Welt-Freundschaftstag',
+  '2026-08-10': 'Welt-Fototag',
+  '2026-08-12': 'Welt-Jugendtag',
+  '2026-08-26': 'Lange Nacht der Museen',
+  '2026-09-04': 'Tag der Sprachen',
+  '2026-09-21': 'Welt-Alzheimer-Tag',
+  '2026-09-22': 'Herbstanfang',
+  '2026-10-01': 'Welt-Musik-Tag',
+  '2026-10-03': 'Tag der Deutschen Einheit',
+  '2026-10-05': 'Welt-Lehrertag',
+  '2026-10-10': 'Welt-Psychische-Gesundheit',
+  '2026-10-16': 'Welt-Ernährungstag',
+  '2026-10-31': 'Halloween',
+  '2026-11-09': 'Mauerfall-Jahrestag',
+  '2026-11-18': 'Welt-Philosophie-Tag',
+  '2026-11-20': 'Welt-Kindertag',
+  '2026-12-01': 'Welt-AIDS-Tag',
+  '2026-12-10': 'Menschenrechtstag',
+  '2026-12-21': 'Winteranfang',
+};
+
+// Content-Zulieferungen aus dem Redaktionsplan (Typ + Kurs-Bezug)
+const ZULIEFERUNGEN = {
+  '2026-01-24': [{typ:'jahrestag', text:'Bildung · VHS-Angebote allg.'}],
+  '2026-02-14': [{typ:'anlass',    text:'Sprachen · Kreativ-Kurse'}],
+  '2026-03-08': [{typ:'jahrestag', text:'Empowerment · Frauen-Kurse'}],
+  '2026-03-14': [{typ:'anlass',    text:'Mathe · EDV · Grundbildung'}],
+  '2026-04-22': [{typ:'jahrestag', text:'Nachhaltigkeit · Natur-Kurse'}],
+  '2026-04-23': [{typ:'jahrestag', text:'Literatur · Schreib-Kurse'}],
+  '2026-05-04': [{typ:'anlass',    text:'Popkultur · Kreativ · Film'}],
+  '2026-06-05': [{typ:'kursstart', text:'Sommerprogramm 2026 online'}],
+  '2026-06-21': [{typ:'jahrestag', text:'Yoga Grundkurs Sp3.316-W'}, {typ:'veranstaltung', text:'Trommelkurs Sp2.731-H'}],
+  '2026-06-27': [{typ:'jahrestag', text:'Urban Sketching Sp2.246-S'}],
+  '2026-08-10': [{typ:'jahrestag', text:'Naturfotografie Sp2.610-S'}],
+  '2026-08-26': [{typ:'veranstaltung', text:'Kunst · Kulturgeschichte'}],
+  '2026-09-01': [{typ:'kursstart', text:'Herbstprogramm 2026 startet'}],
+  '2026-09-04': [{typ:'jahrestag', text:'9 Fremdsprachen · alle PB'}],
+  '2026-09-22': [{typ:'anlass',    text:'Outdoor · Gesundheit · Herbst'}],
+  '2026-10-03': [{typ:'jahrestag', text:'Geschichte · pol. Bildung'}],
+  '2026-10-05': [{typ:'jahrestag', text:'Pädagogik · Weiterbildung'}],
+  '2026-11-09': [{typ:'jahrestag', text:'DonnersTALK · Geschichte'}],
+  '2026-12-01': [{typ:'jahrestag', text:'Gesundheit · Aufklärung'}],
+  '2026-12-10': [{typ:'jahrestag', text:'Politik · Gesellschaft'}],
+};
+
+// Layer-Sichtbarkeit
+let showHooks = true;
+let showZulieferung = true;
+let showFeiertage = true;
+
+// Berliner Feiertage + Schulferien ab 28.05.2026 (laufend)
+const FEIERTAGE = {
+  // ── 2026 ──
+  // Pfingstmontag
+  '2026-05-25': { typ:'feiertag', label:'Pfingstmontag' },
+  // Schulferien Sommer Berlin 2026: 02.07.–11.08.2026
+  '2026-07-02': { typ:'ferien', label:'Sommerferien Berlin (Start)' },
+  '2026-07-03': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-04': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-05': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-06': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-07': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-08': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-09': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-10': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-11': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-12': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-13': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-14': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-15': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-16': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-17': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-18': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-19': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-20': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-21': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-22': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-23': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-24': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-25': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-26': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-27': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-28': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-29': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-30': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-07-31': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-01': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-02': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-03': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-04': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-05': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-06': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-07': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-08': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-09': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-10': { typ:'ferien', label:'Sommerferien Berlin' },
+  '2026-08-11': { typ:'ferien', label:'Sommerferien Berlin (Ende)' },
+  // Tag der Deutschen Einheit
+  '2026-10-03': { typ:'feiertag', label:'Tag der Deutschen Einheit' },
+  // Herbstferien Berlin 2026: 19.10.–30.10.2026
+  '2026-10-19': { typ:'ferien', label:'Herbstferien Berlin (Start)' },
+  '2026-10-20': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-21': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-22': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-23': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-24': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-25': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-26': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-27': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-28': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-29': { typ:'ferien', label:'Herbstferien Berlin' },
+  '2026-10-30': { typ:'ferien', label:'Herbstferien Berlin (Ende)' },
+  // Weihnachtsferien Berlin 2026: 23.12.2026–02.01.2027
+  '2026-12-23': { typ:'ferien', label:'Weihnachtsferien Berlin (Start)' },
+  '2026-12-24': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  '2026-12-25': { typ:'feiertag', label:'1. Weihnachtstag' },
+  '2026-12-26': { typ:'feiertag', label:'2. Weihnachtstag' },
+  '2026-12-27': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  '2026-12-28': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  '2026-12-29': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  '2026-12-30': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  '2026-12-31': { typ:'ferien', label:'Weihnachtsferien Berlin' },
+  // ── 2027 ──
+  '2027-01-01': { typ:'feiertag', label:'Neujahr' },
+  '2027-01-02': { typ:'ferien', label:'Weihnachtsferien Berlin (Ende)' },
+  // Winterferien Berlin 2027: 01.02.–05.02.2027
+  '2027-02-01': { typ:'ferien', label:'Winterferien Berlin (Start)' },
+  '2027-02-02': { typ:'ferien', label:'Winterferien Berlin' },
+  '2027-02-03': { typ:'ferien', label:'Winterferien Berlin' },
+  '2027-02-04': { typ:'ferien', label:'Winterferien Berlin' },
+  '2027-02-05': { typ:'ferien', label:'Winterferien Berlin (Ende)' },
+  '2027-04-02': { typ:'feiertag', label:'Karfreitag' },
+  '2027-04-05': { typ:'feiertag', label:'Ostermontag' },
+  // Osterferien Berlin 2027: 29.03.–09.04.2027
+  '2027-03-29': { typ:'ferien', label:'Osterferien Berlin (Start)' },
+  '2027-03-30': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-03-31': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-01': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-02': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-03': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-04': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-05': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-06': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-07': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-08': { typ:'ferien', label:'Osterferien Berlin' },
+  '2027-04-09': { typ:'ferien', label:'Osterferien Berlin (Ende)' },
+  '2027-05-01': { typ:'feiertag', label:'Tag der Arbeit' },
+  '2027-05-13': { typ:'feiertag', label:'Christi Himmelfahrt' },
+  '2027-05-24': { typ:'feiertag', label:'Pfingstmontag' },
+  '2027-10-03': { typ:'feiertag', label:'Tag der Deutschen Einheit' },
+  '2027-12-25': { typ:'feiertag', label:'1. Weihnachtstag' },
+  '2027-12-26': { typ:'feiertag', label:'2. Weihnachtstag' },
+};
+
+// Berechne ob ein Datum ein Sonntag ist (für Hintergrundmarkierung)
+function istSonntag(datStr) {
+  if (!datStr) return false;
+  const d = new Date(datStr + 'T12:00');
+  return d.getDay() === 0;
+}
+
+function toggleLayer(layer) {
+  if (layer === 'hooks') showHooks = document.getElementById('toggle-hooks').checked;
+  else if (layer === 'zulieferung') showZulieferung = document.getElementById('toggle-zulieferung').checked;
+  else if (layer === 'feiertage') {
+    showFeiertage = document.getElementById('toggle-feiertage').checked;
+    // Feiertage braucht re-render wegen Zellfärbung
+    renderKalender();
+    return;
+  }
+  // Sanftes Ein-/Ausblenden ohne neu rendern
+  document.querySelectorAll('.tag-hook').forEach(el => {
+    el.classList.toggle('hidden-layer', !showHooks);
+  });
+  document.querySelectorAll('.zulieferung-chip').forEach(el => {
+    el.classList.toggle('hidden-layer', !showZulieferung);
+  });
+}
+
+const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const WOCHENTAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const KANAL_ICONS = {ig:'📸',fb:'👥',beide:'📸👥'};
+const KANAL_COLORS = {ig:'var(--ig)',fb:'var(--fb)',beide:'#7c3aed'};
+const KANAL_BG = {ig:'#fce4ee',fb:'#e3eeff',beide:'#f0e8ff'};
+const STATUS_CSS = {geplant:'st-geplant',freigabe:'st-freigabe',veroeffentlicht:'st-veroeffentlicht',abgelehnt:'st-abgelehnt'};
+const STATUS_LABEL = {geplant:'Geplant',freigabe:'Freigabe ausstehend',veroeffentlicht:'Veröffentlicht',abgelehnt:'Abgelehnt'};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH CHECK
+// ══════════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', async () => {
+  try {
+    const r = await fetch('/api/me', { credentials:'include' });
+    if (!r.ok) { window.location.href = '/'; return; }
+    const d = await r.json();
+    currentUser = d.user;
+    const hdrUser = document.getElementById('hdr-user'); if (hdrUser) hdrUser.textContent = currentUser.name + ' · ' + ROLE_LABELS[currentUser.role]||currentUser.role;
+  } catch { window.location.href = '/'; return; }
+
+  await ladePosts();
+  await ladeEigeneEinreichungen();
+  if (postsCache.length === 0) { await ladeDemoPosts(); return; }
+  renderKalender();
+});
+
+async function ladeDemoPosts() {
+  const demo = [
+    {id:'d1',datum:'2026-06-05',uhrzeit:'17:00',kanal:'ig',anlass:'Sommerprogramm 2026',text:'Der Sommer kann kommen! 🌞\n\nUnser Sommerprogramm ist da — über 200 Kurse warten auf dich. Von Yoga über Sprachen bis Urban Sketching: Spandau lernt auch im Sommer.\n\nAlle Kurse jetzt online buchbar.',tags:'#vhsspandau #sommerprogramm #spandau #berlin #lernen',status:'veroeffentlicht',ziel:'Reichweite',freigabe:'Katja Schubert-Linder',paid:'nein',url:''},
+    {id:'d2',datum:'2026-06-05',uhrzeit:'17:15',kanal:'fb',anlass:'Sommerprogramm 2026',text:'Unser Sommerprogramm 2026 ist online! Über 200 Kurse in allen Programmbereichen — jetzt auf vhs-spandau.de entdecken.',tags:'#vhsspandau #sommerprogramm #volkshochschule',status:'veroeffentlicht',ziel:'Conversion',freigabe:'Katja Schubert-Linder',paid:'nein',url:''},
+    {id:'d3',datum:'2026-06-21',uhrzeit:'09:00',kanal:'ig',anlass:'Internationaler Yogatag',text:'Tief einatmen.\n\n…und ausatmen.\n\nHeute ist Internationaler Yogatag — und bei uns kannst du nicht nur feiern, sondern auch anfangen.\n\nYoga Grundkurs · Qi Gong · Pilates\nKleine Gruppen. Persönliche Begleitung.',tags:'#vhsspandau #yogatag #yoga #spandau #gesundheit #achtsamkeit',status:'geplant',ziel:'Reichweite',freigabe:'Thomas Mochalski',paid:'nein',url:''},
+    {id:'d4',datum:'2026-06-21',uhrzeit:'18:00',kanal:'fb',anlass:'Fête de la Musique',text:'Heute klingt Berlin! Die Fête de la Musique füllt die Stadt mit Musik — und wir zeigen, wie man selbst mitmacht. Unsere Trommel- und Percussion-Kurse starten im Herbst.',tags:'#vhsspandau #fetemusique #musik #spandau',status:'freigabe',ziel:'Engagement',freigabe:'Marion Altendorf',paid:'nein',url:''},
+    {id:'d5',datum:'2026-08-10',uhrzeit:'10:00',kanal:'beide',anlass:'Welt-Fototag',text:'Die Welt ist voller Momente — du musst sie nur festhalten.\n\nAm Welt-Fototag zeigen wir, wie das geht: Mit unserem Naturfotografie-Kurs lernst du Komposition, Licht und Timing.',tags:'#vhsspandau #weltfototag #fotografie #naturfotografie #berlin',status:'geplant',ziel:'Reichweite',freigabe:'',paid:'nein',url:''},
+    {id:'d6',datum:'2026-09-04',uhrzeit:'09:00',kanal:'ig',anlass:'Tag der Sprachen',text:'Spandau spricht viele Sprachen.\n\nAm Europäischen Tag der Sprachen feiern wir die Vielfalt — und unsere 9 Fremdsprachen-Angebote.\n\nEnglisch · Französisch · Spanisch · Italienisch · Arabisch · Chinesisch · Türkisch · Schwedisch · Baskisch',tags:'#vhsspandau #tagdersprachen #sprachen #mehrsprachig #spandau',status:'geplant',ziel:'Reichweite',freigabe:'',paid:'nein',url:''},
+    {id:'d7',datum:'2026-11-09',uhrzeit:'09:00',kanal:'beide',anlass:'Mauerfall-Jahrestag',text:'Erinnerung ist keine Pflicht. Erinnerung ist Haltung.\n\nAm 9. November 1989 fiel die Mauer — und veränderte alles. Was dieser Tag bedeutet und was wir daraus lernen: Darüber sprechen wir.',tags:'#vhsspandau #mauerfall #9november #berlin #geschichte #politischebildung',status:'freigabe',ziel:'Community',freigabe:'Marion Altendorf',paid:'nein',url:''},
+  ];
+  for (const p of demo) await savePost_server(p);
+  await ladePosts();
+  renderKalender();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════════════════════
+function changeMonth(dir) {
+  if (view === 'woche') {
+    aktuellesDatum = new Date(aktuellesDatum);
+    aktuellesDatum.setDate(aktuellesDatum.getDate() + dir * 7);
+  } else if (view === 'tag') {
+    aktuellesDatum = new Date(aktuellesDatum);
+    aktuellesDatum.setDate(aktuellesDatum.getDate() + dir);
+  } else {
+    aktuellesDatum = new Date(aktuellesDatum.getFullYear(), aktuellesDatum.getMonth() + dir, 1);
+  }
+  renderKalender();
+}
+function goToday() {
+  aktuellesDatum = new Date();
+  if (view === 'monat' || view === 'liste') aktuellesDatum.setDate(1);
+  renderKalender();
+}
+function setView(v) {
+  const prevView = view;
+  view = v;
+  document.querySelectorAll('.vchip').forEach(c => c.classList.remove('on'));
+  document.getElementById('vchip-' + v).classList.add('on');
+  // Wenn von Monatsansicht zu Woche/Tag gewechselt wird: auf heutiges Datum setzen
+  if ((v === 'woche' || v === 'tag') && (prevView === 'monat' || prevView === 'liste')) {
+    const heute = new Date();
+    // Prüfen ob heute im aktuellen Anzeigemonat liegt
+    if (aktuellesDatum.getMonth() === heute.getMonth() && aktuellesDatum.getFullYear() === heute.getFullYear()) {
+      aktuellesDatum = new Date(heute);
+    } else {
+      // Ersten Tag des angezeigten Monats nehmen
+      aktuellesDatum = new Date(aktuellesDatum.getFullYear(), aktuellesDatum.getMonth(), 1);
+    }
+  }
+  renderKalender();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KALENDER RENDERN
+// ══════════════════════════════════════════════════════════════════════════════
+function renderKalender() {
+  const monat = aktuellesDatum.getMonth();
+  const jahr  = aktuellesDatum.getFullYear();
+  const posts = loadPosts();
+
+  if (view === 'monat') {
+    document.getElementById('month-label').textContent = MONATE[monat] + ' ' + jahr;
+    const monatsPosts = posts.filter(p => p.datum && p.datum.startsWith(`${jahr}-${String(monat+1).padStart(2,'0')}`));
+    document.getElementById('post-count').textContent = monatsPosts.length + ' Posts diesen Monat';
+    renderMonat(monat, jahr, posts);
+  } else if (view === 'woche') {
+    const wocheMo = getWocheMontag(aktuellesDatum);
+    const wocheSo = new Date(wocheMo); wocheSo.setDate(wocheMo.getDate() + 6);
+    const kw = getKW(wocheMo);
+    document.getElementById('month-label').textContent =
+      'KW ' + kw + ' · ' + wocheMo.toLocaleDateString('de-DE',{day:'numeric',month:'short'}) +
+      ' – ' + wocheSo.toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'});
+    const wochePosts = posts.filter(p => {
+      if (!p.datum) return false;
+      const d = new Date(p.datum);
+      return d >= wocheMo && d <= wocheSo;
+    });
+    document.getElementById('post-count').textContent = wochePosts.length + ' Posts diese Woche';
+    renderWoche(wocheMo, posts);
+  } else if (view === 'tag') {
+    document.getElementById('month-label').textContent =
+      aktuellesDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const datStr = aktuellesDatum.toISOString().split('T')[0];
+    const tagPosts = posts.filter(p => p.datum === datStr);
+    document.getElementById('post-count').textContent = tagPosts.length + ' Posts heute';
+    renderTag(aktuellesDatum, posts);
+  } else {
+    document.getElementById('month-label').textContent = MONATE[monat] + ' ' + jahr;
+    const monatsPosts = posts.filter(p => p.datum && p.datum.startsWith(`${jahr}-${String(monat+1).padStart(2,'0')}`));
+    document.getElementById('post-count').textContent = monatsPosts.length + ' Posts diesen Monat';
+    renderListe(posts);
+  }
+}
+
+
+// ISO-Kalenderwoche berechnen
+function getKW(datum) {
+  const d = new Date(Date.UTC(datum.getFullYear(), datum.getMonth(), datum.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+function renderMonat(monat, jahr, allePosts) {
+  const wrap = document.getElementById('kalender-wrap');
+  const ersterTag = new Date(jahr, monat, 1);
+  const letzterTag = new Date(jahr, monat + 1, 0);
+  const heute = new Date();
+  heute.setHours(0,0,0,0);
+
+  // Wochentag des ersten Tags (Mo=0)
+  let startWt = ersterTag.getDay() - 1;
+  if (startWt < 0) startWt = 6;
+
+  // Alle sichtbaren Tage als flaches Array aufbauen (Montag der ersten Woche bis Sonntag der letzten)
+  const vorletzterMonat = new Date(jahr, monat, 0);
+  const tage = []; // { datStr, tagNr, istAnderer, istHeute }
+
+  // Vortage
+  for (let i = startWt - 1; i >= 0; i--) {
+    const d = vorletzterMonat.getDate() - i;
+    tage.push({ datStr: null, tagNr: d, istAnderer: true, istHeute: false, dat: new Date(jahr, monat - 1, d) });
+  }
+  // Haupttage
+  for (let d = 1; d <= letzterTag.getDate(); d++) {
+    const dat = new Date(jahr, monat, d);
+    const tagHeute = new Date(); tagHeute.setHours(0,0,0,0);
+    const datStr = `${jahr}-${String(monat+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    tage.push({ datStr, tagNr: d, istAnderer: false, istHeute: dat.getTime() === tagHeute.getTime(), dat });
+  }
+  // Nachfolgetage
+  const letzterWt = letzterTag.getDay() - 1;
+  const nachfolge = letzterWt === 6 ? 0 : 6 - (letzterWt < 0 ? 6 : letzterWt);
+  for (let d = 1; d <= nachfolge; d++) {
+    tage.push({ datStr: null, tagNr: d, istAnderer: true, istHeute: false, dat: new Date(jahr, monat + 1, d) });
+  }
+
+  // Zeilenweise rendern: je 7 Tage = 1 Zeile, davor KW-Zelle
+  let html = '<div class="monat-grid">';
+  html += '<div class="kw-header">KW</div>';
+  WOCHENTAGE.forEach(w => html += `<div class="wochentag-header">${w}</div>`);
+
+  for (let z = 0; z < tage.length; z += 7) {
+    const zeile = tage.slice(z, z + 7);
+    // KW vom Montag dieser Zeile (immer erstes Element, da Grid Mo-So)
+    html += `<div class="kw-zelle"><div class="kw-label"><span class="kw-nr">${getKW(zeile[0].dat)}</span></div></div>`;
+
+    zeile.forEach(tag => {
+      if (tag.istAnderer) {
+        html += `<div class="tag anderer-monat"><div class="tag-nr">${tag.tagNr}</div></div>`;
+        return;
+      }
+      const { datStr, tagNr, istHeute } = tag;
+      const hook = HOOKS[datStr];
+      const tagPosts = allePosts.filter(p => p.datum === datStr).sort((a,b) => a.uhrzeit.localeCompare(b.uhrzeit));
+      const feiertagInfo = FEIERTAGE[datStr];
+      const istFeiertag = showFeiertage && (feiertagInfo || istSonntag(datStr));
+
+      html += `<div class="tag${istHeute?' heute':''}${istFeiertag?' feiertag-bg':''}" onclick="tagKlick('${datStr}')">`;
+      html += `<div class="tag-nr">${tagNr}</div>`;
+
+      // Feiertag/Ferien-Chip
+      if (feiertagInfo) {
+        const ftIcon = feiertagInfo.typ === 'feiertag' ? '🔔' : '🏖️';
+        html += `<div class="feiertag-chip ft-${feiertagInfo.typ}${showFeiertage?'':' hidden-layer'}">${ftIcon} ${esc(feiertagInfo.label)}</div>`;
+      } else if (istSonntag(datStr) && showFeiertage) {
+        // Sonntag dezent markieren (nur Hintergrund, kein Chip)
+      }
+
+      if (hook) html += `<div class="tag-hook${showHooks?'':' hidden-layer'}">🎯 ${hook}</div>`;
+
+      const zulieferungen = ZULIEFERUNGEN[datStr] || [];
+      zulieferungen.forEach(z2 => {
+        const typIcons = {jahrestag:'📅',veranstaltung:'🎪',kursstart:'🚀',anlass:'💡'};
+        html += `<div class="zulieferung-chip zl-${z2.typ}${showZulieferung?'':' hidden-layer'}">${typIcons[z2.typ]||'•'} ${esc(z2.text)}</div>`;
+      });
+
+      const MAX = 3;
+      tagPosts.slice(0, MAX).forEach(p => {
+        const chipCls = `chip-${p.kanal} ${p.status==='veroeffentlicht'?'chip-veroeffentlicht':''}`;
+        html += `<div class="post-chip ${chipCls}" onclick="event.stopPropagation();openDetail('${p.id}')" title="${esc(p.anlass||'')}">
+          ${KANAL_ICONS[p.kanal]} ${esc(p.anlass||p.text.slice(0,20))}
+        </div>`;
+      });
+      if (tagPosts.length > MAX) {
+        html += `<div class="mehr-btn" onclick="event.stopPropagation();setView('liste')">+${tagPosts.length-MAX} weitere</div>`;
+      }
+
+      // Eigene PBL-Einreichungen für diesen Tag anzeigen
+      if (currentUser && currentUser.role === 'pbl') {
+        const eigene = einreichungenCache.filter(e => e.datum === datStr);
+        eigene.forEach(e => {
+          const cls = e.status === 'angenommen' ? 'chip-einreichung' : 'chip-einreichung-pending';
+          const icon = e.status === 'angenommen' ? '✅' : '📬';
+          html += `<div class="post-chip ${cls}" title="${esc(e.kurs||'')} — ${e.status==='angenommen'?'Angenommen':'Eingereicht'}"
+            onclick="event.stopPropagation();openPblDetail('${esc(e.id||'')}')">
+            ${icon} ${esc((e.kurs||'Vorschlag').slice(0,22))}
+          </div>`;
+        });
+        // "Vorschlag"-Button nur auf Tagen mit Hook oder Zulieferung
+        if (hook || (ZULIEFERUNGEN[datStr]||[]).length) {
+          html += `<div class="post-chip" style="background:var(--blau10);color:var(--blau60);border-left:3px solid var(--blau20);cursor:pointer"
+            onclick="event.stopPropagation();openPblModal('${datStr}')">
+            + Vorschlag
+          </div>`;
+        }
+      }
+      html += '</div>';
+    });
+  }
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function renderListe(allePosts) {
+  const monat = aktuellesDatum.getMonth();
+  const jahr  = aktuellesDatum.getFullYear();
+  const posts = allePosts
+    .filter(p => p.datum && p.datum.startsWith(`${jahr}-${String(monat+1).padStart(2,'0')}`))
+    .sort((a,b) => a.datum.localeCompare(b.datum) || a.uhrzeit.localeCompare(b.uhrzeit));
+
+  if (!posts.length) {
+    document.getElementById('kalender-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Keine Posts in diesem Monat</div><div>Klicke auf „+ Post planen" um loszulegen.</div></div>`;
+    return;
+  }
+
+  // Nach Datum gruppieren
+  const gruppen = {};
+  posts.forEach(p => { (gruppen[p.datum] = gruppen[p.datum]||[]).push(p); });
+
+  let html = '<div class="liste-wrap">';
+  Object.entries(gruppen).forEach(([dat, tagPosts]) => {
+    const [j,m,d] = dat.split('-');
+    const tagObjekt = new Date(+j, +m-1, +d);
+    const datLabel = tagObjekt.toLocaleDateString('de-DE', {weekday:'long',day:'numeric',month:'long'});
+    const hook = HOOKS[dat];
+    const feiertagInfo = FEIERTAGE[dat];
+    html += `<div class="liste-gruppe">
+      <div class="liste-datum"${feiertagInfo ? ' style="background:#FFF3DC"' : ''}>${datLabel}${hook?`<span class="hook-badge">🎯 ${esc(hook)}</span>`:''}${feiertagInfo?`<span class="hook-badge" style="background:#FFD59E;color:#7a3800">${feiertagInfo.typ==='feiertag'?'🔔':'🏖️'} ${esc(feiertagInfo.label)}</span>`:''}
+      </div>`;
+    tagPosts.forEach(p => {
+      html += `<div class="liste-post">
+        <div class="lp-kanal lp-${p.kanal}">${KANAL_ICONS[p.kanal]}</div>
+        <div class="lp-info">
+          <div class="lp-titel">${esc(p.anlass||'Post')}</div>
+          <div class="lp-text">${esc(p.text||'')}</div>
+          <div class="lp-meta">
+            <span class="lp-status ${STATUS_CSS[p.status]||'st-geplant'}">${STATUS_LABEL[p.status]||p.status}</span>
+            ${p.uhrzeit?`<span class="lp-uhr">🕐 ${p.uhrzeit}</span>`:''}
+            ${p.ziel?`<span class="lp-uhr">Ziel: ${esc(p.ziel)}</span>`:''}
+            ${p.paid==='ja'?`<span class="lp-uhr" style="color:var(--orange)">💶 Paid</span>`:''}
+          </div>
+        </div>
+        <div class="lp-actions">
+          <button class="lp-btn" onclick="openDetail('${p.id}')">👁</button>
+          <button class="lp-btn" onclick="openPostModal('${p.id}')">✏️</button>
+          <button class="lp-btn del" onclick="loeschePost('${p.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('kalender-wrap').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WOCHEN-ANSICHT
+// ══════════════════════════════════════════════════════════════════════════════
+function getWocheMontag(datum) {
+  const d = new Date(datum);
+  const wt = d.getDay(); // 0=So
+  const diffMo = wt === 0 ? -6 : 1 - wt;
+  d.setDate(d.getDate() + diffMo);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function renderWoche(wocheMo, allePosts) {
+  const wrap = document.getElementById('kalender-wrap');
+  const heute = new Date(); heute.setHours(0,0,0,0);
+  const STUNDEN = ['08','09','10','11','12','13','14','15','16','17','18','19','20'];
+  const KURZTAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+  // 7 Tage der Woche
+  const tage = Array.from({length:7}, (_,i) => {
+    const d = new Date(wocheMo); d.setDate(wocheMo.getDate() + i);
+    return d;
+  });
+
+  let html = '<div class="woche-grid">';
+
+  // Zeiten-Spalte Header
+  html += '<div class="woche-time-header">Zeit</div>';
+
+  // Ungerade Spalten (Di=1, Do=3, Sa=5) leicht beige einfärben
+  // Tag-Headers (ungerade Spalten Di=1,Do=3,Sa=5 leicht beige)
+  tage.forEach((d, i) => {
+    const istHeute = d.getTime() === heute.getTime();
+    const datStr = d.toISOString().split('T')[0];
+    const feiertagInfo = FEIERTAGE[datStr];
+    const nrHtml = istHeute
+      ? `<div class="woche-day-nr heute-nr">${d.getDate()}</div>`
+      : `<div class="woche-day-nr">${d.getDate()}</div>`;
+    const ftBadge = feiertagInfo ? `<div style="font-size:8px;color:var(--gelb);margin-top:1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${feiertagInfo.label}</div>` : '';
+    const oddCls = (i % 2 === 1 && !istHeute) ? ' col-odd' : '';
+    html += `<div class="woche-day-header${istHeute?' heute-col':''}${oddCls}">
+      <div class="woche-day-name">${KURZTAGE[i]}</div>
+      ${nrHtml}
+      ${ftBadge}
+    </div>`;
+  });
+
+  // Zeit-Slots + Events
+  STUNDEN.forEach(std => {
+    html += `<div class="woche-time-slot">${std}:00</div>`;
+    tage.forEach((d, i) => {
+      const datStr = d.toISOString().split('T')[0];
+      const hook = showHooks && HOOKS[datStr];
+      const feiertagInfo = FEIERTAGE[datStr];
+      const tagPosts = allePosts.filter(p =>
+        p.datum === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
+      );
+      const hatContent = tagPosts.length > 0;
+      const oddCls = (i % 2 === 1 && !feiertagInfo) ? ' col-odd' : '';
+      html += `<div class="woche-slot${hatContent?' hat-post':''}${feiertagInfo?' feiertag-slot':''}${oddCls}"
+        onclick="wocheSlotKlick('${datStr}','${std}:00')">`;
+      if (std === '08' && hook) {
+        html += `<div style="font-size:8px;color:var(--orange);background:#FEF3DA;border-radius:3px;padding:1px 4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 ${esc(hook)}</div>`;
+      }
+      tagPosts.forEach(p => {
+        const pillCls = p.kanal === 'ig' ? 'pill-ig' : p.kanal === 'fb' ? 'pill-fb' : 'pill-beide';
+        html += `<div class="woche-post-pill ${pillCls}" onclick="event.stopPropagation();openDetail('${p.id}')" title="${esc(p.anlass||'')}">
+          ${KANAL_ICONS[p.kanal]} ${esc((p.anlass||p.text||'').slice(0,22))}
+        </div>`;
+      });
+      html += '</div>';
+    });
+  });
+
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function wocheSlotKlick(datStr, uhrzeit) {
+  openPostModal(null, datStr, uhrzeit);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAG-ANSICHT
+// ══════════════════════════════════════════════════════════════════════════════
+function renderTag(datum, allePosts) {
+  const wrap = document.getElementById('kalender-wrap');
+  const datStr = datum.toISOString().split('T')[0];
+  const heute = new Date(); heute.setHours(0,0,0,0);
+  const istHeute = datum.getTime() === heute.getTime();
+  const STUNDEN = ['07','08','09','10','11','12','13','14','15','16','17','18','19','20','21'];
+  const wochentag = datum.toLocaleDateString('de-DE',{weekday:'long'});
+  const datumLabel = datum.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
+  const kw = getKW(datum);
+  const hook = HOOKS[datStr];
+  const feiertagInfo = FEIERTAGE[datStr];
+  const tagPosts = allePosts.filter(p => p.datum === datStr);
+
+  let html = `<div class="tag-view-wrap">
+    <div class="tag-view-header">
+      <div>
+        <div class="tag-view-wochentag">${wochentag}${istHeute?' · Heute':''}</div>
+        <div class="tag-view-datum">${datumLabel}</div>
+      </div>
+      <div class="tag-view-kw">KW ${kw}</div>
+      ${feiertagInfo ? `<div style="font-size:11px;background:rgba(250,185,15,.2);color:var(--gelb);padding:3px 10px;border-radius:10px;font-weight:600">${feiertagInfo.typ==='feiertag'?'🔔':'🏖️'} ${esc(feiertagInfo.label)}</div>` : ''}
+      <div style="margin-left:auto;display:flex;gap:6px">
+        ${tagPosts.length > 0 ? `<span style="font-size:12px;color:rgba(255,255,255,.7)">${tagPosts.length} Post${tagPosts.length>1?'s':''}</span>` : ''}
+        ${currentUser && currentUser.role === 'pbl'
+          ? `<button onclick="openPblModal('${datStr}')" style="background:var(--gruen);color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📬 Vorschlag einreichen</button>`
+          : `<button onclick="openPostModal(null,'${datStr}')" style="background:var(--gelb);color:var(--blau);border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋ Post planen</button>`
+        }
+      </div>
+    </div>`;
+
+  if (hook) {
+    html += `<div style="background:#FEF9EC;border-left:4px solid var(--gelb);padding:10px 16px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--orange)">
+      <span style="font-size:16px">🎯</span> <strong>Hook:</strong> ${esc(hook)}
+    </div>`;
+  }
+
+  html += '<div class="tag-view-body"><div class="tag-stunden">';
+  STUNDEN.forEach(std => {
+    html += `<div class="tag-stunde-row">${std}:00</div>`;
+  });
+  html += '</div><div class="tag-events">';
+
+  STUNDEN.forEach(std => {
+    const stdPosts = tagPosts.filter(p => p.uhrzeit && p.uhrzeit.startsWith(std));
+    html += `<div class="tag-event-row${stdPosts.length?' hat-post':''}" onclick="openPostModal(null,'${datStr}','${std}:00')">`;
+    if (stdPosts.length === 0) {
+      html += `<div class="tag-empty-slot">— leer</div>`;
+    } else {
+      stdPosts.forEach(p => {
+        const cls = p.kanal === 'ig' ? 'card-ig' : p.kanal === 'fb' ? 'card-fb' : 'card-beide';
+        html += `<div class="tag-post-card ${cls}" onclick="event.stopPropagation();openDetail('${p.id}')">
+          <span class="tag-post-time">${esc(p.uhrzeit||std+':00')}</span>
+          <span style="font-size:14px">${KANAL_ICONS[p.kanal]}</span>
+          <span class="tag-post-text">${esc(p.anlass||p.text.slice(0,60))}</span>
+          <span style="font-size:9px;font-weight:700;color:rgba(255,255,255,.6);padding:1px 6px;background:rgba(255,255,255,.15);border-radius:8px">${STATUS_LABEL[p.status]||p.status}</span>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  });
+
+  html += '</div></div></div>';
+  wrap.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAG-KLICK (Monatsansicht → Post anlegen)
+// ══════════════════════════════════════════════════════════════════════════════
+function tagKlick(datStr) {
+  // PBL sieht das Einreichungs-Modal, Admin/Redakteur sehen Post-Modal
+  if (currentUser && currentUser.role === 'pbl') {
+    openPblModal(datStr);
+  } else {
+    openPostModal(null, datStr);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// POST MODAL
+// ══════════════════════════════════════════════════════════════════════════════
+function openPostModal(id, datStr, uhrzeit) {
+  editingPostId = id || null;
+  const overlay = document.getElementById('pmodal-overlay');
+  if (id) {
+    const p = loadPosts().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('pmodal-title').textContent = 'Post bearbeiten';
+    document.getElementById('pf-id').value      = p.id;
+    document.getElementById('pf-datum').value   = p.datum;
+    document.getElementById('pf-uhrzeit').value = p.uhrzeit||'17:00';
+    document.getElementById('pf-kanal').value   = p.kanal;
+    document.getElementById('pf-ziel').value    = p.ziel||'Reichweite';
+    document.getElementById('pf-anlass').value  = p.anlass||'';
+    document.getElementById('pf-text').value    = p.text||'';
+    document.getElementById('pf-tags').value    = p.tags||'';
+    document.getElementById('pf-status').value  = p.status||'geplant';
+    document.getElementById('pf-freigabe').value= p.freigabe||'';
+    document.getElementById('pf-url').value     = p.url||'';
+    document.getElementById('pf-paid').value    = p.paid||'nein';
+  } else {
+    document.getElementById('pmodal-title').textContent = 'Post planen';
+    document.getElementById('pf-id').value      = '';
+    document.getElementById('pf-datum').value   = datStr || today();
+    document.getElementById('pf-uhrzeit').value = uhrzeit || '17:00';
+    document.getElementById('pf-kanal').value   = 'ig';
+    document.getElementById('pf-ziel').value    = 'Reichweite';
+    document.getElementById('pf-anlass').value  = datStr && HOOKS[datStr] ? HOOKS[datStr] : '';
+    document.getElementById('pf-text').value    = '';
+    document.getElementById('pf-tags').value    = '#vhsspandau #spandau';
+    document.getElementById('pf-status').value  = 'geplant';
+    document.getElementById('pf-freigabe').value= '';
+    document.getElementById('pf-url').value     = '';
+    document.getElementById('pf-paid').value    = 'nein';
+  }
+  overlay.classList.add('open');
+  setTimeout(() => document.getElementById('pf-anlass').focus(), 50);
+}
+
+function closePModal(e) { if (e.target === document.getElementById('pmodal-overlay')) closePModalDirect(); }
+function closePModalDirect() { document.getElementById('pmodal-overlay').classList.remove('open'); }
+
+async function savePost() {
+  const datum = document.getElementById('pf-datum').value;
+  if (!datum) { alert('Bitte ein Datum wählen.'); return; }
+  const post = {
+    id:       editingPostId || 'p' + Date.now(),
+    datum,
+    uhrzeit:  document.getElementById('pf-uhrzeit').value,
+    kanal:    document.getElementById('pf-kanal').value,
+    ziel:     document.getElementById('pf-ziel').value,
+    anlass:   document.getElementById('pf-anlass').value.trim(),
+    text:     document.getElementById('pf-text').value.trim(),
+    tags:     document.getElementById('pf-tags').value.trim(),
+    status:   document.getElementById('pf-status').value,
+    freigabe: document.getElementById('pf-freigabe').value,
+    url:      document.getElementById('pf-url').value.trim(),
+    paid:     document.getElementById('pf-paid').value,
+  };
+  await savePost_server(post);
+  closePModalDirect();
+  showToast(editingPostId ? '✅ Post aktualisiert' : '✅ Post geplant');
+  renderKalender();
+}
+
+async function loeschePost(id) {
+  if (!confirm('Post wirklich löschen?')) return;
+  await deletePost_server(id);
+  closeDetailDirect();
+  showToast('🗑 Post gelöscht');
+  renderKalender();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════════════════════════════════════════
+function openDetail(id) {
+  const p = loadPosts().find(x => x.id === id);
+  if (!p) return;
+  const badge = document.getElementById('dm-kanal-badge');
+  badge.style.background = KANAL_BG[p.kanal];
+  badge.textContent = KANAL_ICONS[p.kanal];
+  document.getElementById('dm-titel').textContent = p.anlass || 'Post';
+  const dat = p.datum ? new Date(p.datum+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
+  document.getElementById('dm-meta').textContent = `${dat}${p.uhrzeit?' · '+p.uhrzeit:''} · ${STATUS_LABEL[p.status]||p.status}${p.paid==='ja?' ?'· 💶 Paid':''}`;
+  document.getElementById('dm-text').textContent = p.text || '(kein Text)';
+  document.getElementById('dm-tags').textContent = p.tags || '';
+
+  // Aktionen je Status und Rolle
+  const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'redakteur');
+  let acts = `<button class="dm-btn copy" onclick="copyText('${id}')">📋 Kopieren</button>`;
+  acts += `<button class="dm-btn copy" onclick="openPostModal('${id}');closeDetailDirect()">✏️ Bearbeiten</button>`;
+  if (isAdmin && p.status === 'freigabe') {
+    acts += `<button class="dm-btn approve" onclick="updateStatus('${id}','geplant')">✅ Freigeben</button>`;
+    acts += `<button class="dm-btn reject" onclick="updateStatus('${id}','abgelehnt')">✕ Ablehnen</button>`;
+  }
+  if (isAdmin && p.status === 'geplant') {
+    acts += `<button class="dm-btn publish" onclick="updateStatus('${id}','veroeffentlicht')">🚀 Veröffentlicht</button>`;
+  }
+  acts += `<button class="dm-btn del" onclick="loeschePost('${id}')">🗑 Löschen</button>`;
+  document.getElementById('dm-actions').innerHTML = acts;
+  document.getElementById('detail-overlay').classList.add('open');
+}
+function closeDetail(e) { if (e.target===document.getElementById('detail-overlay')) closeDetailDirect(); }
+function closeDetailDirect() { document.getElementById('detail-overlay').classList.remove('open'); }
+
+async function updateStatus(id, status) {
+  const posts = loadPosts();
+  const idx = posts.findIndex(p => p.id === id);
+  if (idx > -1) {
+    posts[idx].status = status;
+    await savePost_server(posts[idx]);
+  }
+  closeDetailDirect();
+  const labels = {geplant:'✅ Freigegeben',veroeffentlicht:'🚀 Veröffentlicht',abgelehnt:'✕ Abgelehnt'};
+  showToast(labels[status]||'Status geändert');
+  renderKalender();
+}
+
+function copyText(id) {
+  const p = loadPosts().find(x => x.id === id);
+  if (!p) return;
+  navigator.clipboard.writeText((p.text||'') + '\n\n' + (p.tags||'')).then(() => showToast('📋 Text kopiert'));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PBL-VORSCHLAG MODAL
+// ══════════════════════════════════════════════════════════════════════════════
+function openPblModal(datStr) {
+  // Neuer Vorschlag
+  pblDatumContext = datStr;
+  const hook = HOOKS[datStr] || '';
+  const [j,m,d] = datStr.split('-');
+  const datLabel = new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('pbl-modal-datum').textContent = datLabel;
+  document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
+  document.getElementById('pbl-modal-title').textContent = 'Vorschlag an Redaktion';
+  document.getElementById('pbl-kurs').value  = '';
+  document.getElementById('pbl-nr').value    = '';
+  document.getElementById('pbl-idee').value  = '';
+  // Bild-Felder zurücksetzen
+  document.getElementById('pbl-bild-input').value = '';
+  document.getElementById('pbl-bild-preview').style.display = 'none';
+  document.getElementById('pbl-bild-placeholder').style.display = 'block';
+  document.getElementById('pbl-bild-name').textContent = '';
+  document.getElementById('pbl-bild-wrap').style.borderColor = '#dde2e9';
+
+  // Felder editierbar
+  ['pbl-kurs','pbl-nr','pbl-idee'].forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = false;
+    el.style.background = '';
+  });
+  document.getElementById('pbl-submit-btn').style.display = 'inline-block';
+  document.getElementById('pbl-readonly-hint').style.display = 'none';
+
+  document.getElementById('pbl-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('pbl-kurs').focus(), 50);
+}
+
+function openPblDetail(einrId) {
+  // Vorhandenen Vorschlag ansehen (read-only)
+  const e = einreichungenCache.find(x => String(x.id) === String(einrId));
+  if (!e) return;
+
+  pblDatumContext = e.datum;
+  const hook = e.datum ? (HOOKS[e.datum] || '') : '';
+  const datLabel = e.datum
+    ? (() => { const [j,m,d] = e.datum.split('-'); return new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); })()
+    : '';
+
+  document.getElementById('pbl-modal-datum').textContent = datLabel;
+  document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
+  document.getElementById('pbl-modal-title').textContent = 'Mein Vorschlag';
+
+  document.getElementById('pbl-kurs').value = e.kurs  || '';
+  document.getElementById('pbl-nr').value   = e.kursNr || '';
+  document.getElementById('pbl-idee').value = e.idee  || '';
+
+  // Felder schreibgeschützt anzeigen
+  ['pbl-kurs','pbl-nr','pbl-idee'].forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = true;
+    el.style.background = '#f8fafc';
+  });
+
+  // Status-Badge einblenden, Submit ausblenden
+  const STATUS_LABEL = { neu:'📬 Eingereicht — wartet auf Redaktion', angenommen:'✅ Angenommen', abgelehnt:'↩️ Abgelehnt' };
+  const STATUS_COLOR = { neu:'#8B4000', angenommen:'#3B6D11', abgelehnt:'#791F1F' };
+  const STATUS_BG    = { neu:'#FFF0E6', angenommen:'#EAF3DE', abgelehnt:'#FCEBEB' };
+  const status = e.status || 'neu';
+  const hint = document.getElementById('pbl-readonly-hint');
+  hint.textContent = STATUS_LABEL[status] || status;
+  hint.style.color = STATUS_COLOR[status] || '#333';
+  hint.style.background = STATUS_BG[status] || '#f0f0f0';
+  hint.style.display = 'block';
+  document.getElementById('pbl-submit-btn').style.display = 'none';
+
+  document.getElementById('pbl-modal-overlay').classList.add('open');
+}
+
+function closePblModal(e) { if (e.target === document.getElementById('pbl-modal-overlay')) closePblModalDirect(); }
+function closePblModalDirect() { document.getElementById('pbl-modal-overlay').classList.remove('open'); }
+
+function pblBildVorschau(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('pbl-bild-preview');
+  const placeholder = document.getElementById('pbl-bild-placeholder');
+  const nameEl = document.getElementById('pbl-bild-name');
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    nameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+    document.getElementById('pbl-bild-wrap').style.borderColor = 'var(--blau)';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function pblVorschlagEinreichen() {
+  const kurs = document.getElementById('pbl-kurs').value.trim();
+  if (!kurs) { document.getElementById('pbl-kurs').focus(); return; }
+  const nr   = document.getElementById('pbl-nr').value.trim();
+  const idee = document.getElementById('pbl-idee').value.trim();
+  const hook = HOOKS[pblDatumContext] || '';
+  const bildInput = document.getElementById('pbl-bild-input');
+  const hasBild = bildInput.files && bildInput.files.length > 0;
+
+  const btn = document.getElementById('pbl-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Wird gesendet …';
+
+  const anlass   = (hook || 'Kalender-Vorschlag') + (pblDatumContext ? ' · ' + pblDatumContext : '');
+  const anlassId = 'kalender-' + pblDatumContext;
+
+  try {
+    let r, d;
+    // Bild als base64 lesen falls vorhanden, dann alles als JSON senden
+    let bildDataUrl = null;
+    if (hasBild) {
+      // Bild komprimieren auf max 800px und ~300KB
+      bildDataUrl = await new Promise((resolve) => {
+        const file = bildInput.files[0];
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX = 800;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.onerror = () => resolve(null);
+          img.src = e.target.result;
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+    }
+    const payload = { anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
+                      pb: currentUser?.pb || 'alle', bild: bildDataUrl };
+    const endpoint = bildDataUrl ? '/api/einreichungen/mit-bild' : '/api/einreichungen';
+    r = await fetch(endpoint, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) { showToast('⚠️ Fehler beim Einreichen'); btn.disabled = false; btn.textContent = '📬 Einreichen'; return; }
+    d = await r.json();
+    // Lokal cachen damit der Chip sofort erscheint
+    cacheEinreichungLokal({ anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
+      id: d.einreichung?.id || Date.now(), status: 'neu' });
+    closePblModalDirect();
+    showToast('📬 Vorschlag an die Redaktion gesendet!');
+    renderKalender();
+  } catch { showToast('⚠️ Server nicht erreichbar'); }
+  btn.disabled = false;
+  btn.textContent = '📬 Einreichen';
+}
+
+
+function today() {
+  const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
+>>>>>>> Stashed changes
