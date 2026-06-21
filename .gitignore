@@ -2,3 +2,9 @@ downloads/
 uploads/
 sessions.json
 passwords_override.json
+
+# Server-Backups und temporäre Dateien
+server.js.backup_*
+*.backup_*
+vhs-pr-maschine-update.zip
+users.json
