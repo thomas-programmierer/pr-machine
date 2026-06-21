@@ -12,3 +12,11 @@ FORCE_UPDATE.bat
 update.ps1
 update2.ps1
 gitignore
+downloads/
+uploads/
+sessions.json
+passwords_override.json
+FORCE_UPDATE.bat
+update.ps1
+update2.ps1
+gitignore
