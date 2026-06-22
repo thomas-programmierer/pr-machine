@@ -87,7 +87,16 @@ function loadJSON(file, def) {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return def; }
 }
 function saveJSON(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8"); }
-function loadUsers() { return loadJSON(USERS_FILE, { users:[] }).users; }
+function loadUsers() {
+  const data = loadJSON(USERS_FILE, { users:[] }).users;
+  if (data.length === 0) {
+    return [
+      { id:"1", name:"Thomas Admin", username:"thomas", role:"admin", pb:"alle", aktiv:true, password:"vhs2026!" },
+      { id:"2", name:"PBL Muster", username:"pbl", role:"pbl", pb:"alle", aktiv:true, password:"vhs2026!" }
+    ];
+  }
+  return data;
+}
 function saveUsers(u) { saveJSON(USERS_FILE, { users: u }); }
 function safeUser(u) { const { password:_, ...s } = u; return s; }
 async function readBody(req) {
