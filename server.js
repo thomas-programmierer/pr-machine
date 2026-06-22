@@ -92,7 +92,7 @@ function loadUsers() {
   if (data.length === 0) {
     return [
       { id:"1", name:"Thomas Admin", username:"thomas", role:"admin", pb:"alle", aktiv:true, password:"vhs2026!" },
-      { id:"2", name:"PBL Muster", username:"pbl", role:"pbl", pb:"alle", aktiv:true, password:"vhs2026!" }
+      { id:"2", name:"Manuela Linke", username:"manuela", role:"pbl", pb:"Programmbereichsleitung", aktiv:true, password:"vhs2020!" }
     ];
   }
   return data;
