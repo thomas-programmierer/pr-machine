@@ -225,6 +225,40 @@ const server = http.createServer(async (req, res) => {
   }
   // ── ENDE HUB-IMPORT ───────────────────────────────────────────────────────
 
+  // ── HUB-EINREICHUNG (kein Cookie nötig, nur Token) ───────────────────────
+  if (req.method === "POST" && url === "/api/einreichungen/hub") {
+    const HUB_SECRET = process.env.HUB_SECRET || "vhs-hub-2026";
+    const hubToken = req.headers["x-hub-token"];
+    if (hubToken !== HUB_SECRET) {
+      return jsonRes(res, 401, { error: "Unauthorized" });
+    }
+    const b = await readBody(req);
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
+    const neu = {
+      id:          String(Date.now()),
+      anlass:      b.anlass    || b.kurs || "Hub-Einreichung",
+      anlassId:    "hub-" + Date.now(),
+      kurs:        b.kurs      || b.anlass || "",
+      kursNr:      b.kursNr   || "",
+      idee:        b.idee      || "",
+      text:        b.text      || "",
+      hashtags:    b.hashtags  || "",
+      kanal:       b.kanal     || "Instagram",
+      datum:       b.datum     || "",
+      pb:          "alle",
+      bild:        null,
+      status:      "neu",
+      eingereicht: new Date().toISOString(),
+      autor:       "thomas",
+      autorId:     "1"
+    };
+    einr.unshift(neu);
+    saveJSON(EINR_FILE, einr);
+    console.log("[Hub-Einreichung] ✓", neu.kurs);
+    return jsonRes(res, 201, { ok: true, einreichung: neu });
+  }
+  // ── ENDE HUB-EINREICHUNG ─────────────────────────────────────────────────
+
 
   const sess = getSession(getToken(req));
 
