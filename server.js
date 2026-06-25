@@ -183,6 +183,44 @@ const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-hub-token");
 
+  // ── HUB-IMPORT (vor Session-Check – nur Token-Auth) ──────────────────────
+  if (req.method === "POST" && url === "/api/hub-import") {
+    const HUB_SECRET = process.env.HUB_SECRET || "vhs-hub-2026";
+    const hubToken = req.headers["x-hub-token"];
+    if (hubToken !== HUB_SECRET) {
+      return jsonRes(res, 401, { error: "Unauthorized – Hub-Token ungültig" });
+    }
+    const b = await readBody(req);
+    if (!b.titel || !b.text) {
+      return jsonRes(res, 400, { error: "Pflichtfelder: titel, text" });
+    }
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
+    const neu = {
+      id:          String(Date.now()),
+      quelle:      "hub",
+      status:      "neu",
+      eingereicht: new Date().toISOString(),
+      autor:       "VHS PR-Hub",
+      autorId:     "hub",
+      pb:          "alle",
+      hook:        b.titel,
+      kurs:        b.titel,
+      kursNr:      b.kurs_nr         || "",
+      idee:        b.text.slice(0, 150),
+      text:        b.text,
+      hashtags:    b.hashtags        || "",
+      kanal:       b.kanal           || "instagram",
+      format:      b.format          || "sq",
+      datum:       b.datum_vorschlag || ""
+    };
+    einr.unshift(neu);
+    saveJSON(EINR_FILE, einr);
+    console.log(`[Hub-Import] ✓ ${b.titel} (${b.kanal || "instagram"})`);
+    return jsonRes(res, 201, { success: true, id: neu.id, message: "Im Redaktionsplan gespeichert" });
+  }
+  // ── ENDE HUB-IMPORT ───────────────────────────────────────────────────────
+
+
   const url  = req.url.split("?")[0];
   const sess = getSession(getToken(req));
 
@@ -495,46 +533,7 @@ const server = http.createServer(async (req, res) => {
     return callAnthropic(await readBody(req), res);
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // ── HUB-IMPORT · NEU ─────────────────────────────────────────────────────
-  // Empfängt Content-Pakete vom VHS PR-Hub und speichert sie als Einreichungen
-  // Token: HUB_SECRET Umgebungsvariable (Railway) oder Fallback 'vhs-hub-2026'
-  // ══════════════════════════════════════════════════════════════════════════
-  if (req.method === "POST" && url === "/api/hub-import") {
-    const HUB_SECRET = process.env.HUB_SECRET || "vhs-hub-2026";
-    const token = req.headers["x-hub-token"];
-    if (token !== HUB_SECRET) {
-      return jsonRes(res, 401, { error: "Unauthorized – Hub-Token ungültig" });
-    }
-    const b = await readBody(req);
-    if (!b.titel || !b.text) {
-      return jsonRes(res, 400, { error: "Pflichtfelder: titel, text" });
-    }
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const neu = {
-      id:           String(Date.now()),
-      quelle:       "hub",
-      status:       "neu",
-      eingereicht:  new Date().toISOString(),
-      autor:        "VHS PR-Hub",
-      autorId:      "hub",
-      pb:           "alle",
-      hook:         b.titel,
-      kurs:         b.titel,
-      kursNr:       b.kurs_nr    || "",
-      idee:         b.text.slice(0, 150),
-      text:         b.text,
-      hashtags:     b.hashtags   || "",
-      kanal:        b.kanal      || "instagram",
-      format:       b.format     || "sq",
-      datum:        b.datum_vorschlag || ""
-    };
-    einr.unshift(neu);
-    saveJSON(EINR_FILE, einr);
-    console.log(`[Hub-Import] ✓ ${b.titel} (${b.kanal || "instagram"})`);
-    return jsonRes(res, 201, { success: true, id: neu.id, message: "Im Redaktionsplan gespeichert" });
-  }
-  // ── ENDE HUB-IMPORT ───────────────────────────────────────────────────────
+
 
   // ── SEITEN ────────────────────────────────────────────────────────────────
   const PAGES = { "/performance":"performance.html", "/freigabe":"freigabe.html",
