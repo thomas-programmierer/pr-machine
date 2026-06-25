@@ -179,6 +179,10 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
+  // CORS-Header für alle Antworten setzen
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-hub-token");
+
   const url  = req.url.split("?")[0];
   const sess = getSession(getToken(req));
 
