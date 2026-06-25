@@ -28,7 +28,9 @@ function saveSessions() {
 const USERS_FILE   = path.join(__dirname, "users.json");
 const POSTS_FILE   = path.join(__dirname, "posts.json");
 const PERF_FILE    = path.join(__dirname, "performance.json");
-const EINR_FILE    = path.join(__dirname, "einreichungen.json");
+const EINR_FILE    = fs.existsSync('/app/data') 
+  ? '/app/data/einreichungen.json'
+  : path.join(__dirname, "einreichungen.json");
 const KONTEXT_FILE = path.join(__dirname, 'kursprogramm_kontext.json');
 const PW_OVERRIDE_FILE = path.join(__dirname, 'passwords_override.json');
 
