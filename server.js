@@ -183,6 +183,9 @@ const server = http.createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,x-hub-token");
 
+  // url früh definieren (wird auch unten nochmal für sess gebraucht)
+  const url = req.url.split("?")[0];
+
   // ── HUB-IMPORT (vor Session-Check – nur Token-Auth) ──────────────────────
   if (req.method === "POST" && url === "/api/hub-import") {
     const HUB_SECRET = process.env.HUB_SECRET || "vhs-hub-2026";
@@ -221,7 +224,6 @@ const server = http.createServer(async (req, res) => {
   // ── ENDE HUB-IMPORT ───────────────────────────────────────────────────────
 
 
-  const url  = req.url.split("?")[0];
   const sess = getSession(getToken(req));
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
