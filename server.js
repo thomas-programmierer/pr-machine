@@ -200,21 +200,23 @@ const server = http.createServer(async (req, res) => {
     const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
     const neu = {
       id:          String(Date.now()),
-      quelle:      "hub",
+      // Struktur kompatibel mit PR-Maschine Frontend
+      anlass:      b.anlass    || b.titel,
+      anlassId:    b.anlassId  || ("hub-" + Date.now()),
+      kurs:        b.titel,
+      kursNr:      b.kurs_nr   || "",
+      idee:        b.idee      || b.text.slice(0, 150),
+      text:        b.text,
+      hashtags:    b.hashtags  || "",
+      kanal:       b.kanal     || "instagram",
+      format:      b.format    || "sq",
+      datum:       b.datum     || b.datum_vorschlag || "",
+      pb:          "alle",
       status:      "neu",
       eingereicht: new Date().toISOString(),
-      autor:       "VHS PR-Hub",
-      autorId:     "hub",
-      pb:          "alle",
-      hook:        b.titel,
-      kurs:        b.titel,
-      kursNr:      b.kurs_nr         || "",
-      idee:        b.text.slice(0, 150),
-      text:        b.text,
-      hashtags:    b.hashtags        || "",
-      kanal:       b.kanal           || "instagram",
-      format:      b.format          || "sq",
-      datum:       b.datum_vorschlag || ""
+      autor:       "thomas",
+      autorId:     "1",
+      quelle:      "hub"
     };
     einr.unshift(neu);
     saveJSON(EINR_FILE, einr);
