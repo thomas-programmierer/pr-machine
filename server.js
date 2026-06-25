@@ -175,7 +175,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") {
     res.writeHead(204, { "Access-Control-Allow-Origin":"*",
       "Access-Control-Allow-Methods":"GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers":"Content-Type" });
+      "Access-Control-Allow-Headers":"Content-Type,x-hub-token" });
     return res.end();
   }
 
@@ -237,10 +237,9 @@ const server = http.createServer(async (req, res) => {
     const users = loadUsers();
     const idx = users.findIndex(u => u.id === id);
     if (idx === -1) return jsonRes(res, 404, { error:"User nicht gefunden" });
-    // Passwort separat in Override-Datei speichern (deploy-sicher)
     if (b.password) {
       setPassword(id, b.password);
-      delete b.password; // nicht in users.json schreiben
+      delete b.password;
     }
     users[idx] = { ...users[idx], ...b, id };
     saveUsers(users);
@@ -351,7 +350,6 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
-  // Einreichung mit Bild als base64 im JSON
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
@@ -398,7 +396,7 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, { ok:true });
   }
 
-  // ── ADMIN INPUT: Redaktionsplan-URLs ─────────────────────────────────────
+  // ── ADMIN INPUT: Redaktionsplan-URLs ──────────────────────────────────────
   if (req.method === "GET" && url === "/api/admin/redaktionsplan-urls") {
     if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
     const meta = loadJSON(REDPLAN_FILE, { urls: [], lastUpdate: null });
@@ -417,7 +415,7 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, { ok:true, meta });
   }
 
-  // ── ADMIN INPUT: Datei-Upload ────────────────────────────────────────────
+  // ── ADMIN INPUT: Datei-Upload ─────────────────────────────────────────────
   if (req.method === "POST" && url === "/api/admin/upload") {
     if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
     const ct = req.headers["content-type"] || "";
@@ -486,12 +484,53 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  // ── KI GENERATE ──────────────────────────────────────────────────────────
+  // ── KI GENERATE ───────────────────────────────────────────────────────────
   if (req.method === "POST" && url === "/api/generate") {
     if (!sess || !["admin","redakteur"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff — nur für Redakteure" });
     return callAnthropic(await readBody(req), res);
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // ── HUB-IMPORT · NEU ─────────────────────────────────────────────────────
+  // Empfängt Content-Pakete vom VHS PR-Hub und speichert sie als Einreichungen
+  // Token: HUB_SECRET Umgebungsvariable (Railway) oder Fallback 'vhs-hub-2026'
+  // ══════════════════════════════════════════════════════════════════════════
+  if (req.method === "POST" && url === "/api/hub-import") {
+    const HUB_SECRET = process.env.HUB_SECRET || "vhs-hub-2026";
+    const token = req.headers["x-hub-token"];
+    if (token !== HUB_SECRET) {
+      return jsonRes(res, 401, { error: "Unauthorized – Hub-Token ungültig" });
+    }
+    const b = await readBody(req);
+    if (!b.titel || !b.text) {
+      return jsonRes(res, 400, { error: "Pflichtfelder: titel, text" });
+    }
+    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
+    const neu = {
+      id:           String(Date.now()),
+      quelle:       "hub",
+      status:       "neu",
+      eingereicht:  new Date().toISOString(),
+      autor:        "VHS PR-Hub",
+      autorId:      "hub",
+      pb:           "alle",
+      hook:         b.titel,
+      kurs:         b.titel,
+      kursNr:       b.kurs_nr    || "",
+      idee:         b.text.slice(0, 150),
+      text:         b.text,
+      hashtags:     b.hashtags   || "",
+      kanal:        b.kanal      || "instagram",
+      format:       b.format     || "sq",
+      datum:        b.datum_vorschlag || ""
+    };
+    einr.unshift(neu);
+    saveJSON(EINR_FILE, einr);
+    console.log(`[Hub-Import] ✓ ${b.titel} (${b.kanal || "instagram"})`);
+    return jsonRes(res, 201, { success: true, id: neu.id, message: "Im Redaktionsplan gespeichert" });
+  }
+  // ── ENDE HUB-IMPORT ───────────────────────────────────────────────────────
 
   // ── SEITEN ────────────────────────────────────────────────────────────────
   const PAGES = { "/performance":"performance.html", "/freigabe":"freigabe.html",
