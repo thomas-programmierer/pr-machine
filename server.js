@@ -26,11 +26,12 @@ function saveSessions() {
 }
 
 const USERS_FILE   = path.join(__dirname, "users.json");
-const POSTS_FILE   = path.join(__dirname, "posts.json");
-const PERF_FILE    = path.join(__dirname, "performance.json");
-const EINR_FILE    = fs.existsSync('/app/data') 
-  ? '/app/data/einreichungen.json'
-  : path.join(__dirname, "einreichungen.json");
+const POSTS_FILE   = path.join(__dirname, "data", "posts.json");
+const PERF_FILE    = path.join(__dirname, "data", "performance.json");
+const DATA_DIR     = fs.existsSync(path.join(__dirname, "data"))
+  ? path.join(__dirname, "data")
+  : (fs.existsSync('/app/data') ? '/app/data' : __dirname);
+const EINR_FILE    = path.join(DATA_DIR, "einreichungen.json");
 const KONTEXT_FILE = path.join(__dirname, 'kursprogramm_kontext.json');
 const PW_OVERRIDE_FILE = path.join(__dirname, 'passwords_override.json');
 
@@ -48,7 +49,7 @@ function setPassword(userId, pw) {
   ov[userId] = pw;
   fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
 }
-const REDPLAN_FILE = path.join(__dirname, "redaktionsplan_meta.json");
+const REDPLAN_FILE = path.join(DATA_DIR, "redaktionsplan_meta.json");
 
 if (!API_KEY) { console.error("❌  ANTHROPIC_API_KEY fehlt."); process.exit(1); }
 
@@ -339,7 +340,7 @@ const server = http.createServer(async (req, res) => {
   // ── POSTS ─────────────────────────────────────────────────────────────────
   if (req.method === "GET" && url === "/api/posts") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    return jsonRes(res, 200, loadJSON(POSTS_FILE, []));
+    return jsonRes(res, 200, loadJSON(POSTS_FILE, { posts: [] }).posts || loadJSON(POSTS_FILE, []));
   }
 
   if (req.method === "POST" && url === "/api/posts") {
