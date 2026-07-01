@@ -2,10 +2,7 @@
 
 const multer = require('multer');
 const XLSX   = require('xlsx');
-const KURSE_JSON_PATH = require('path').join(__dirname, 'data', 'kursprogramm_data.json');
-let KURSE = require('fs').existsSync(KURSE_JSON_PATH)
-  ? JSON.parse(require('fs').readFileSync(KURSE_JSON_PATH, 'utf8'))
-  : [];
+const db     = require('./db');   // Postgres-Anbindung (Einreichungen + Kurse)
 
 const http   = require("http");
 const https  = require("https");
@@ -31,7 +28,6 @@ const PERF_FILE    = path.join(__dirname, "data", "performance.json");
 const DATA_DIR     = fs.existsSync(path.join(__dirname, "data"))
   ? path.join(__dirname, "data")
   : (fs.existsSync('/app/data') ? '/app/data' : __dirname);
-const EINR_FILE    = path.join(DATA_DIR, "einreichungen.json");
 const KONTEXT_FILE = path.join(__dirname, 'kursprogramm_kontext.json');
 const PW_OVERRIDE_FILE = path.join(__dirname, 'passwords_override.json');
 
@@ -200,10 +196,7 @@ const server = http.createServer(async (req, res) => {
     if (!b.titel || !b.text) {
       return jsonRes(res, 400, { error: "Pflichtfelder: titel, text" });
     }
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const neu = {
-      id:          String(Date.now()),
-      // Struktur kompatibel mit PR-Maschine Frontend
+    const neu = await db.addEinreichung({
       anlass:      b.anlass    || b.titel,
       anlassId:    b.anlassId  || ("hub-" + Date.now()),
       kurs:        b.titel,
@@ -213,16 +206,14 @@ const server = http.createServer(async (req, res) => {
       hashtags:    b.hashtags  || "",
       kanal:       b.kanal     || "instagram",
       format:      b.format    || "sq",
-      datum:       b.datum     || b.datum_vorschlag || "",
+      datum:       b.datum     || b.datum_vorschlag || null,
       pb:          "alle",
       status:      "neu",
       eingereicht: new Date().toISOString(),
       autor:       "thomas",
       autorId:     "1",
       quelle:      "hub"
-    };
-    einr.unshift(neu);
-    saveJSON(EINR_FILE, einr);
+    });
     console.log(`[Hub-Import] ✓ ${b.titel} (${b.kanal || "instagram"})`);
     return jsonRes(res, 201, { success: true, id: neu.id, message: "Im Redaktionsplan gespeichert" });
   }
@@ -236,9 +227,7 @@ const server = http.createServer(async (req, res) => {
       return jsonRes(res, 401, { error: "Unauthorized" });
     }
     const b = await readBody(req);
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const neu = {
-      id:          String(Date.now()),
+    const neu = await db.addEinreichung({
       anlass:      b.anlass    || b.kurs || "Hub-Einreichung",
       anlassId:    "hub-" + Date.now(),
       kurs:        b.kurs      || b.anlass || "",
@@ -247,16 +236,14 @@ const server = http.createServer(async (req, res) => {
       text:        b.text      || "",
       hashtags:    b.hashtags  || "",
       kanal:       b.kanal     || "Instagram",
-      datum:       b.datum     || "",
+      datum:       b.datum     || null,
       pb:          "alle",
       bild:        null,
       status:      "neu",
       eingereicht: new Date().toISOString(),
       autor:       "thomas",
       autorId:     "1"
-    };
-    einr.unshift(neu);
-    saveJSON(EINR_FILE, einr);
+    });
     console.log("[Hub-Einreichung] ✓", neu.kurs);
     return jsonRes(res, 201, { ok: true, einreichung: neu });
   }
@@ -370,8 +357,7 @@ const server = http.createServer(async (req, res) => {
     if (!sess || !["admin","redakteur"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
-    const posts = loadJSON(POSTS_FILE, []).filter(p => p.id !== id);
-    saveJSON(POSTS_FILE, posts);
+    const posts = loadJSON(POSTS_FILE, []).filter(p => p.id !== id);saveJSON(POSTS_FILE, posts);saveJSON(POSTS_FILE, posts);
     return jsonRes(res, 200, { ok:true });
   }
 
@@ -405,7 +391,7 @@ const server = http.createServer(async (req, res) => {
   // ── EINREICHUNGEN ─────────────────────────────────────────────────────────
   if (req.method === "GET" && url === "/api/einreichungen") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    const alle = loadJSON(EINR_FILE, []);
+    const alle = await db.getEinreichungen();
     if (["admin","redakteur"].includes(sess.user.role)) {
       return jsonRes(res, 200, alle);
     }
@@ -418,30 +404,24 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url === "/api/einreichungen") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const neu = {
-      id: String(Date.now()),
+    const neu = await db.addEinreichung({
       ...b,
       status: "neu",
       eingereicht: new Date().toISOString(),
       autor: sess.user.name,
       autorId: sess.user.id,
       pb: sess.user.pb || "alle"
-    };
-    einr.push(neu);
-    saveJSON(EINR_FILE, einr);
+    });
     return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const neu = {
-      id: String(Date.now()),
+    const neu = await db.addEinreichung({
       anlass:   b.anlass   || "",
       anlassId: b.anlassId || "",
-      datum:    b.datum    || "",
+      datum:    b.datum    || null,
       kurs:     b.kurs     || "",
       kursNr:   b.kursNr   || "",
       idee:     b.idee     || "",
@@ -450,10 +430,8 @@ const server = http.createServer(async (req, res) => {
       status:   "neu",
       eingereicht: new Date().toISOString(),
       autor:    sess.user.name,
-      autorId:  sess.user.id,
-    };
-    einr.push(neu);
-    saveJSON(EINR_FILE, einr);
+      autorId:  sess.user.id
+    });
     return jsonRes(res, 201, { ok:true, einreichung: neu });
   }
 
@@ -462,20 +440,19 @@ const server = http.createServer(async (req, res) => {
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
     const b = await readBody(req);
-    const einr = (() => { const d = loadJSON(EINR_FILE, []); return Array.isArray(d) ? d : []; })();
-    const idx = einr.findIndex(e => e.id === id);
-    if (idx === -1) return jsonRes(res, 404, { error:"Nicht gefunden" });
-    einr[idx] = { ...einr[idx], ...b };
-    saveJSON(EINR_FILE, einr);
-    return jsonRes(res, 200, { ok:true, einreichung: einr[idx] });
+    const alle = await db.getEinreichungen();
+    const bestehend = alle.find(e => String(e.id) === String(id));
+    if (!bestehend) return jsonRes(res, 404, { error:"Nicht gefunden" });
+    const merged = { ...bestehend, ...b };
+    const aktualisiert = await db.updateEinreichung(id, merged);
+    return jsonRes(res, 200, { ok:true, einreichung: aktualisiert });
   }
 
   if (req.method === "DELETE" && url.startsWith("/api/einreichungen/")) {
     if (!sess || !["admin","redakteur"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
-    const einr = loadJSON(EINR_FILE, []).filter(e => e.id !== id);
-    saveJSON(EINR_FILE, einr);
+    await db.deleteEinreichung(id);
     return jsonRes(res, 200, { ok:true });
   }
 
@@ -594,23 +571,24 @@ const server = http.createServer(async (req, res) => {
     const urlObj = new URL("http://x" + req.url);
     const id = url.split("/")[3];
     if (id && id !== 'kategorien') {
-      const kurs = KURSE.find(k => k.id === id);
+      const kurs = await db.getKursByCode(id);
       if (!kurs) return jsonRes(res, 404, { error: 'Kurs nicht gefunden' });
       return jsonRes(res, 200, kurs);
     }
     if (url === "/api/kurse-kategorien") {
-      return jsonRes(res, 200, [...new Set(KURSE.map(k => k.kategorie))].sort());
+      return jsonRes(res, 200, await db.getKategorien());
     }
     const q = urlObj.searchParams.get('q');
     const kategorie = urlObj.searchParams.get('kategorie');
     const limit = parseInt(urlObj.searchParams.get('limit')) || 5000;
     const offset = parseInt(urlObj.searchParams.get('offset')) || 0;
-    let result = KURSE;
+    let result = await db.getKurse();
     if (kategorie && kategorie !== 'alle') result = result.filter(k => k.kategorie === kategorie);
     if (q && q.trim()) {
       const s = q.toLowerCase().trim();
       result = result.filter(k =>
-        k.titel.toLowerCase().includes(s) || k.id.toLowerCase().includes(s) ||
+        (k.titel && k.titel.toLowerCase().includes(s)) ||
+        (k.id && k.id.toLowerCase().includes(s)) ||
         (k.beschreibung && k.beschreibung.toLowerCase().includes(s))
       );
     }
@@ -621,7 +599,7 @@ const server = http.createServer(async (req, res) => {
     if (!adminOnly(sess)) return jsonRes(res, 403, { error: "Kein Zugriff" });
     const chunks = [];
     req.on('data', c => chunks.push(c));
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const buf = Buffer.concat(chunks);
         const boundary = req.headers['content-type']?.split('boundary=')[1];
@@ -652,10 +630,7 @@ const server = http.createServer(async (req, res) => {
             angemeldet: parseInt(r[6]) || 0, maximum: parseInt(r[7]) || 0, kategorie: getKategorie(id) });
         }
         if (!kurse.length) return jsonRes(res, 400, { error: 'Keine gültigen Kurse' });
-        const dataDir = path.join(__dirname, 'data');
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
-        fs.writeFileSync(KURSE_JSON_PATH, JSON.stringify(kurse, null, 2), 'utf8');
-        KURSE.length = 0; KURSE.push(...kurse);
+        await db.upsertKurse(kurse);
         return jsonRes(res, 200, { success: true, count: kurse.length });
       } catch (err) { return jsonRes(res, 500, { error: err.message }); }
     });
@@ -728,8 +703,15 @@ function parseKursDate(v) {
   return null;
 }
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
   console.log(`  🌐  http://localhost:${PORT}`);
-  console.log("  🔑  API-Key: aktiv\n  Stoppen: Strg+C\n");
+  console.log("  🔑  API-Key: aktiv");
+  try {
+    const n = await db.testConnection();
+    console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
+  } catch (e) {
+    console.error("  ❌  Postgres NICHT erreichbar:", e.message);
+  }
+  console.log("  Stoppen: Strg+C\n");
 });
