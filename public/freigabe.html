@@ -49,12 +49,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .post-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
 .post-card:hover{box-shadow:0 4px 16px rgba(0,40,90,.1)}
 .post-card.warten{border-top:3px solid var(--orange)}
+.post-card.direktion{border-top:3px solid var(--hellblau)}
 .post-card.freigegeben{border-top:3px solid var(--gruen)}
 .post-card.abgelehnt{border-top:3px solid var(--rot);opacity:.75}
 
 .pc-head{padding:12px 14px 8px;display:flex;align-items:flex-start;gap:10px}
 .pc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .s-warten{background:var(--orange)}
+.s-direktion{background:var(--hellblau)}
 .s-freigegeben{background:var(--gruen)}
 .s-abgelehnt{background:var(--rot)}
 .pc-meta{flex:1;min-width:0}
@@ -62,6 +64,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .pc-sub{font-size:10px;color:var(--blau60);display:flex;gap:8px;flex-wrap:wrap}
 .pc-pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
 .pill-warten{background:#FFF0E6;color:#8B4000}
+.pill-direktion{background:#E4F2FB;color:#1B5E86}
 .pill-freigegeben{background:#EAF3DE;color:#3B6D11}
 .pill-abgelehnt{background:#FCEBEB;color:#791F1F}
 
@@ -146,7 +149,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 
   <div style="margin-bottom:16px">
     <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
-    <div style="font-size:12px;color:var(--blau60)">Posts prüfen, freigeben oder ablehnen — bevor sie veröffentlicht werden.</div>
+    <div style="font-size:12px;color:var(--blau60)">Zweistufig: Die Redaktion prüft zuerst und gibt an die Direktion weiter — die Direktion erteilt die endgültige Freigabe.</div>
   </div>
 
   <!-- STATS -->
@@ -155,7 +158,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
   <!-- FILTER TABS -->
   <div class="tabs">
     <button class="tab-btn active" id="tab-alle"     onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
-    <button class="tab-btn"        id="tab-warten"   onclick="setFilter('freigabe_ausstehend')">Ausstehend <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+    <button class="tab-btn"        id="tab-warten"   onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+    <button class="tab-btn"        id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
     <button class="tab-btn"        id="tab-frei"     onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
     <button class="tab-btn"        id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
   </div>
@@ -198,13 +202,8 @@ async function init() {
     document.getElementById('hdr-user').textContent = currentUser.name + ' · ' + (ROLE_LABELS[currentUser.role]||'');
     document.getElementById('login-required').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
-
-    // Nur Admins und Redakteure dürfen Aktionen ausführen
-    if (!['admin','redakteur'].includes(currentUser.role)) {
-      // Direktion / PBL dürfen lesen, aber nicht freigeben — Buttons ausblenden
-      document.querySelectorAll('.btn-approve,.btn-reject,.btn-undo,.btn-modal-approve,.btn-modal-reject')
-        .forEach(b => b.style.display = 'none');
-    }
+    // Aktionen werden pro Karte je nach Rolle und Status gerendert
+    // (Redaktion: Stufe 1, Direktion: Stufe 2) — siehe renderCards()
     await ladePosts();
   } catch { redirectLogin(); }
 }
@@ -234,14 +233,16 @@ async function ladePosts() {
 
 function updateCounts() {
   const cnt = (s) => allePosts.filter(p => !s || p.status === s).length;
-  document.getElementById('cnt-alle').textContent     = cnt('');
-  document.getElementById('cnt-warten').textContent   = cnt('freigabe_ausstehend');
-  document.getElementById('cnt-frei').textContent     = cnt('freigegeben');
+  document.getElementById('cnt-alle').textContent      = cnt('');
+  document.getElementById('cnt-warten').textContent    = cnt('freigabe_ausstehend');
+  document.getElementById('cnt-direktion').textContent = cnt('redaktion_frei');
+  document.getElementById('cnt-frei').textContent      = cnt('freigegeben');
   document.getElementById('cnt-abgelehnt').textContent = cnt('abgelehnt');
 
   // Stats bar
   document.getElementById('stats-bar').innerHTML = [
-    `<div class="stat-pill orange"><span>${cnt('freigabe_ausstehend')}</span> warten auf Freigabe</div>`,
+    `<div class="stat-pill orange"><span>${cnt('freigabe_ausstehend')}</span> bei der Redaktion</div>`,
+    `<div class="stat-pill"><span>${cnt('redaktion_frei')}</span> warten auf Direktion</div>`,
     `<div class="stat-pill green"><span>${cnt('freigegeben')}</span> freigegeben</div>`,
     `<div class="stat-pill"><span>${cnt('')}</span> Posts gesamt</div>`,
   ].join('');
@@ -250,7 +251,7 @@ function updateCounts() {
 function setFilter(f) {
   currentFilter = f;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const map = { alle:'tab-alle', freigabe_ausstehend:'tab-warten', freigegeben:'tab-frei', abgelehnt:'tab-abgelehnt' };
+  const map = { alle:'tab-alle', freigabe_ausstehend:'tab-warten', redaktion_frei:'tab-direktion', freigegeben:'tab-frei', abgelehnt:'tab-abgelehnt' };
   document.getElementById(map[f])?.classList.add('active');
   renderCards();
 }
@@ -264,32 +265,26 @@ function renderCards() {
   if (!gefiltert.length) {
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
       <div class="empty-icon">📭</div>
-      <div class="empty-title">${currentFilter === 'freigabe_ausstehend' ? 'Nichts wartet auf Freigabe' : 'Keine Posts in dieser Kategorie'}</div>
-      <div style="font-size:12px">${currentFilter === 'freigabe_ausstehend' ? 'Sobald ein Redakteur einen Post einreicht, erscheint er hier.' : ''}</div>
+      <div class="empty-title">${currentFilter === 'freigabe_ausstehend' ? 'Nichts wartet auf die Redaktion' : currentFilter === 'redaktion_frei' ? 'Nichts wartet auf die Direktion' : 'Keine Posts in dieser Kategorie'}</div>
+      <div style="font-size:12px">${currentFilter === 'freigabe_ausstehend' ? 'Sobald ein Redakteur einen Post einreicht, erscheint er hier.' : currentFilter === 'redaktion_frei' ? 'Sobald die Redaktion einen Post weitergibt, erscheint er hier.' : ''}</div>
     </div>`;
     return;
   }
 
   const STATUS = {
-    freigabe_ausstehend: { label:'Wartet', pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
+    freigabe_ausstehend: { label:'Bei Redaktion', pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
+    redaktion_frei:      { label:'Bei Direktion', pill:'pill-direktion',   dot:'s-direktion',  cls:'direktion' },
     freigegeben:         { label:'✓ Freigegeben', pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
     abgelehnt:           { label:'Abgelehnt', pill:'pill-abgelehnt', dot:'s-abgelehnt',  cls:'abgelehnt' },
     geplant:             { label:'Geplant', pill:'',                dot:'s-warten',     cls:'warten' },
   };
-
-  const canAct = ['admin','redakteur'].includes(currentUser?.role);
 
   grid.innerHTML = gefiltert.map(p => {
     const s = STATUS[p.status] || STATUS.geplant;
     const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' }) : '';
     const hasPreview = p.preview && p.preview.startsWith('data:image');
 
-    const aktionen = p.status === 'freigabe_ausstehend' && canAct
-      ? `<button class="btn-approve" onclick="event.stopPropagation();freigeben('${p.id}')">✅ Freigeben</button>
-         <button class="btn-reject"  onclick="event.stopPropagation();ablehnen('${p.id}')">✕ Ablehnen</button>`
-      : p.status === 'freigegeben' && canAct
-      ? `<button class="btn-undo" onclick="event.stopPropagation();zurueck('${p.id}')">↩ Rückgängig</button>`
-      : '';
+    const aktionen = kartenAktionen(p, true);
 
     return `<div class="post-card ${s.cls}" onclick="openDetail('${p.id}')">
       <div class="pc-head">
@@ -316,18 +311,59 @@ function renderCards() {
   }).join('');
 }
 
+// ── ROLLEN ────────────────────────────────────────────────────────────────────
+function istRedaktion() { return ['admin','redakteur'].includes(currentUser?.role); }
+function istDirektion() { return ['admin','direktion'].includes(currentUser?.role); }
+
+// Baut die Aktions-Buttons je nach Status + Rolle.
+// modus 'karte' (kompakt) oder 'modal' (große Buttons).
+function kartenAktionen(p, kompakt) {
+  const stop = kompakt ? 'event.stopPropagation();' : '';
+  const app  = kompakt ? 'btn-approve' : 'btn-modal-approve';
+  const rej  = kompakt ? 'btn-reject'  : 'btn-modal-reject';
+  const undo = kompakt ? 'btn-undo'    : 'btn-modal-reject';
+
+  // Stufe 1: Redaktion prüft neu eingereichte Posts
+  if (p.status === 'freigabe_ausstehend' && istRedaktion()) {
+    return `<button class="${app}" onclick="${stop}anDirektion('${p.id}')">✅ An Direktion</button>
+            <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>`;
+  }
+  // Stufe 2: Direktion erteilt die endgültige Freigabe
+  if (p.status === 'redaktion_frei' && istDirektion()) {
+    return `<button class="${app}" onclick="${stop}freigeben('${p.id}')">✅ Freigeben</button>
+            <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>`;
+  }
+  // Redaktion kann eine Weitergabe an die Direktion zurücknehmen
+  if (p.status === 'redaktion_frei' && istRedaktion()) {
+    return `<button class="${undo}" onclick="${stop}zurueckRedaktion('${p.id}')">↩ Zurückziehen</button>`;
+  }
+  // Direktion kann eine erteilte Freigabe rückgängig machen
+  if (p.status === 'freigegeben' && istDirektion()) {
+    return `<button class="${undo}" onclick="${stop}zurueckDirektion('${p.id}')">↩ Freigabe zurücknehmen</button>`;
+  }
+  return '';
+}
+
 // ── AKTIONEN ──────────────────────────────────────────────────────────────────
+async function anDirektion(id) {
+  await setStatus(id, 'redaktion_frei');
+  showToast('✅ An die Direktion weitergeleitet');
+}
 async function freigeben(id) {
   await setStatus(id, 'freigegeben');
-  showToast('✅ Post freigegeben');
+  showToast('✅ Post endgültig freigegeben');
 }
 async function ablehnen(id) {
   await setStatus(id, 'abgelehnt');
   showToast('↩️ Post abgelehnt');
 }
-async function zurueck(id) {
+async function zurueckRedaktion(id) {
   await setStatus(id, 'freigabe_ausstehend');
-  showToast('↩ Status zurückgesetzt');
+  showToast('↩ Weitergabe zurückgezogen');
+}
+async function zurueckDirektion(id) {
+  await setStatus(id, 'redaktion_frei');
+  showToast('↩ Freigabe zurückgenommen');
 }
 async function setStatus(id, status) {
   try {
@@ -351,7 +387,6 @@ function openDetail(id) {
   if (!p) return;
   modalPostId = id;
   const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE') : '';
-  const canAct = ['admin','redakteur'].includes(currentUser?.role);
   const hasPreview = p.preview && p.preview.startsWith('data:image');
 
   document.getElementById('modal-title').textContent = p.anlass || 'Post-Details';
@@ -371,17 +406,7 @@ function openDetail(id) {
     ${(p.headline||p.fulltext) ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.headline||'')}${p.fulltext ? '\n\n' + esc(p.fulltext) : ''}</div></div>` : ''}
   `;
 
-  const foot = document.getElementById('modal-foot');
-  if (p.status === 'freigabe_ausstehend' && canAct) {
-    foot.innerHTML = `
-      <button class="btn-modal-reject" onclick="ablehnen('${id}')">✕ Ablehnen</button>
-      <button class="btn-modal-approve" onclick="freigeben('${id}')">✅ Freigeben</button>
-    `;
-  } else if (p.status === 'freigegeben' && canAct) {
-    foot.innerHTML = `<button class="btn-modal-reject" onclick="zurueck('${id}')">↩ Freigabe zurückziehen</button>`;
-  } else {
-    foot.innerHTML = '';
-  }
+  document.getElementById('modal-foot').innerHTML = kartenAktionen(p, false);
 
   document.getElementById('modal-bg').classList.add('open');
 }

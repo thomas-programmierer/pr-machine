@@ -798,7 +798,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div>
           <div class="section-label">Pipeline-Übersicht <span id="dir-aktualisiert" style="font-size:10px;font-weight:400;color:var(--blau60)"></span></div>
           <div class="stat-grid" id="dir-stats">
-            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-n" id="dir-n-warten">—</div><div class="stat-label">Warten auf Freigabe</div></div>
+            <div class="stat-card" style="cursor:pointer" onclick="window.open('/freigabe','_blank')"><div class="stat-icon">⏳</div><div class="stat-n" id="dir-n-warten">—</div><div class="stat-label">Wartet auf Ihre Freigabe ↗</div></div>
             <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-n" id="dir-n-frei">—</div><div class="stat-label">Freigegeben</div></div>
             <div class="stat-card"><div class="stat-icon">📬</div><div class="stat-n" id="dir-n-einr">—</div><div class="stat-label">Offene Einreichungen</div></div>
             <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-n" id="dir-n-gesamt">—</div><div class="stat-label">Posts gesamt</div></div>
@@ -1410,7 +1410,7 @@ function initApp() {
     admin:     ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance','tab-admin'],
     redakteur: ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance'],
     pbl:       ['tab-kalender','tab-pbl','tab-kurse'],
-    direktion: ['tab-kalender','tab-direktion','tab-performance'],
+    direktion: ['tab-kalender','tab-direktion','tab-freigabe','tab-performance'],
   };
   (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
 
@@ -1483,8 +1483,8 @@ async function loadDirektion() {
     const posts = rPosts.ok ? await rPosts.json() : [];
     const einr  = rEinr.ok  ? await rEinr.json()  : [];
 
-    // Stats
-    const warten  = posts.filter(p => p.status === 'freigabe_ausstehend').length;
+    // Stats — die Direktion sieht, was von der Redaktion zur Freigabe vorgelegt wurde
+    const warten  = posts.filter(p => p.status === 'redaktion_frei').length;
     const frei    = posts.filter(p => p.status === 'freigegeben').length;
     const offeneE = einr.filter(e => e.status === 'neu').length;
     document.getElementById('dir-n-warten').textContent  = warten;

@@ -341,7 +341,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "PUT" && url.startsWith("/api/posts/")) {
-    if (!sess || !["admin","redakteur"].includes(sess.user.role))
+    // Redaktion (admin/redakteur) und Direktion duerfen den Status aendern —
+    // zweistufige Freigabe: Redaktion -> redaktion_frei -> Direktion -> freigegeben
+    if (!sess || !["admin","redakteur","direktion"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
     const b = await readBody(req);
