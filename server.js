@@ -308,8 +308,7 @@ const server = http.createServer(async (req, res) => {
     const idx = users.findIndex(u => u.id === id);
     if (idx === -1) return jsonRes(res, 404, { error:"User nicht gefunden" });
     if (b.password) {
-      await setPassword(id, b.password);
-      delete b.password;
+      b.password = await bcrypt.hash(b.password, 10);
     }
     users[idx] = { ...users[idx], ...b, id };
     saveUsers(users);

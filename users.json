@@ -4,7 +4,7 @@
       "id": "1",
       "name": "Thomas Mochalski",
       "username": "thomas",
-      "password": "vhs2026!",
+      "password": "Spandau2030",
       "role": "admin",
       "pb": "alle",
       "aktiv": true
@@ -13,7 +13,7 @@
       "id": "2",
       "name": "Katja Schubert-Linder",
       "username": "katja",
-      "password": "vhs2026!",
+      "password": "Spandau1",
       "role": "redakteur",
       "pb": "alle",
       "aktiv": true
@@ -22,7 +22,7 @@
       "id": "3",
       "name": "Manuela Linke",
       "username": "manuela",
-      "password": "vhs2026!",
+      "password": "Spandau2",
       "role": "pbl",
       "pb": "Gesundheit & Bewegung",
       "aktiv": true
@@ -31,7 +31,7 @@
       "id": "4",
       "name": "Kristina Schmidt-Köhnlein",
       "username": "kristina",
-      "password": "vhs2026!",
+      "password": "Spandau8",
       "role": "pbl",
       "pb": "Kultur & Kreativität",
       "aktiv": true
@@ -40,7 +40,7 @@
       "id": "5",
       "name": "Vanessa Pinn",
       "username": "vanessa",
-      "password": "vhs2026!",
+      "password": "Spandau76",
       "role": "pbl",
       "pb": "Fremdsprachen",
       "aktiv": true
@@ -49,7 +49,7 @@
       "id": "6",
       "name": "Marion Altendorf",
       "username": "marion",
-      "password": "vhs2026!",
+      "password": "Spandau76",
       "role": "direktion",
       "pb": "alle",
       "aktiv": true
@@ -58,7 +58,7 @@
       "id": "7",
       "name": "Silke Oemus",
       "username": "silke",
-      "password": "vhs2026!",
+      "password": "Spandau93",
       "role": "pbl",
       "pb": "Deutsch und Integration",
       "aktiv": true
