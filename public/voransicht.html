@@ -256,7 +256,8 @@ function renderPosts() {
   container.innerHTML = gefiltert.map(p => {
     const s = STATUS[p.status] || STATUS.geplant;
     const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-    const hasPreview = p.preview && p.preview.startsWith('data:image');
+    const bildsrc    = p.bild || p.preview || '';
+    const hasPreview = bildsrc.startsWith('data:image');
     const kanal = p.kanal === 'ig' ? '📸 Instagram' : p.kanal === 'fb' ? '👥 Facebook' : p.kanal === 'beide' ? '📸👥 Beide' : (p.kanal||'');
 
     // Action-Buttons
@@ -275,10 +276,13 @@ function renderPosts() {
     }
 
     // Studio-Link
+    const postText = p.text || p.fulltext || '';
     const studioParams = [
-      p.headline ? 'hl=' + encodeURIComponent(p.headline) : '',
       p.anlass   ? 'anlass=' + encodeURIComponent(p.anlass) : '',
-      'from=voransicht'
+      p.kurs     ? 'kurs='   + encodeURIComponent(p.kurs)   : '',
+      postText   ? 'fulltext=' + encodeURIComponent(postText.slice(0, 800)) : '',
+      'from=voransicht',
+      'postId=' + p.id
     ].filter(Boolean).join('&');
 
     return `
@@ -290,12 +294,11 @@ function renderPosts() {
           <span class="kanal-badge">${esc(kanal)}</span>
         </div>
         ${hasPreview
-          ? `<div class="preview-image-wrap"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>`
+          ? `<div class="preview-image-wrap"><img src="${bildsrc}" alt="Vorschau" loading="lazy"></div>`
           : `<div class="preview-image-wrap"><div class="preview-placeholder">🖼</div></div>`}
         <div class="preview-text-wrap">
-          ${p.headline ? `<div class="preview-headline">${esc(p.headline)}</div>` : ''}
-          ${p.fulltext ? `<div class="preview-fulltext">${esc(p.fulltext)}</div>` : ''}
-          ${!p.headline && !p.fulltext ? '<div style="font-size:12px;color:var(--blau60);font-style:italic">Kein Text übermittelt</div>' : ''}
+          ${p.text ? `<div class="preview-fulltext">${esc(p.text)}</div>` : ''}
+          ${!p.text ? '<div style="font-size:12px;color:var(--blau60);font-style:italic">Kein Text übermittelt</div>' : ''}
         </div>
       </div>
       <!-- RECHTE SEITE: Details & Aktionen -->

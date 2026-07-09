@@ -649,7 +649,8 @@ window.addEventListener('load', async () => {
   const inAnlass = qp.get('anlass')   || '';
   const inKurs   = qp.get('kurs')     || '';
   const inFull   = qp.get('fulltext') || '';
-  const hasURLPayload = !!(inHL || inFull);
+  const inPostId = qp.get('postId')   || '';
+  const hasURLPayload = !!(inHL || inFull || inAnlass);
 
   // Auth
   try {
@@ -686,15 +687,22 @@ window.addEventListener('load', async () => {
   loadTemplate(0);
   initDrag();
 
-  // URL-Payload anwenden (direkter Aufruf)
+  // URL-Payload anwenden (direkter Aufruf / aus Voransicht)
   if (hasURLPayload) {
     const hlLen = inHL.length;
     redaktionPayload = {
       hl: inHL, sub: inSub, anlass: inAnlass, kurs: inKurs, full: inFull,
       hlsize: hlLen > 100 ? 12 : hlLen > 70 ? 14 : hlLen > 40 ? 16 : 18,
     };
+    window._studioPayload = { fulltext: inFull, kurs: inKurs, anlass: inAnlass, postId: inPostId };
+    if (inAnlass) {
+      const anlassEl = document.getElementById('exp-anlass');
+      if (anlassEl) anlassEl.value = inAnlass;
+    }
     applyRedaktionPayload();
     showStudioBanner(inAnlass, inKurs, inFull);
+    // Direkt zum Freigabe-Tab — Grafik erstellen ist der nächste Schritt
+    setTimeout(() => setRTab(2), 100);
     window.history.replaceState({}, '', '/editor');
   }
 });
