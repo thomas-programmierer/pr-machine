@@ -1533,11 +1533,11 @@ async function pblVorschlagEinreichen() {
     cacheEinreichungLokal({ anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
       id: d.einreichung?.id || Date.now(), status: 'neu' });
     closePblModalDirect();
-    showToast('📬 Vorschlag an die Redaktion gesendet!');
+    showToast('📬 Vorschlag gesendet! Seite wird aktualisiert …');
+    setTimeout(() => window.location.reload(), 1200);
   } catch { showToast('⚠️ Server nicht erreichbar'); }
   btn.disabled = false;
   btn.textContent = '📬 Einreichen';
-  renderKalender();
 }
 
 
