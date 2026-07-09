@@ -614,7 +614,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           </div>
         </div>
         <div><div class="sl">Hook / Anlass</div><input class="fi" id="i-anlass" value="Internationaler Yogatag — 21. Juni 2026"></div>
-        <div><div class="sl">Kurs &amp; Inhalt</div><input class="fi" id="i-kurs" value="Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W"></div>
+        <div><div class="sl">Kurs &amp; Inhalt</div><input class="fi" id="i-kurs" value="Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W" oninput="window._kursBeschreibung=''"></div>
         <div id="inbox-bild-preview" style="display:none"></div>
         <div><div class="sl">Idee / Bezug</div><textarea class="ft" id="i-idee">Wer kennt das nicht: Der Alltag hetzt, der Körper kämpft mit. Yoga bringt den Ausgleich — kein Leistungsdruck. Einfach ankommen.</textarea></div>
         <!-- MODUS-SCHALTER -->
@@ -1939,6 +1939,12 @@ async function generate() {
     ? `LINKTREE: Füge am Ende des Posts einen Verweis auf den LinkTree ein. Instagram: „Alle Infos + Anmeldung: Link in der Bio (${linktreeUrl})" — oder kürzer für IG. Facebook: URL direkt nennen.`
     : 'LINK WEGLASSEN: Keinen Link und keine URL im Post nennen.';
 
+  // Kursbeschreibung als KI-Quelle (aus Kursprogramm übernommen)
+  const kursBeschr = (window._kursBeschreibung || '').trim();
+  const quelleAnweisung = kursBeschr
+    ? 'QUELLENREGEL: Verwende für alle kursspezifischen Inhalte (Themen, Methoden, Zielgruppe, Schwerpunkte) NUR die KURSBESCHREIBUNG unten. Erfinde keine Details, Zeiten, Preise oder Inhalte. Wenn die Beschreibung knapp ist, schreibe einen kürzeren Post — lieber weniger als halluziniert.'
+    : '';
+
   try {
     const r = await fetch('/api/generate', {
       method:'POST', credentials:'include',
@@ -1946,8 +1952,8 @@ async function generate() {
       body: JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:1200,
-        system:`Du bist Redakteur der Volkshochschule Berlin-Spandau.\nTON: ${ton}\n${modusAnweisung}\n${kursinfoAnweisung}\n${linktreeAnweisung}\nDu-Form IG, Sie-Form FB. Kurze Sätze. Zeilenumbrüche für Rhythmus. Max 3 Emojis auf IG.\n\nWICHTIG: Beginne jeden Post IMMER mit einer kurzen, prägnanten Überschrift/Slogan (max. 50 Zeichen, eine Zeile, ohne Punkt am Ende). Das ist die Grafik-Headline. Dann eine Leerzeile, dann der eigentliche Post-Text.\n\nFormat: === INSTAGRAM ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]\\n=== FACEBOOK ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]`,
-        messages:[{role:'user',content:`Kanäle: ${kanaele}\nAnlass: ${anlass}\nKurs: ${kurs}\nIdee: ${idee}\n\nNur die Posts, kein Kommentar.`}]
+        system:`Du bist Redakteur der Volkshochschule Berlin-Spandau.\nTON: ${ton}\n${modusAnweisung}\n${kursinfoAnweisung}\n${linktreeAnweisung}\n${quelleAnweisung}\nDu-Form IG, Sie-Form FB. Kurze Sätze. Zeilenumbrüche für Rhythmus. Max 3 Emojis auf IG.\n\nWICHTIG: Beginne jeden Post IMMER mit einer kurzen, prägnanten Überschrift/Slogan (max. 50 Zeichen, eine Zeile, ohne Punkt am Ende). Das ist die Grafik-Headline. Dann eine Leerzeile, dann der eigentliche Post-Text.\n\nFormat: === INSTAGRAM ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]\\n=== FACEBOOK ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]`,
+        messages:[{role:'user',content:`Kanäle: ${kanaele}\nAnlass: ${anlass}\nKurs: ${kurs}\nIdee: ${idee}${kursBeschr ? '\n\nKURSBESCHREIBUNG (einzige Quelle):\n"""\n' + kursBeschr + '\n"""' : ''}\n\nNur die Posts, kein Kommentar.`}]
       })
     });
     if (!r.ok) { const e=await r.json(); throw new Error(e.error||'API-Fehler'); }
@@ -2533,6 +2539,9 @@ function kurseNachRedaktion() {
   const kursTitelEl = document.getElementById('kurs-titel');
   if (kursNrEl) kursNrEl.value = k.nr;
   if (kursTitelEl) kursTitelEl.value = k.titel;
+  // Beschreibung als KI-Quelle speichern (verhindert Halluzinationen)
+  window._kursBeschreibung = k.beschreibung || '';
+  document.getElementById('i-kurs').value = (k.nr ? k.nr + ' — ' : '') + (k.titel || '');
   showToast('✏️ Kurs ' + k.nr + ' in Redaktion geladen');
 }
 
