@@ -1010,7 +1010,7 @@ function renderMonat(monat, jahr, allePosts) {
 
       // Eigene PBL-Einreichungen für diesen Tag anzeigen
       if (currentUser && currentUser.role === 'pbl') {
-        const eigene = einreichungenCache.filter(e => e.datum === datStr);
+        const eigene = einreichungenCache.filter(e => (e.datum||'').slice(0,10) === datStr);
         eigene.forEach(e => {
           const cls = e.status === 'angenommen' ? 'chip-einreichung' : 'chip-einreichung-pending';
           const icon = e.status === 'angenommen' ? '✅' : '📬';
