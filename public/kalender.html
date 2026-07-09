@@ -125,7 +125,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .tag-view-kw{font-size:11px;background:rgba(255,255,255,.15);color:#fff;padding:2px 9px;border-radius:10px}
 .tag-view-body{display:grid;grid-template-columns:60px 1fr;min-height:480px}
 .tag-stunden{border-right:1px solid #eef1f6;display:flex;flex-direction:column}
-.tag-stunde-row{height:60px;border-bottom:1px solid #f5f5f5;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 10px 0 0;font-size:9px;color:#bbb;font-family:monospace;flex-shrink:0}
+.tag-stunde-row{height:60px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;justify-content:flex-end;padding:0 10px 0 0;font-size:13px;font-weight:600;color:#8fa0ad;font-family:inherit;flex-shrink:0}
 .tag-events{padding:0;position:relative;display:flex;flex-direction:column}
 .tag-event-row{height:60px;border-bottom:1px solid #f5f5f5;padding:4px 8px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;cursor:pointer}
 .tag-event-row:hover{background:#f8fafc}
@@ -1210,7 +1210,7 @@ function renderTag(datum, allePosts) {
 
   html += '<div class="tag-view-body"><div class="tag-stunden">';
   STUNDEN.forEach(std => {
-    html += `<div class="tag-stunde-row">${std}:00</div>`;
+    html += `<div class="tag-stunde-row">${parseInt(std)}</div>`;
   });
   html += '</div><div class="tag-events">';
 
