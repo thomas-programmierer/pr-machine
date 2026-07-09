@@ -1145,7 +1145,7 @@ function renderWoche(wocheMo, allePosts) {
         p.datum === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
       );
       const hatContent = tagPosts.length > 0;
-      const oddCls = (i % 2 === 1 && !feiertagInfo) ? ' col-odd' : '';
+      const oddCls = (i % 2 === 1) ? ' col-odd' : '';
       html += `<div class="woche-slot${hatContent?' hat-post':''}${feiertagInfo?' feiertag-slot':''}${oddCls}"
         onclick="wocheSlotKlick('${datStr}','${std}:00')">`;
       if (std === '08' && hook) {
