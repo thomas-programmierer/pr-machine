@@ -1548,4 +1548,9 @@ function esc(s) { return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/<
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show'
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
