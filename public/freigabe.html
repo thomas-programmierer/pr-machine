@@ -414,7 +414,8 @@ function renderCards() {
   grid.innerHTML = gefiltert.map(p => {
     const s     = STATUS[p.status] || STATUS.geplant;
     const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' }) : '';
-    const hasPreview = p.preview && p.preview.startsWith('data:image');
+    const hasPreview = (p.bild || p.preview || '').startsWith('data:image');
+    const previewSrc = p.bild || p.preview || '';
     const aktionen   = kartenAktionen(p, true);
     return `<div class="post-card ${s.cls}" onclick="openDetail('${p.id}')">
       <div class="pc-head">
@@ -425,8 +426,8 @@ function renderCards() {
         </div>
         <span class="pc-pill ${s.pill}">${s.label}</span>
       </div>
-      ${hasPreview ? `<div class="pc-preview"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>` : `<div class="pc-preview"><div class="pc-preview-placeholder">🖼</div></div>`}
-      ${p.headline||p.text ? `<div class="pc-text">${esc(p.headline||p.text||'')}</div>` : ''}
+      ${hasPreview ? `<div class="pc-preview"><img src="${previewSrc}" alt="Vorschau" loading="lazy"></div>` : `<div class="pc-preview"><div class="pc-preview-placeholder">🖼</div></div>`}
+      ${p.text ? `<div class="pc-text">${esc(p.text||'')}</div>` : ''}
       <div class="pc-foot">
         <div class="pc-autor">von ${esc(p.autor||'')}</div>
         ${aktionen}
@@ -528,10 +529,11 @@ function openDetail(id) {
   if (!p) return;
   modalPostId = id;
   const datum      = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE') : '';
-  const hasPreview = p.preview && p.preview.startsWith('data:image');
+  const bildsrc    = p.bild || p.preview || '';
+  const hasPreview = bildsrc.startsWith('data:image');
   document.getElementById('modal-title').textContent = p.anlass || 'Post-Details';
   document.getElementById('modal-body').innerHTML = `
-    ${hasPreview ? `<div><div class="ml">Vorschau</div><div class="modal-preview-wrap"><img src="${p.preview}" alt="Vorschau"></div></div>` : ''}
+    ${hasPreview ? `<div><div class="ml">Grafik-Vorschau</div><div class="modal-preview-wrap"><img src="${bildsrc}" alt="Vorschau"></div></div>` : ''}
     ${p.direktion_kommentar ? `<div class="dir-kommentar-box"><div class="dir-kommentar-label">↩️ Kommentar der Direktion</div>${esc(p.direktion_kommentar)}</div>` : ''}
     <div>
       <div class="ml">Details</div>
@@ -540,10 +542,11 @@ function openDetail(id) {
         <div><span style="color:var(--blau60)">Format:</span> ${esc(p.format||'—')}</div>
         <div><span style="color:var(--blau60)">Autor:</span> ${esc(p.autor||'—')}</div>
         <div><span style="color:var(--blau60)">Eingereicht:</span> ${datum}</div>
+        ${p.kurs ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Kurs:</span> ${esc(p.kurs)}</div>` : ''}
         ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
       </div>
     </div>
-    ${(p.headline||p.fulltext) ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.headline||'')}${p.fulltext ? '\n\n' + esc(p.fulltext) : ''}</div></div>` : ''}
+    ${p.text ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.text)}</div></div>` : ''}
   `;
   document.getElementById('modal-foot').innerHTML = kartenAktionen(p, false);
   document.getElementById('modal-bg').classList.add('open');
