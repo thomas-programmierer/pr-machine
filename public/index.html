@@ -580,6 +580,10 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div class="section-label">Aktuelle Anlässe — klicken zum Vorschlagen</div>
         <div class="karten-grid" id="karten-grid"></div>
       </div>
+      <div style="padding:12px 22px 0" id="pbl-demnaechst-wrap" style="display:none">
+        <div class="section-label">📅 Kurse die in 4 Wochen starten — jetzt bewerben!</div>
+        <div id="pbl-demnaechst-list"></div>
+      </div>
       <div style="padding:16px 22px 20px">
         <div class="section-label" id="status-label" style="display:none">Meine Einreichungen</div>
         <div id="status-liste"></div>
@@ -1590,31 +1594,78 @@ function openStudio(payload) {
 
 // PBL SCREEN
 // ══════════════════════════════════════════════════════════════════════════════
+// PB-Mapping: users.pb → PB-Nummern (für Anlässe) + Sp-Präfixe (für Kurse-API)
+const PB_MAP = {
+  'Gesundheit & Bewegung':  { nums:['PB3'],       prefix:'Sp3'    },
+  'Fremdsprachen':           { nums:['PB5'],       prefix:'Sp5'    },
+  'Kultur & Kreativität':    { nums:['PB2'],       prefix:'Sp2'    },
+  'Arbeit & Beruf':          { nums:['PB6','PB7'], prefix:'Sp6,Sp7'},
+  'Deutsch und Integration': { nums:['PB4'],       prefix:'Sp4'    },
+  'alle':                    { nums:null,          prefix:''       },
+};
+
 const ANLAESSE = [
-  {id:1, datum:'21. Jun 2026', titel:'Fête de la Musique',       typ:'ve', icon:'🎵', bg:'#FEF3DA', hint:'Musik, Kurse, Community'},
-  {id:2, datum:'27. Jun 2026', titel:'Tag der Architektur',       typ:'jt', icon:'🏛', bg:'#E6F1FB', hint:'Urban Sketching, Stadtführungen'},
-  {id:3, datum:'10. Aug 2026', titel:'Welt-Fototag',              typ:'jt', icon:'📷', bg:'#E6F1FB', hint:'Naturfotografie, Bildbearbeitung'},
-  {id:4, datum:'21. Jun 2026', titel:'Internationaler Yogatag',   typ:'jt', icon:'🧘', bg:'#EAF3DE', hint:'Yoga, Qi Gong, Pilates'},
-  {id:5, datum:'04. Sep 2026', titel:'Europ. Tag der Sprachen',   typ:'jt', icon:'🗣', bg:'#E6F1FB', hint:'Alle 9 Fremdsprachen'},
-  {id:6, datum:'26. Aug 2026', titel:'Lange Nacht der Museen',    typ:'ve', icon:'🎨', bg:'#FEF3DA', hint:'Kunst, Kulturgeschichte'},
-  {id:7, datum:'09. Nov 2026', titel:'Mauerfall-Jahrestag',       typ:'jt', icon:'🕊', bg:'#E6F1FB', hint:'Geschichte, pol. Bildung'},
-  {id:8, datum:'Jun–Aug 2026', titel:'Sommerkurse starten',       typ:'ks', icon:'☀️', bg:'#EAF3DE', hint:'Outdoor, Sprachen, Gesundheit'},
+  {id:1, datum:'21. Jun 2026', titel:'Fête de la Musique',       typ:'ve', icon:'🎵', bg:'#FEF3DA', hint:'Musik, Kurse, Community',          pbs:['PB2']},
+  {id:2, datum:'27. Jun 2026', titel:'Tag der Architektur',       typ:'jt', icon:'🏛', bg:'#E6F1FB', hint:'Urban Sketching, Stadtführungen',  pbs:['PB1','PB2']},
+  {id:3, datum:'10. Aug 2026', titel:'Welt-Fototag',              typ:'jt', icon:'📷', bg:'#E6F1FB', hint:'Naturfotografie, Bildbearbeitung',  pbs:['PB2','PB6']},
+  {id:4, datum:'21. Jun 2026', titel:'Internationaler Yogatag',   typ:'jt', icon:'🧘', bg:'#EAF3DE', hint:'Yoga, Qi Gong, Pilates',           pbs:['PB3']},
+  {id:5, datum:'04. Sep 2026', titel:'Europ. Tag der Sprachen',   typ:'jt', icon:'🗣', bg:'#E6F1FB', hint:'Alle 9 Fremdsprachen',             pbs:['PB5']},
+  {id:6, datum:'26. Aug 2026', titel:'Lange Nacht der Museen',    typ:'ve', icon:'🎨', bg:'#FEF3DA', hint:'Kunst, Kulturgeschichte',           pbs:['PB1','PB2']},
+  {id:7, datum:'09. Nov 2026', titel:'Mauerfall-Jahrestag',       typ:'jt', icon:'🕊', bg:'#E6F1FB', hint:'Geschichte, pol. Bildung',          pbs:['PB1']},
+  {id:8, datum:'Jun–Aug 2026', titel:'Sommerkurse starten',       typ:'ks', icon:'☀️', bg:'#EAF3DE', hint:'Outdoor, Sprachen, Gesundheit',    pbs:['alle']},
 ];
 const TYP_LABEL = {jt:'Jahrestag',ve:'Veranstaltung',ks:'Kursstart',an:'Anlass'};
 
 function initPBL() {
-  // Begrüßung
   const icons = {admin:'👑',redakteur:'✏️',pbl:'🌱',direktion:'👁'};
   document.getElementById('pbl-icon').textContent = icons[currentUser.role]||'👋';
   document.getElementById('pbl-greeting').textContent = 'Hallo, ' + currentUser.name.split(' ')[0] + '!';
   document.getElementById('pbl-pb-badge').textContent = currentUser.pb;
-
   renderKarten();
+  ladeKurseDemnaechst();
+}
+
+async function ladeKurseDemnaechst() {
+  const pbInfo = PB_MAP[currentUser.pb] || PB_MAP['alle'];
+  const prefix = encodeURIComponent(pbInfo.prefix || '');
+  try {
+    const r = await fetch(`/api/kurse/bald?prefix=${prefix}`, { credentials:'include' });
+    if (!r.ok) return;
+    const kurse = await r.json();
+    renderDemnaechst(kurse);
+  } catch(e) { console.warn('Kurse demnächst:', e); }
+}
+
+function renderDemnaechst(kurse) {
+  const wrap = document.getElementById('pbl-demnaechst-wrap');
+  const list = document.getElementById('pbl-demnaechst-list');
+  if (!kurse || !kurse.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  list.innerHTML = kurse.slice(0,15).map(k => {
+    const dat = k.beginn ? new Date(k.beginn+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const auslastung = k.maximum > 0 ? Math.round((k.angemeldet||0)/k.maximum*100) : null;
+    const ausStr = auslastung !== null ? ` · ${k.angemeldet||0}/${k.maximum} TN` : '';
+    return `<div style="background:#fff;border:1.5px solid #e2e7ef;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:6px;cursor:default">
+      <div style="font-size:10px;font-weight:700;color:var(--blau);background:var(--blau10);border-radius:6px;padding:4px 9px;white-space:nowrap;flex-shrink:0">${dat}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--blau);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(k.titel||'')}</div>
+        <div style="font-size:10px;color:var(--blau60)">${esc(k.id||'')}${ausStr}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderKarten() {
   const grid = document.getElementById('karten-grid');
-  grid.innerHTML = ANLAESSE.map(a => {
+  const pbInfo = PB_MAP[currentUser.pb] || PB_MAP['alle'];
+  const userNums = pbInfo.nums; // null = alle
+  const gefiltert = ANLAESSE.filter(a =>
+    !userNums || a.pbs.includes('alle') || a.pbs.some(p => userNums.includes(p))
+  );
+  grid.innerHTML = gefiltert.map(a => {
     const done = submitted[a.id];
     return `<div class="karte${done?' eingereicht':''}" onclick="openModal(${a.id})">
       <div class="karte-top">

@@ -567,6 +567,27 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
+  // ── KURSE DEMNÄCHST (in 4 Wochen) ────────────────────────────────────────
+  if (req.method === "GET" && url.startsWith("/api/kurse/bald")) {
+    if (!sess?.user) return jsonRes(res, 401, { error: "Nicht eingeloggt" });
+    const urlObj = new URL("http://x" + req.url);
+    const prefix = urlObj.searchParams.get('prefix') || '';
+    const heute = new Date(); heute.setHours(0,0,0,0);
+    const in4wochen = new Date(heute.getTime() + 28*24*60*60*1000);
+    try {
+      let result = await db.getKurse();
+      result = result.filter(k => {
+        if (!k.beginn) return false;
+        const d = new Date(k.beginn);
+        if (d < heute || d > in4wochen) return false;
+        if (!prefix) return true;
+        return prefix.split(',').some(p => k.id && k.id.startsWith(p.trim()));
+      });
+      result.sort((a,b) => (a.beginn||'').localeCompare(b.beginn||''));
+      return jsonRes(res, 200, result.slice(0, 30));
+    } catch(e) { return jsonRes(res, 500, { error: 'Fehler beim Laden' }); }
+  }
+
   // ── KURSPROGRAMM API ──────────────────────────────────────────────────────
   if (req.method === "GET" && url.startsWith("/api/kurse")) {
     const urlObj = new URL("http://x" + req.url);
