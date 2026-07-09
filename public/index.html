@@ -976,10 +976,21 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
   <!-- ══ RECHTES PANEL ══ -->
   <div class="panel-r panel">
 
+    <!-- PRIMÄR-AKTION: immer sichtbar, kein Tab nötig -->
+    <div style="padding:10px 12px;border-bottom:2px solid rgba(250,185,15,.3);background:rgba(250,185,15,.06)">
+      <button onclick="exportUndFreigabe()" id="btn-freigabe-submit"
+        style="width:100%;background:#FAB90F;color:#00285A;border:none;border-radius:8px;
+               padding:11px;font-size:12px;font-weight:800;cursor:pointer;
+               font-family:'DM Sans',sans-serif;letter-spacing:.2px">
+        🚀 PNG erstellen &amp; zur Freigabe
+      </button>
+      <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:5px;text-align:center"></div>
+    </div>
+
     <div style="display:flex;border-bottom:1px solid var(--border)">
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">🚀 Freigabe</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">Export</div>
     </div>
 
     <!-- TAB BILD -->
