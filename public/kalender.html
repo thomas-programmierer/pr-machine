@@ -1529,12 +1529,12 @@ async function pblVorschlagEinreichen() {
     });
     if (!r.ok) { showToast('⚠️ Fehler beim Einreichen'); btn.disabled = false; btn.textContent = '📬 Einreichen'; return; }
     d = await r.json();
-    try { cacheEinreichungLokal({ anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
-      id: d.einreichung?.id || Date.now(), status: 'neu' }); } catch(e2) { alert('CACHE FEHLER: '+e2.message); }
-    try { closePblModalDirect(); } catch(e3) { alert('MODAL FEHLER: '+e3.message); }
-    showToast('📬 Vorschlag gesendet!');
+    cacheEinreichungLokal({ anlass, anlassId, datum: pblDatumContext, kurs, kursNr: nr, idee,
+      id: d.einreichung?.id || Date.now(), status: 'neu' });
+    closePblModalDirect();
+    showToast('📬 Vorschlag gesendet! Seite wird aktualisiert …');
     setTimeout(() => window.location.reload(), 1200);
-  } catch(e) { alert('SUBMIT CATCH: ' + e + ' | ' + e?.message + ' | stack: ' + e?.stack?.slice(0,200)); showToast('⚠️ ' + (e?.message || 'Server nicht erreichbar')); }
+  } catch(e) { console.error('Einreichung Fehler:', e); showToast('⚠️ Server nicht erreichbar'); }
   btn.disabled = false;
   btn.textContent = '📬 Einreichen';
 }
