@@ -99,7 +99,7 @@ function safeUser(u) { const { password:_, ...s } = u; return s; }
 async function readBody(req) {
   return new Promise((res, rej) => {
     let b = "", size = 0;
-    const MAX = 10 * 1024 * 1024;
+    const MAX = 25 * 1024 * 1024;
     req.on("data", d => { size += d.length; if (size > MAX) { req.destroy(); return; } b += d; });
     req.on("end", () => { try { res(JSON.parse(b)); } catch { res({}); } });
     req.on("error", rej);
@@ -404,36 +404,46 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url === "/api/einreichungen") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    const b = await readBody(req);
-    const neu = await db.addEinreichung({
-      ...b,
-      status: "neu",
-      eingereicht: new Date().toISOString(),
-      autor: sess.user.name,
-      autorId: sess.user.id,
-      pb: sess.user.pb || "alle"
-    });
-    return jsonRes(res, 201, { ok:true, einreichung: neu });
+    try {
+      const b = await readBody(req);
+      const neu = await db.addEinreichung({
+        ...b,
+        status: "neu",
+        eingereicht: new Date().toISOString(),
+        autor: sess.user.name,
+        autorId: sess.user.id,
+        pb: sess.user.pb || "alle"
+      });
+      return jsonRes(res, 201, { ok:true, einreichung: neu });
+    } catch(e) {
+      console.error("Einreichung POST Fehler:", e.message);
+      return jsonRes(res, 500, { error: e.message });
+    }
   }
 
   if (req.method === "POST" && url === "/api/einreichungen/mit-bild") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    const b = await readBody(req);
-    const neu = await db.addEinreichung({
-      anlass:   b.anlass   || "",
-      anlassId: b.anlassId || "",
-      datum:    b.datum    || null,
-      kurs:     b.kurs     || "",
-      kursNr:   b.kursNr   || "",
-      idee:     b.idee     || "",
-      pb:       sess.user.pb || "alle",
-      bild:     b.bild     || null,
-      status:   "neu",
-      eingereicht: new Date().toISOString(),
-      autor:    sess.user.name,
-      autorId:  sess.user.id
-    });
-    return jsonRes(res, 201, { ok:true, einreichung: neu });
+    try {
+      const b = await readBody(req);
+      const neu = await db.addEinreichung({
+        anlass:   b.anlass   || "",
+        anlassId: b.anlassId || "",
+        datum:    b.datum    || null,
+        kurs:     b.kurs     || "",
+        kursNr:   b.kursNr   || "",
+        idee:     b.idee     || "",
+        pb:       sess.user.pb || "alle",
+        bild:     b.bild     || null,
+        status:   "neu",
+        eingereicht: new Date().toISOString(),
+        autor:    sess.user.name,
+        autorId:  sess.user.id
+      });
+      return jsonRes(res, 201, { ok:true, einreichung: neu });
+    } catch(e) {
+      console.error("Einreichung mit-Bild POST Fehler:", e.message);
+      return jsonRes(res, 500, { error: e.message });
+    }
   }
 
   if (req.method === "PUT" && url.startsWith("/api/einreichungen/")) {
@@ -775,6 +785,8 @@ server.listen(PORT, async () => {
   try {
     const n = await db.testConnection();
     console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
+    await db.ensureTables();
+    console.log(`  📋  Tabellen geprüft/erstellt`);
   } catch (e) {
     console.error("  ❌  Postgres NICHT erreichbar:", e.message);
   }

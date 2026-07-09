@@ -145,6 +145,32 @@ async function upsertKurse(kurse) {
   }
 }
 
+async function ensureTables() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS einreichungen (
+      id              SERIAL PRIMARY KEY,
+      anlass          TEXT,
+      anlass_id       TEXT,
+      kurs            TEXT,
+      kurs_nr         TEXT,
+      idee            TEXT,
+      text            TEXT,
+      hashtags        TEXT,
+      kanal           TEXT,
+      format          TEXT,
+      datum           DATE,
+      pb              TEXT,
+      status          TEXT DEFAULT 'neu',
+      eingereicht     BOOLEAN DEFAULT FALSE,
+      eingereicht_am  TIMESTAMPTZ,
+      autor           TEXT,
+      autor_id        TEXT,
+      quelle          TEXT,
+      bild            TEXT
+    )
+  `);
+}
+
 async function testConnection() {
   var res = await pool.query('SELECT count(*)::int AS n FROM kurse');
   return res.rows[0].n;
@@ -155,5 +181,5 @@ module.exports = {
   getEinreichungen, addEinreichung, updateEinreichung, deleteEinreichung,
   setEinreichungStatus,
   getKurse, getKursByCode, getKategorien, upsertKurse,
-  testConnection
+  testConnection, ensureTables
 };
