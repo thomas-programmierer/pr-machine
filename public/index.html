@@ -1417,6 +1417,15 @@ function initApp() {
   };
   (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
 
+  // Trennstriche ausblenden, die neben versteckten Tabs hängen
+  document.querySelectorAll('.nav-sep').forEach(sep => {
+    const prev = sep.previousElementSibling;
+    const next = sep.nextElementSibling;
+    const prevHidden = !prev || prev.classList.contains('hidden');
+    const nextHidden = !next || next.classList.contains('hidden') || next.classList.contains('nav-sep');
+    sep.style.display = (prevHidden || nextHidden) ? 'none' : '';
+  });
+
   // URL-Parameter von Freigabe-Seite: direkt zum Generator
   const params = new URLSearchParams(window.location.search);
 
