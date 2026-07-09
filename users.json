@@ -4,7 +4,7 @@
       "id": "1",
       "name": "Thomas Mochalski",
       "username": "thomas",
-      "password": "Spandau2030",
+      "password": "$2b$10$DPnJHZHJYQE5VXB1mc.k7ed047cn2Y0GHztwyYwK.dKUfswVb.1cy",
       "role": "admin",
       "pb": "alle",
       "aktiv": true
@@ -13,7 +13,7 @@
       "id": "2",
       "name": "Katja Schubert-Linder",
       "username": "katja",
-      "password": "Spandau1",
+      "password": "$2b$10$lxyOCvC5OsLvive.0UriLeiJQjjrhzMuZLvN3VS4MPHa3Yp3Hspzi",
       "role": "redakteur",
       "pb": "alle",
       "aktiv": true
@@ -22,7 +22,7 @@
       "id": "3",
       "name": "Manuela Linke",
       "username": "manuela",
-      "password": "Spandau2",
+      "password": "$2b$10$ODslDOWwr69OjQVgOpbVZ.VXWCdLU3KKEL1GRmxicQ.npikCLVmkK",
       "role": "pbl",
       "pb": "Gesundheit & Bewegung",
       "aktiv": true
@@ -31,7 +31,7 @@
       "id": "4",
       "name": "Kristina Schmidt-Köhnlein",
       "username": "kristina",
-      "password": "Spandau8",
+      "password": "$2b$10$ZMqOkqsFS2Wi1km0ZuTRkeypKk.vb67JOwPZtMNdcbc8UWWNnuUcu",
       "role": "pbl",
       "pb": "Kultur & Kreativität",
       "aktiv": true
@@ -40,7 +40,7 @@
       "id": "5",
       "name": "Vanessa Pinn",
       "username": "vanessa",
-      "password": "Spandau76",
+      "password": "$2b$10$PC2Fjuro9rt.HcfH04Qa4.TZKaRsLb.lbXFOW1zaLg5bo683d6YOm",
       "role": "pbl",
       "pb": "Fremdsprachen",
       "aktiv": true
@@ -49,7 +49,7 @@
       "id": "6",
       "name": "Marion Altendorf",
       "username": "marion",
-      "password": "Spandau76",
+      "password": "$2b$10$W.hUUZq9i3ZZCdOEHUzSv.ig9NUrjjljExgC5XBA1ThbjXZiWzPMu",
       "role": "direktion",
       "pb": "alle",
       "aktiv": true
@@ -58,7 +58,7 @@
       "id": "7",
       "name": "Silke Oemus",
       "username": "silke",
-      "password": "Spandau93",
+      "password": "$2b$10$UMRjV3etyemakicXMnTBNeQFr2aHCwDp3lrur5j7FyFqJl9zlDLq2",
       "role": "pbl",
       "pb": "Deutsch und Integration",
       "aktiv": true
