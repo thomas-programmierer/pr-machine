@@ -17,7 +17,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 /* HEADER */
 .topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 20px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
 .tb-logo{display:flex;align-items:center;gap:8px}
-.tb-title{font-size:13px;font-weight:700;color:#fff}
 .tb-tag{font-size:10px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .tb-back{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 11px;color:rgba(255,255,255,.7);font-size:11px;font-weight:500;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;transition:all .15s}
@@ -27,7 +26,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 /* MAIN */
 .main{flex:1;padding:20px 22px;max-width:1100px;width:100%;margin:0 auto}
 
-/* TABS */
+/* DIREKTION HERO */
+.dir-hero{background:var(--blau);border-radius:14px;padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.dir-hero-text{flex:1}
+.dir-hero-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px}
+.dir-hero-sub{font-size:12px;color:rgba(255,255,255,.55)}
+.dir-badge{background:var(--gelb);color:var(--blau);border-radius:12px;padding:8px 20px;font-size:22px;font-weight:800;white-space:nowrap;text-align:center;line-height:1.2}
+.dir-badge-label{font-size:10px;font-weight:600;opacity:.8}
+
+/* TABS (Admin/Redakteur) */
 .tabs{display:flex;gap:2px;background:#fff;border:1.5px solid #dde2e9;border-radius:10px;padding:4px;margin-bottom:18px;width:fit-content}
 .tab-btn{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--blau60);transition:all .15s;font-family:'DM Sans',sans-serif}
 .tab-btn.active{background:var(--blau);color:#fff}
@@ -45,51 +52,69 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 /* CARDS GRID */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
 
-/* POST CARD */
+/* ── DIREKTION CARD (fokussiert, 3 Aktionen) ── */
+.dir-card{background:#fff;border-radius:14px;border:2px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s;border-top:3px solid var(--hellblau)}
+.dir-card:hover{box-shadow:0 6px 20px rgba(0,40,90,.12)}
+.dir-card-head{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px;cursor:pointer}
+.dir-card-meta{flex:1;min-width:0}
+.dir-card-title{font-size:14px;font-weight:700;color:var(--blau);line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dir-card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.dir-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--blau10);color:var(--blau60)}
+.dir-card-snippet{padding:0 16px 12px;font-size:12px;color:var(--blau60);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.dir-card-autor{padding:0 16px 10px;font-size:10px;color:var(--blau60)}
+
+/* Direktion-Kommentar (wenn Post zurückgeschickt wurde) */
+.dir-kommentar-box{margin:0 16px 12px;background:#FFF8E1;border:1px solid #FECE4D;border-radius:8px;padding:9px 12px;font-size:11px;color:#6B4C00;line-height:1.5}
+.dir-kommentar-label{font-weight:700;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+
+/* AKTIONS-ZONE */
+.dir-actions{border-top:1.5px solid #eef1f6;padding:12px 16px;display:flex;gap:8px}
+.btn-frei{flex:1;padding:9px 8px;border-radius:9px;font-size:12px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-frei:hover{background:#8faa04}
+.btn-zurueck{flex:1;padding:9px 8px;border-radius:9px;font-size:12px;font-weight:600;background:#EEF1F6;color:var(--blau);border:none;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-zurueck:hover{background:var(--blau10);color:var(--blau80)}
+.btn-ablehnen{padding:9px 12px;border-radius:9px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-ablehnen:hover{border-color:var(--rot);color:var(--rot);background:#FCEBEB}
+
+/* POST CARD (Standard für Admin/Redakteur) */
 .post-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
 .post-card:hover{box-shadow:0 4px 16px rgba(0,40,90,.1)}
 .post-card.warten{border-top:3px solid var(--orange)}
 .post-card.direktion{border-top:3px solid var(--hellblau)}
 .post-card.freigegeben{border-top:3px solid var(--gruen)}
 .post-card.abgelehnt{border-top:3px solid var(--rot);opacity:.75}
-
 .pc-head{padding:12px 14px 8px;display:flex;align-items:flex-start;gap:10px}
 .pc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.s-warten{background:var(--orange)}
-.s-direktion{background:var(--hellblau)}
-.s-freigegeben{background:var(--gruen)}
-.s-abgelehnt{background:var(--rot)}
+.s-warten{background:var(--orange)}.s-direktion{background:var(--hellblau)}
+.s-freigegeben{background:var(--gruen)}.s-abgelehnt{background:var(--rot)}
 .pc-meta{flex:1;min-width:0}
 .pc-anlass{font-size:13px;font-weight:600;color:var(--blau);line-height:1.3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pc-sub{font-size:10px;color:var(--blau60);display:flex;gap:8px;flex-wrap:wrap}
 .pc-pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px}
-.pill-warten{background:#FFF0E6;color:#8B4000}
-.pill-direktion{background:#E4F2FB;color:#1B5E86}
-.pill-freigegeben{background:#EAF3DE;color:#3B6D11}
-.pill-abgelehnt{background:#FCEBEB;color:#791F1F}
-
-/* PREVIEW */
-.pc-preview{margin:0 14px 10px;border-radius:8px;overflow:hidden;background:var(--blau10);min-height:60px;max-height:180px;display:flex;align-items:center;justify-content:center;position:relative}
+.pill-warten{background:#FFF0E6;color:#8B4000}.pill-direktion{background:#E4F2FB;color:#1B5E86}
+.pill-freigegeben{background:#EAF3DE;color:#3B6D11}.pill-abgelehnt{background:#FCEBEB;color:#791F1F}
+.pc-preview{margin:0 14px 10px;border-radius:8px;overflow:hidden;background:var(--blau10);min-height:60px;max-height:180px;display:flex;align-items:center;justify-content:center}
 .pc-preview img{width:100%;height:180px;object-fit:cover;display:block}
 .pc-preview-placeholder{font-size:28px;color:var(--blau20);padding:20px}
-
-/* TEXT */
 .pc-text{padding:0 14px 10px;font-size:11px;color:var(--blau60);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-
-/* FOOTER ACTIONS */
 .pc-foot{padding:10px 14px 12px;border-top:1px solid #eef1f6;display:flex;gap:7px;align-items:center}
 .pc-autor{font-size:10px;color:var(--blau60);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pc-datum{font-size:10px;color:var(--blau60)}
-.btn-approve{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer;transition:background .15s}
+.btn-approve{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer}
 .btn-approve:hover{background:#8faa04}
 .btn-reject{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;transition:all .15s}
 .btn-reject:hover{border-color:var(--rot);color:var(--rot)}
 .btn-undo{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer}
 
-/* DETAIL MODAL */
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--blau60)}
+.empty-icon{font-size:56px;margin-bottom:14px}
+.empty-title{font-size:17px;font-weight:700;color:var(--blau);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--blau60)}
+
+/* MODAL (allgemein) */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:14px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.3)}
 .modal-head{padding:16px 20px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;gap:10px}
 .modal-title{font-size:15px;font-weight:600;color:var(--blau);flex:1}
 .modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--blau60);padding:2px 6px}
@@ -102,10 +127,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .btn-modal-approve{padding:9px 22px;border-radius:8px;font-size:12px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer}
 .btn-modal-reject{padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer}
 
-/* EMPTY */
-.empty{text-align:center;padding:60px 20px;color:var(--blau60)}
-.empty-icon{font-size:48px;margin-bottom:12px}
-.empty-title{font-size:15px;font-weight:600;color:var(--blau);margin-bottom:5px}
+/* KOMMENTAR MODAL */
+.kom-label{font-size:12px;font-weight:600;color:var(--blau);margin-bottom:6px}
+.kom-sub{font-size:11px;color:var(--blau60);margin-bottom:10px;line-height:1.5}
+.kom-textarea{width:100%;border:1.5px solid #dde2e9;border-radius:9px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--blau);outline:none;resize:vertical;min-height:100px;transition:border-color .15s}
+.kom-textarea:focus{border-color:var(--blau)}
+.kom-textarea.error{border-color:var(--rot)}
+.kom-error{font-size:11px;color:var(--rot);margin-top:4px;display:none}
+.btn-kom-send{padding:10px 22px;border-radius:8px;font-size:12px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer}
+.btn-kom-send:hover{background:#001f47}
+.btn-kom-cancel{padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer}
 
 /* TOAST */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid var(--gelb)}
@@ -142,36 +173,50 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 <div id="login-required">
   <div style="font-size:48px">🔐</div>
   <div style="font-size:16px;font-weight:600;color:var(--blau)">Bitte zuerst anmelden</div>
-  <div style="font-size:13px">Du wirst in 2 Sekunden weitergeleitet …</div>
+  <div style="font-size:13px">Du wirst weitergeleitet …</div>
 </div>
 
 <div class="main" id="main-content" style="display:none">
 
-  <div style="margin-bottom:16px">
-    <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
-    <div style="font-size:12px;color:var(--blau60)">Zweistufig: Die Redaktion prüft zuerst und gibt an die Direktion weiter — die Direktion erteilt die endgültige Freigabe.</div>
+  <!-- ── DIREKTION: fokussiertes Entscheidungs-Board ── -->
+  <div id="view-direktion" style="display:none">
+    <div class="dir-hero">
+      <div class="dir-hero-text">
+        <div class="dir-hero-title" id="dir-hero-title">Ihre Freigabe-Aufgaben</div>
+        <div class="dir-hero-sub">Prüfen Sie die Posts der Redaktion und entscheiden Sie: Freigeben, Zurück oder Ablehnen.</div>
+      </div>
+      <div class="dir-badge">
+        <div id="dir-badge-count">—</div>
+        <div class="dir-badge-label">warten auf Sie</div>
+      </div>
+    </div>
+    <div class="cards-grid" id="dir-cards-grid">
+      <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+    </div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar" id="stats-bar"></div>
-
-  <!-- FILTER TABS -->
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-alle"     onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
-    <button class="tab-btn"        id="tab-warten"   onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
-    <button class="tab-btn"        id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
-    <button class="tab-btn"        id="tab-frei"     onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
-    <button class="tab-btn"        id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
-  </div>
-
-  <!-- CARDS -->
-  <div class="cards-grid" id="cards-grid">
-    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+  <!-- ── ADMIN / REDAKTION: Übersichts-Board ── -->
+  <div id="view-redaktion" style="display:none">
+    <div style="margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
+      <div style="font-size:12px;color:var(--blau60)">Zweistufig: Die Redaktion prüft zuerst und gibt an die Direktion weiter — die Direktion erteilt die endgültige Freigabe.</div>
+    </div>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-alle"      onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
+      <button class="tab-btn"       id="tab-warten"    onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+      <button class="tab-btn"       id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
+      <button class="tab-btn"       id="tab-frei"      onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
+      <button class="tab-btn"       id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
+    </div>
+    <div class="cards-grid" id="cards-grid">
+      <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+    </div>
   </div>
 
 </div>
 
-<!-- DETAIL MODAL -->
+<!-- ── DETAIL MODAL ── -->
 <div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-head">
@@ -183,15 +228,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
   </div>
 </div>
 
+<!-- ── KOMMENTAR MODAL (Zurück zur Redaktion) ── -->
+<div class="modal-bg" id="kom-modal-bg" onclick="closeKomModal(event)">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <div class="modal-title">↩️ Zurück zur Redaktion</div>
+      <button class="modal-close" onclick="closeKomModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div class="kom-label">Was soll die Redaktion ändern?</div>
+        <div class="kom-sub">Ihr Kommentar hilft der Redaktion, den Post gezielt zu verbessern. Pflichtfeld.</div>
+        <textarea class="kom-textarea" id="kom-textarea" placeholder="z. B. Bitte den Ton etwas formeller gestalten und den Kursname vollständig ausschreiben …"></textarea>
+        <div class="kom-error" id="kom-error">Bitte einen Kommentar eingeben.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-kom-cancel" onclick="closeKomModalDirect()">Abbrechen</button>
+      <button class="btn-kom-send" onclick="sendeZurueck()">↩️ Zurücksenden</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><div id="toast-msg"></div></div>
 
 <script>
-let currentUser = null;
-let allePosts   = [];
+let currentUser  = null;
+let allePosts    = [];
 let currentFilter = 'alle';
-let modalPostId = null;
+let modalPostId  = null;
+let komPostId    = null;
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
+// ── AUTH ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
     const r = await fetch('/api/me', { credentials:'include' });
@@ -201,9 +269,13 @@ async function init() {
     const ROLE_LABELS = { admin:'Admin', redakteur:'Redakteur', pbl:'Programmbereichsleitung', direktion:'Direktion' };
     document.getElementById('hdr-user').textContent = currentUser.name + ' · ' + (ROLE_LABELS[currentUser.role]||'');
     document.getElementById('login-required').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    // Aktionen werden pro Karte je nach Rolle und Status gerendert
-    // (Redaktion: Stufe 1, Direktion: Stufe 2) — siehe renderCards()
+    document.getElementById('main-content').style.display   = 'block';
+
+    if (istDirektionOnly()) {
+      document.getElementById('view-direktion').style.display = 'block';
+    } else {
+      document.getElementById('view-redaktion').style.display = 'block';
+    }
     await ladePosts();
   } catch { redirectLogin(); }
 }
@@ -212,25 +284,88 @@ function redirectLogin() {
   document.getElementById('login-required').style.display = 'flex';
   setTimeout(() => { window.location.href = '/?screen=freigabe'; }, 2000);
 }
-
 async function doLogout() {
   await fetch('/api/logout', { method:'POST', credentials:'include' });
   window.location.href = '/';
 }
 
-// ── DATEN ─────────────────────────────────────────────────────────────────────
+// ── ROLLEN ───────────────────────────────────────────────────────────────────
+function istRedaktion()    { return ['admin','redakteur'].includes(currentUser?.role); }
+function istDirektion()    { return ['admin','direktion'].includes(currentUser?.role); }
+function istDirektionOnly(){ return currentUser?.role === 'direktion'; }
+
+// ── DATEN ────────────────────────────────────────────────────────────────────
 async function ladePosts() {
   try {
     const r = await fetch('/api/posts', { credentials:'include' });
     if (!r.ok) return;
     allePosts = await r.json();
-    // Neueste zuerst
     allePosts.sort((a, b) => (b.erstellt||'').localeCompare(a.erstellt||''));
-    updateCounts();
-    renderCards();
+    if (istDirektionOnly()) {
+      renderDirektionBoard();
+    } else {
+      updateCounts();
+      renderCards();
+    }
   } catch(e) { console.error(e); }
 }
 
+// ── DIREKTION BOARD ──────────────────────────────────────────────────────────
+function renderDirektionBoard() {
+  const aufgaben = allePosts.filter(p => p.status === 'redaktion_frei');
+  const grid     = document.getElementById('dir-cards-grid');
+  const badge    = document.getElementById('dir-badge-count');
+  const title    = document.getElementById('dir-hero-title');
+
+  badge.textContent = aufgaben.length;
+  title.textContent = aufgaben.length === 0
+    ? 'Alles erledigt ✓'
+    : aufgaben.length === 1 ? 'Ein Post wartet auf Sie' : `${aufgaben.length} Posts warten auf Sie`;
+
+  if (!aufgaben.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">✅</div>
+      <div class="empty-title">Nichts zu tun — alles freigegeben oder in Bearbeitung</div>
+      <div class="empty-sub">Sobald die Redaktion einen Post weitergibt, erscheint er hier.</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = aufgaben.map(p => {
+    const datum = p.erstellt
+      ? new Date(p.erstellt).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' })
+      : '';
+    const komBox = p.direktion_kommentar
+      ? `<div class="dir-kommentar-box">
+           <div class="dir-kommentar-label">⚠️ Früherer Kommentar</div>
+           ${esc(p.direktion_kommentar)}
+         </div>`
+      : '';
+    return `
+    <div class="dir-card">
+      <div class="dir-card-head" onclick="openDetail('${p.id}')">
+        <div class="dir-card-meta">
+          <div class="dir-card-title">${esc(p.anlass||'Unbenannter Post')}</div>
+          <div class="dir-card-tags">
+            ${p.kanal  ? `<span class="dir-tag">📱 ${esc(p.kanal)}</span>`  : ''}
+            ${p.format ? `<span class="dir-tag">${esc(p.format)}</span>` : ''}
+            ${datum    ? `<span class="dir-tag">${datum}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${p.headline||p.text ? `<div class="dir-card-snippet" onclick="openDetail('${p.id}')">${esc(p.headline||p.text||'')}</div>` : ''}
+      <div class="dir-card-autor">von ${esc(p.autor||'—')}</div>
+      ${komBox}
+      <div class="dir-actions">
+        <button class="btn-frei"     onclick="freigeben('${p.id}')">✅ Freigeben</button>
+        <button class="btn-zurueck"  onclick="openKomModal('${p.id}')">↩️ Zurück</button>
+        <button class="btn-ablehnen" onclick="ablehnen('${p.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── REDAKTION / ADMIN BOARD ──────────────────────────────────────────────────
 function updateCounts() {
   const cnt = (s) => allePosts.filter(p => !s || p.status === s).length;
   document.getElementById('cnt-alle').textContent      = cnt('');
@@ -238,8 +373,6 @@ function updateCounts() {
   document.getElementById('cnt-direktion').textContent = cnt('redaktion_frei');
   document.getElementById('cnt-frei').textContent      = cnt('freigegeben');
   document.getElementById('cnt-abgelehnt').textContent = cnt('abgelehnt');
-
-  // Stats bar
   document.getElementById('stats-bar').innerHTML = [
     `<div class="stat-pill orange"><span>${cnt('freigabe_ausstehend')}</span> bei der Redaktion</div>`,
     `<div class="stat-pill"><span>${cnt('redaktion_frei')}</span> warten auf Direktion</div>`,
@@ -257,51 +390,42 @@ function setFilter(f) {
 }
 
 function renderCards() {
-  const grid = document.getElementById('cards-grid');
+  const grid     = document.getElementById('cards-grid');
   const gefiltert = currentFilter === 'alle'
     ? allePosts
     : allePosts.filter(p => p.status === currentFilter);
-
-  if (!gefiltert.length) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
-      <div class="empty-icon">📭</div>
-      <div class="empty-title">${currentFilter === 'freigabe_ausstehend' ? 'Nichts wartet auf die Redaktion' : currentFilter === 'redaktion_frei' ? 'Nichts wartet auf die Direktion' : 'Keine Posts in dieser Kategorie'}</div>
-      <div style="font-size:12px">${currentFilter === 'freigabe_ausstehend' ? 'Sobald ein Redakteur einen Post einreicht, erscheint er hier.' : currentFilter === 'redaktion_frei' ? 'Sobald die Redaktion einen Post weitergibt, erscheint er hier.' : ''}</div>
-    </div>`;
-    return;
-  }
 
   const STATUS = {
     freigabe_ausstehend: { label:'Bei Redaktion', pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
     redaktion_frei:      { label:'Bei Direktion', pill:'pill-direktion',   dot:'s-direktion',  cls:'direktion' },
     freigegeben:         { label:'✓ Freigegeben', pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
-    abgelehnt:           { label:'Abgelehnt', pill:'pill-abgelehnt', dot:'s-abgelehnt',  cls:'abgelehnt' },
-    geplant:             { label:'Geplant', pill:'',                dot:'s-warten',     cls:'warten' },
+    abgelehnt:           { label:'Abgelehnt',     pill:'pill-abgelehnt',   dot:'s-abgelehnt',  cls:'abgelehnt' },
+    geplant:             { label:'Geplant',        pill:'',                 dot:'s-warten',     cls:'warten' },
   };
 
+  if (!gefiltert.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">Keine Posts in dieser Kategorie</div>
+    </div>`;
+    return;
+  }
+
   grid.innerHTML = gefiltert.map(p => {
-    const s = STATUS[p.status] || STATUS.geplant;
+    const s     = STATUS[p.status] || STATUS.geplant;
     const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' }) : '';
     const hasPreview = p.preview && p.preview.startsWith('data:image');
-
-    const aktionen = kartenAktionen(p, true);
-
+    const aktionen   = kartenAktionen(p, true);
     return `<div class="post-card ${s.cls}" onclick="openDetail('${p.id}')">
       <div class="pc-head">
         <div class="pc-status ${s.dot}"></div>
         <div class="pc-meta">
           <div class="pc-anlass">${esc(p.anlass||'Unbenannter Post')}</div>
-          <div class="pc-sub">
-            <span>${esc(p.kanal||'')}</span>
-            <span>${esc(p.format||'')}</span>
-            <span>${datum}</span>
-          </div>
+          <div class="pc-sub"><span>${esc(p.kanal||'')}</span><span>${esc(p.format||'')}</span><span>${datum}</span></div>
         </div>
         <span class="pc-pill ${s.pill}">${s.label}</span>
       </div>
-      ${hasPreview
-        ? `<div class="pc-preview"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>`
-        : `<div class="pc-preview"><div class="pc-preview-placeholder">🖼</div></div>`}
+      ${hasPreview ? `<div class="pc-preview"><img src="${p.preview}" alt="Vorschau" loading="lazy"></div>` : `<div class="pc-preview"><div class="pc-preview-placeholder">🖼</div></div>`}
       ${p.headline||p.text ? `<div class="pc-text">${esc(p.headline||p.text||'')}</div>` : ''}
       <div class="pc-foot">
         <div class="pc-autor">von ${esc(p.autor||'')}</div>
@@ -311,51 +435,42 @@ function renderCards() {
   }).join('');
 }
 
-// ── ROLLEN ────────────────────────────────────────────────────────────────────
-function istRedaktion() { return ['admin','redakteur'].includes(currentUser?.role); }
-function istDirektion() { return ['admin','direktion'].includes(currentUser?.role); }
-
-// Baut die Aktions-Buttons je nach Status + Rolle.
-// modus 'karte' (kompakt) oder 'modal' (große Buttons).
 function kartenAktionen(p, kompakt) {
   const stop = kompakt ? 'event.stopPropagation();' : '';
-  const app  = kompakt ? 'btn-approve' : 'btn-modal-approve';
-  const rej  = kompakt ? 'btn-reject'  : 'btn-modal-reject';
-  const undo = kompakt ? 'btn-undo'    : 'btn-modal-reject';
-
-  // Stufe 1: Redaktion prüft neu eingereichte Posts
+  const app  = kompakt ? 'btn-approve'      : 'btn-modal-approve';
+  const rej  = kompakt ? 'btn-reject'       : 'btn-modal-reject';
+  const undo = kompakt ? 'btn-undo'         : 'btn-modal-reject';
   if (p.status === 'freigabe_ausstehend' && istRedaktion()) {
     return `<button class="${app}" onclick="${stop}anDirektion('${p.id}')">✅ An Direktion</button>
             <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>`;
   }
-  // Stufe 2: Direktion erteilt die endgültige Freigabe
   if (p.status === 'redaktion_frei' && istDirektion()) {
     return `<button class="${app}" onclick="${stop}freigeben('${p.id}')">✅ Freigeben</button>
-            <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>`;
+            <button class="${undo}" onclick="${stop}openKomModal('${p.id}')">↩️ Zurück</button>
+            <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕</button>`;
   }
-  // Redaktion kann eine Weitergabe an die Direktion zurücknehmen
   if (p.status === 'redaktion_frei' && istRedaktion()) {
     return `<button class="${undo}" onclick="${stop}zurueckRedaktion('${p.id}')">↩ Zurückziehen</button>`;
   }
-  // Direktion kann eine erteilte Freigabe rückgängig machen
   if (p.status === 'freigegeben' && istDirektion()) {
     return `<button class="${undo}" onclick="${stop}zurueckDirektion('${p.id}')">↩ Freigabe zurücknehmen</button>`;
   }
   return '';
 }
 
-// ── AKTIONEN ──────────────────────────────────────────────────────────────────
+// ── AKTIONEN ─────────────────────────────────────────────────────────────────
 async function anDirektion(id) {
   await setStatus(id, 'redaktion_frei');
   showToast('✅ An die Direktion weitergeleitet');
 }
 async function freigeben(id) {
-  await setStatus(id, 'freigegeben');
-  showToast('✅ Post endgültig freigegeben');
+  await setStatus(id, 'freigegeben', { freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString(), direktion_kommentar: '' });
+  showToast('✅ Post freigegeben');
 }
 async function ablehnen(id) {
+  if (!confirm('Post wirklich ablehnen?')) return;
   await setStatus(id, 'abgelehnt');
-  showToast('↩️ Post abgelehnt');
+  showToast('❌ Post abgelehnt');
 }
 async function zurueckRedaktion(id) {
   await setStatus(id, 'freigabe_ausstehend');
@@ -365,33 +480,59 @@ async function zurueckDirektion(id) {
   await setStatus(id, 'redaktion_frei');
   showToast('↩ Freigabe zurückgenommen');
 }
-async function setStatus(id, status) {
+
+// ── ZURÜCK MIT KOMMENTAR ──────────────────────────────────────────────────────
+function openKomModal(id) {
+  komPostId = id;
+  document.getElementById('kom-textarea').value = '';
+  document.getElementById('kom-textarea').classList.remove('error');
+  document.getElementById('kom-error').style.display = 'none';
+  document.getElementById('kom-modal-bg').classList.add('open');
+}
+function closeKomModal(e) { if (e.target === document.getElementById('kom-modal-bg')) closeKomModalDirect(); }
+function closeKomModalDirect() {
+  document.getElementById('kom-modal-bg').classList.remove('open');
+  komPostId = null;
+}
+async function sendeZurueck() {
+  const txt = document.getElementById('kom-textarea').value.trim();
+  if (!txt) {
+    document.getElementById('kom-textarea').classList.add('error');
+    document.getElementById('kom-error').style.display = 'block';
+    return;
+  }
+  closeKomModalDirect();
+  await setStatus(komPostId, 'freigabe_ausstehend', { direktion_kommentar: txt, freigegeben_von: '', freigegeben_am: '' });
+  showToast('↩️ Post zurückgeschickt mit Kommentar');
+}
+
+async function setStatus(id, status, extra = {}) {
   try {
     const r = await fetch('/api/posts/' + id, {
       method:'PUT', credentials:'include',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ status, freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString() })
+      body: JSON.stringify({ status, ...extra })
     });
     if (!r.ok) { showToast('⚠️ Fehler beim Speichern'); return; }
   } catch { showToast('⚠️ Server nicht erreichbar'); return; }
   const idx = allePosts.findIndex(p => p.id === id);
-  if (idx !== -1) allePosts[idx].status = status;
+  if (idx !== -1) { allePosts[idx].status = status; Object.assign(allePosts[idx], extra); }
   if (modalPostId === id) closeModalDirect();
-  updateCounts();
-  renderCards();
+  if (istDirektionOnly()) renderDirektionBoard();
+  else { updateCounts(); renderCards(); }
 }
 
-// ── DETAIL MODAL ──────────────────────────────────────────────────────────────
+// ── DETAIL MODAL ─────────────────────────────────────────────────────────────
 function openDetail(id) {
   const p = allePosts.find(x => x.id === id);
   if (!p) return;
   modalPostId = id;
-  const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE') : '';
+  const datum      = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE') : '';
   const hasPreview = p.preview && p.preview.startsWith('data:image');
-
   document.getElementById('modal-title').textContent = p.anlass || 'Post-Details';
   document.getElementById('modal-body').innerHTML = `
     ${hasPreview ? `<div><div class="ml">Vorschau</div><div class="modal-preview-wrap"><img src="${p.preview}" alt="Vorschau"></div></div>` : ''}
+    ${p.direktion_kommentar ? `<div class="dir-kommentar-box"><div class="dir-kommentar-label">↩️ Kommentar der Direktion</div>${esc(p.direktion_kommentar)}</div>` : ''}
     <div>
       <div class="ml">Details</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
@@ -399,25 +540,21 @@ function openDetail(id) {
         <div><span style="color:var(--blau60)">Format:</span> ${esc(p.format||'—')}</div>
         <div><span style="color:var(--blau60)">Autor:</span> ${esc(p.autor||'—')}</div>
         <div><span style="color:var(--blau60)">Eingereicht:</span> ${datum}</div>
-        ${p.datum ? `<div><span style="color:var(--blau60)">Geplant für:</span> ${esc(p.datum)}</div>` : ''}
         ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
       </div>
     </div>
     ${(p.headline||p.fulltext) ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.headline||'')}${p.fulltext ? '\n\n' + esc(p.fulltext) : ''}</div></div>` : ''}
   `;
-
   document.getElementById('modal-foot').innerHTML = kartenAktionen(p, false);
-
   document.getElementById('modal-bg').classList.add('open');
 }
-
 function closeModal(e) { if (e.target === document.getElementById('modal-bg')) closeModalDirect(); }
 function closeModalDirect() {
   document.getElementById('modal-bg').classList.remove('open');
   modalPostId = null;
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────────
+// ── UTILS ────────────────────────────────────────────────────────────────────
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -426,9 +563,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Auto-Refresh alle 30 Sekunden
 setInterval(ladePosts, 30000);
-
 window.addEventListener('load', init);
 </script>
 </body>
