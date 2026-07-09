@@ -979,7 +979,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div style="display:flex;border-bottom:1px solid var(--border)">
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">Export</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">🚀 Freigabe</div>
     </div>
 
     <!-- TAB BILD -->
@@ -1148,23 +1148,24 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
     <!-- TAB EXPORT -->
     <div id="rtab-2" style="display:none">
-      <div class="p-section">
-        <div class="p-label">PNG exportieren</div>
-        <button class="exp-btn exp-main" onclick="exportPNG()">⬇ Als PNG herunterladen</button>
-        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Exportiert ohne Hilfslinien · Safe-Zonen werden automatisch ausgeblendet.</div>
+      <div class="p-section" style="background:rgba(250,185,15,.07);border:1px solid rgba(250,185,15,.2);border-radius:10px;margin-bottom:10px">
+        <div class="p-label" style="color:var(--gelb);font-size:11px">Grafik einreichen</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:10px">PNG wird erstellt und der Post landet direkt im Freigabe-Board.</div>
+        <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Titel des Posts …" style="font-size:10px;margin-bottom:6px">
+        <select class="txt-field" id="exp-kanal" style="font-size:10px;margin-bottom:10px">
+          <option value="Instagram">📸 Instagram</option>
+          <option value="Facebook">👥 Facebook</option>
+          <option value="Instagram & Facebook">📸👥 Beide</option>
+        </select>
+        <input class="txt-field" id="exp-datum" type="date" style="font-size:10px;margin-bottom:10px">
+        <button class="exp-btn exp-main" onclick="exportUndFreigabe()" id="btn-freigabe-submit" style="font-size:12px;padding:12px;font-weight:800">
+          🚀 PNG erstellen &amp; zur Freigabe
+        </button>
+        <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
       </div>
       <div class="p-section">
-        <div class="p-label">In Redaktionsplan</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <select class="txt-field" id="exp-kanal" style="font-size:10px">
-            <option value="ig">📸 Instagram</option>
-            <option value="fb">👥 Facebook</option>
-            <option value="beide">📸👥 Beide</option>
-          </select>
-          <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
-          <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Hook …" style="font-size:10px">
-          <button class="exp-btn" onclick="saveToRedaktionsplan()">📅 Im Redaktionsplan speichern</button>
-        </div>
+        <div class="p-label">Nur herunterladen</div>
+        <button class="exp-btn" onclick="exportPNG()" style="font-size:10px">⬇ PNG lokal speichern</button>
       </div>
       <div class="p-section">
         <div class="p-label">Auflösung</div>
@@ -3129,28 +3130,11 @@ function showStudioBanner(anlass, kurs, fulltext) {
 }
 
 function injectFreigabeCTA(anlass) {
-  const expTab = document.getElementById('rtab-2');
-  if (!expTab) return;
-  const existing = document.getElementById('freigabe-cta');
-  if (existing) existing.remove();
-  const cta = document.createElement('div');
-  cta.id = 'freigabe-cta';
-  cta.style.cssText = 'border-top:1px solid var(--border);';
-  cta.innerHTML = `
-    <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
-      <div class="p-label" style="color:var(--gelb)">Schritt 6 — Freigabe</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:10px">
-        PNG exportieren, dann Post zur Freigabe einreichen.
-      </div>
-      <button class="exp-btn exp-main" onclick="exportUndFreigabe()" id="btn-freigabe-submit">
-        ⬇ PNG exportieren &amp; zur Freigabe
-      </button>
-      <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
-    </div>
-  `;
-  expTab.prepend(cta);
+  // Anlass-Feld vorausfüllen
+  const anlassEl = document.getElementById('exp-anlass');
+  if (anlassEl && anlass) anlassEl.value = anlass;
+  // Direkt zum Freigabe-Tab — bleibt offen
   setRTab(2);
-  setTimeout(() => setRTab(0), 200);
 }
 
 async function exportUndFreigabe() {
@@ -3220,9 +3204,8 @@ async function exportUndFreigabe() {
       body: JSON.stringify(post)
     });
     if (r.ok) {
-      if (btn) { btn.textContent = '✅ Eingereicht!'; }
-      if (statusEl) statusEl.textContent = 'Post wartet auf Freigabe — Tab 6 öffnen.';
-      showToast('✅ PNG gespeichert · Post zur Freigabe eingereicht');
+      showToast('✅ Grafik eingereicht — weiter zur Voransicht');
+      setTimeout(() => { window.location.href = '/voransicht'; }, 1200);
     } else {
       showToast('⚠️ PNG ok, aber Freigabe-Speicherung fehlgeschlagen');
       if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }

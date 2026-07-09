@@ -1225,9 +1225,8 @@ async function exportUndFreigabe() {
       body: JSON.stringify(post)
     });
     if (r.ok) {
-      if (btn) { btn.disabled = true; btn.textContent = '✅ Eingereicht!'; btn.style.background = '#AFC805'; }
-      if (statusEl) statusEl.innerHTML = 'Grafik liegt im Freigabe-Board · <a href="/freigabe" style="color:var(--gelb);font-weight:700;text-decoration:underline">→ Freigabe öffnen</a>';
-      showToast('✅ Grafik eingereicht — wartet auf Freigabe');
+      showToast('✅ Grafik eingereicht — weiter zur Voransicht');
+      setTimeout(() => { window.location.href = '/voransicht'; }, 1200);
     } else {
       showToast('⚠️ PNG ok, aber Einreichen fehlgeschlagen');
       if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
