@@ -1225,8 +1225,8 @@ async function exportUndFreigabe() {
       body: JSON.stringify(post)
     });
     if (r.ok) {
-      if (btn) { btn.textContent = '✅ Eingereicht!'; }
-      if (statusEl) statusEl.textContent = 'Post wartet im Freigabe-Board auf Prüfung.';
+      if (btn) { btn.disabled = true; btn.textContent = '✅ Eingereicht!'; btn.style.background = '#AFC805'; }
+      if (statusEl) statusEl.innerHTML = 'Grafik liegt im Freigabe-Board · <a href="/freigabe" style="color:var(--gelb);font-weight:700;text-decoration:underline">→ Freigabe öffnen</a>';
       showToast('✅ Grafik eingereicht — wartet auf Freigabe');
     } else {
       showToast('⚠️ PNG ok, aber Einreichen fehlgeschlagen');
