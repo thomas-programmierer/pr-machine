@@ -1535,7 +1535,7 @@ async function pblVorschlagEinreichen() {
     closePblModalDirect();
     showToast('📬 Vorschlag gesendet! Seite wird aktualisiert …');
     setTimeout(() => window.location.reload(), 1200);
-  } catch { showToast('⚠️ Server nicht erreichbar'); }
+  } catch(e) { console.error('EINREICHUNG FEHLER:', e); showToast('⚠️ ' + (e?.message || 'Server nicht erreichbar')); }
   btn.disabled = false;
   btn.textContent = '📬 Einreichen';
 }
