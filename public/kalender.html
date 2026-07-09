@@ -98,7 +98,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .woche-grid{display:grid;grid-template-columns:52px repeat(7,1fr);gap:1px;background:#dde2e9;border-radius:10px;overflow:hidden;min-height:400px}
 .woche-time-col{background:#f4f5f7;display:flex;flex-direction:column}
 .woche-time-header{background:var(--blau);height:56px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase}
-.woche-time-slot{height:50px;border-top:1px solid #e2e7ef;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;color:#aaa;font-family:monospace}
+.woche-time-slot{height:50px;border-top:1px solid #e2e7ef;display:flex;align-items:flex-start;justify-content:center;padding-top:5px;font-size:12px;font-weight:600;color:#bbc5cf;font-family:inherit;letter-spacing:0}
 .woche-day-col{background:#fff;display:flex;flex-direction:column;min-width:0}
 .woche-day-header{background:var(--blau);height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;gap:1px}
 .woche-day-header.heute-col{background:#00408a}
@@ -1136,7 +1136,7 @@ function renderWoche(wocheMo, allePosts) {
 
   // Zeit-Slots + Events
   STUNDEN.forEach(std => {
-    html += `<div class="woche-time-slot">${std}:00</div>`;
+    html += `<div class="woche-time-slot">${parseInt(std)}</div>`;
     tage.forEach((d, i) => {
       const datStr = d.toISOString().split('T')[0];
       const hook = showHooks && HOOKS[datStr];
