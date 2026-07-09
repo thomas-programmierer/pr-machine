@@ -60,7 +60,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .wochentag-header{background:var(--blau);color:#fff;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .tag{background:#fff;min-height:110px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .1s;position:relative}
 .tag:hover{background:#f8fafc}
-.tag.heute{background:#fffbec}
+.tag.heute{background:#fffbec;border:2px solid #AFC805 !important;box-shadow:inset 0 0 0 1px rgba(175,200,5,.15)}
 .tag.anderer-monat{background:#f8f8f8}
 .tag.anderer-monat .tag-nr{color:#ccc}
 .tag-nr{font-size:11px;font-weight:600;color:var(--blau60);margin-bottom:2px;line-height:1}
@@ -526,7 +526,7 @@ async function extLogout() {
 // ══════════════════════════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════════════════════════
-let aktuellesDatum = new Date(2026, 5, 1); // Juni 2026 — für Monat/Liste (Tag 1)
+let aktuellesDatum = new Date(); // tagesaktuell
 let view = 'monat';
 let editingPostId = null;
 let currentUser = null;
