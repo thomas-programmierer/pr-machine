@@ -1418,9 +1418,9 @@ function openPblDetail(einrId) {
   if (!e) return;
 
   pblDatumContext = e.datum;
-  const hook = e.datum ? (HOOKS[e.datum] || '') : '';
+  const hook = e.datum ? (HOOKS[(e.datum||'').slice(0,10)] || '') : '';
   const datLabel = e.datum
-    ? (() => { const [j,m,d] = e.datum.split('-'); return new Date(+j,+m-1,+d).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); })()
+    ? (() => { const [j,m,dd] = (e.datum||'').slice(0,10).split('-'); return new Date(+j,+m-1,+dd).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); })()
     : '';
 
   document.getElementById('pbl-modal-datum').textContent = datLabel;
