@@ -1534,10 +1534,10 @@ async function pblVorschlagEinreichen() {
       id: d.einreichung?.id || Date.now(), status: 'neu' });
     closePblModalDirect();
     showToast('📬 Vorschlag an die Redaktion gesendet!');
-    renderKalender();
   } catch { showToast('⚠️ Server nicht erreichbar'); }
   btn.disabled = false;
   btn.textContent = '📬 Einreichen';
+  renderKalender();
 }
 
 
