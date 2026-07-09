@@ -2,6 +2,7 @@
 
 const multer = require('multer');
 const XLSX   = require('xlsx');
+const bcrypt = require('bcrypt');
 const db     = require('./db');   // Postgres-Anbindung (Einreichungen + Kurse)
 
 const http   = require("http");
@@ -39,10 +40,10 @@ function getPassword(userId) {
   } catch {}
   return null;
 }
-function setPassword(userId, pw) {
+async function setPassword(userId, pw) {
   let ov = {};
   try { ov = JSON.parse(fs.readFileSync(PW_OVERRIDE_FILE, 'utf8')); } catch {}
-  ov[userId] = pw;
+  ov[userId] = await bcrypt.hash(pw, 10);
   fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
 }
 const REDPLAN_FILE = path.join(DATA_DIR, "redaktionsplan_meta.json");
@@ -89,10 +90,7 @@ function saveJSON(file, data) { fs.writeFileSync(file, JSON.stringify(data, null
 function loadUsers() {
   const data = loadJSON(USERS_FILE, { users:[] }).users;
   if (data.length === 0) {
-    return [
-      { id:"1", name:"Thomas Admin", username:"thomas", role:"admin", pb:"alle", aktiv:true, password:"vhs2026!" },
-      { id:"2", name:"Manuela Linke", username:"manuela", role:"pbl", pb:"Programmbereichsleitung", aktiv:true, password:"vhs2020!" }
-    ];
+    console.error('⚠  users.json ist leer — bitte users.json prüfen!');
   }
   return data;
 }
@@ -256,11 +254,12 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url === "/api/login") {
     const b = await readBody(req);
     const users = loadUsers();
-    const u = users.find(x => {
-    if (x.username !== b.username || x.aktiv === false) return false;
-    const pw = getPassword(x.id) || x.password;
-    return pw === b.password;
-  });
+    const candidate = users.find(x => x.username === b.username && x.aktiv !== false);
+    let u = null;
+    if (candidate) {
+      const hash = getPassword(candidate.id) || candidate.password;
+      if (hash && await bcrypt.compare(b.password, hash)) u = candidate;
+    }
     if (!u) return jsonRes(res, 401, { error:"Ungültige Zugangsdaten" });
     const token = createSession(u);
     return jsonRes(res, 200, { ok:true, user:safeUser(u) },
@@ -294,7 +293,8 @@ const server = http.createServer(async (req, res) => {
     if (users.find(u => u.username === b.username))
       return jsonRes(res, 409, { error:"Benutzername bereits vergeben" });
     const neu = { id:String(Date.now()), name:b.name, username:b.username,
-                  password:b.password, role:b.role, pb:b.pb||"alle", aktiv:true };
+                  password: await bcrypt.hash(b.password, 10),
+                  role:b.role, pb:b.pb||"alle", aktiv:true };
     users.push(neu);
     saveUsers(users);
     return jsonRes(res, 201, { ok:true, user:safeUser(neu) });
@@ -308,7 +308,7 @@ const server = http.createServer(async (req, res) => {
     const idx = users.findIndex(u => u.id === id);
     if (idx === -1) return jsonRes(res, 404, { error:"User nicht gefunden" });
     if (b.password) {
-      setPassword(id, b.password);
+      await setPassword(id, b.password);
       delete b.password;
     }
     users[idx] = { ...users[idx], ...b, id };
@@ -705,10 +705,44 @@ function parseKursDate(v) {
   return null;
 }
 
+// ── Passwort-Migration beim Start ─────────────────────────────────────────────
+// Erkennt Klartext-Passwörter in users.json und hasht sie automatisch.
+// Läuft einmalig beim ersten Start nach dem Deploy — danach ein No-Op.
+async function migratePasswordsOnStartup() {
+  const users = loadUsers();
+  let changed = 0;
+  for (const u of users) {
+    if (!u.password) continue;
+    if (u.password.startsWith('$2b$') || u.password.startsWith('$2a$')) continue;
+    u.password = await bcrypt.hash(u.password, 10);
+    changed++;
+  }
+  if (changed > 0) {
+    saveUsers(users);
+    console.log(`  🔒  ${changed} Passwörter auf bcrypt migriert`);
+  }
+
+  // passwords_override.json ebenfalls prüfen
+  if (fs.existsSync(PW_OVERRIDE_FILE)) {
+    let ov = {}; try { ov = JSON.parse(fs.readFileSync(PW_OVERRIDE_FILE, 'utf8')); } catch {}
+    let ovChanged = 0;
+    for (const [id, pw] of Object.entries(ov)) {
+      if (pw.startsWith('$2b$') || pw.startsWith('$2a$')) continue;
+      ov[id] = await bcrypt.hash(pw, 10);
+      ovChanged++;
+    }
+    if (ovChanged > 0) {
+      fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
+      console.log(`  🔒  ${ovChanged} Override-Passwörter auf bcrypt migriert`);
+    }
+  }
+}
+
 server.listen(PORT, async () => {
   console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
   console.log(`  🌐  http://localhost:${PORT}`);
   console.log("  🔑  API-Key: aktiv");
+  await migratePasswordsOnStartup();
   try {
     const n = await db.testConnection();
     console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
