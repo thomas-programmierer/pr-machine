@@ -1417,6 +1417,9 @@ function initApp() {
   };
   (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
 
+  // Direktion: Nav komplett ausblenden
+  document.getElementById('nav').style.display = (role === 'direktion') ? 'none' : '';
+
   // Trennstriche ausblenden, die neben versteckten Tabs hängen
   document.querySelectorAll('.nav-sep').forEach(sep => {
     const prev = sep.previousElementSibling;
