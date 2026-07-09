@@ -577,13 +577,18 @@ const server = http.createServer(async (req, res) => {
     try {
       let result = await db.getKurse();
       result = result.filter(k => {
-        if (!k.beginn) return false;
-        const d = new Date(k.beginn);
-        if (d < heute || d > in4wochen) return false;
+        const terminBeginn = k.termin ? k.termin.split(' bis ')[0].trim() : null;
+        if (!terminBeginn) return false;
+        const d = new Date(terminBeginn);
+        if (isNaN(d) || d < heute || d > in4wochen) return false;
         if (!prefix) return true;
         return prefix.split(',').some(p => k.id && k.id.startsWith(p.trim()));
       });
-      result.sort((a,b) => (a.beginn||'').localeCompare(b.beginn||''));
+      result.sort((a,b) => {
+        const aT = a.termin ? a.termin.split(' bis ')[0] : '';
+        const bT = b.termin ? b.termin.split(' bis ')[0] : '';
+        return aT.localeCompare(bT);
+      });
       return jsonRes(res, 200, result.slice(0, 30));
     } catch(e) { return jsonRes(res, 500, { error: 'Fehler beim Laden' }); }
   }
@@ -647,8 +652,12 @@ const server = http.createServer(async (req, res) => {
           if (!r[1] || !r[2]) continue;
           const id = String(r[1]).trim();
           if (id.includes('\n') || id.length > 30 || !/^Sp[\d.]/.test(id)) continue;
-          kurse.push({ id, titel: String(r[2]).trim(), beginn: parseKursDate(r[3]), ende: parseKursDate(r[4]),
-            beschreibung: r[5] ? String(r[5]).trim().slice(0, 1000) : '',
+          const beschrRaw = r[3] ? String(r[3]).trim() : '';
+          const beschr = beschrRaw.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 800);
+          kurse.push({ id, titel: String(r[2]).trim(),
+            beginn: parseKursDate(r[4]),
+            ende: parseKursDate(r[5]),
+            beschreibung: beschr,
             angemeldet: parseInt(r[6]) || 0, maximum: parseInt(r[7]) || 0, kategorie: getKategorie(id) });
         }
         if (!kurse.length) return jsonRes(res, 400, { error: 'Keine gültigen Kurse' });
