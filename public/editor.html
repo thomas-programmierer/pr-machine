@@ -308,7 +308,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div style="display:flex;border-bottom:1px solid var(--border)">
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
       <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">Export</div>
+      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">🚀 Freigabe</div>
     </div>
 
     <!-- TAB BILD -->
@@ -477,24 +477,33 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
     <!-- TAB EXPORT -->
     <div id="rtab-2" style="display:none">
-      <div class="p-section">
-        <div class="p-label">PNG exportieren</div>
-        <button class="exp-btn exp-main" onclick="exportPNG()">⬇ Als PNG herunterladen</button>
-        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Exportiert ohne Hilfslinien · Safe-Zonen werden automatisch ausgeblendet.</div>
-      </div>
-      <div class="p-section">
-        <div class="p-label">In Redaktionsplan</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <select class="txt-field" id="exp-kanal" style="font-size:10px">
-            <option value="ig">📸 Instagram</option>
-            <option value="fb">👥 Facebook</option>
-            <option value="beide">📸👥 Beide</option>
-          </select>
-          <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
-          <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Hook …" style="font-size:10px">
-          <button class="exp-btn" onclick="saveToRedaktionsplan()">📅 Im Redaktionsplan speichern</button>
+
+      <!-- Primäre Aktion: PNG + Freigabe -->
+      <div class="p-section" style="background:rgba(250,185,15,.07);border:1px solid rgba(250,185,15,.2);border-radius:10px;margin-bottom:10px">
+        <div class="p-label" style="color:var(--gelb);font-size:11px">Grafik einreichen</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:10px">
+          PNG wird erstellt und der Post landet direkt im Freigabe-Board.
         </div>
+        <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Titel des Posts …" style="font-size:10px;margin-bottom:6px">
+        <select class="txt-field" id="exp-kanal" style="font-size:10px;margin-bottom:10px">
+          <option value="Instagram">📸 Instagram</option>
+          <option value="Facebook">👥 Facebook</option>
+          <option value="Instagram & Facebook">📸👥 Beide</option>
+        </select>
+        <input class="txt-field" id="exp-datum" type="date" style="font-size:10px;margin-bottom:10px">
+        <button class="exp-btn exp-main" onclick="exportUndFreigabe()" id="btn-freigabe-submit" style="font-size:12px;padding:12px;font-weight:800">
+          🚀 PNG erstellen &amp; zur Freigabe
+        </button>
+        <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
       </div>
+
+      <!-- Sekundär: nur herunterladen -->
+      <div class="p-section">
+        <div class="p-label">Nur herunterladen</div>
+        <button class="exp-btn" onclick="exportPNG()" style="font-size:10px">⬇ PNG lokal speichern</button>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Ohne Einreichen — nur für eigene Ablage.</div>
+      </div>
+
       <div class="p-section">
         <div class="p-label">Auflösung</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
@@ -616,6 +625,8 @@ window.addEventListener('message', function(e) {
     full:   p.fulltext || '',
     hlsize: hlLen > 100 ? 12 : hlLen > 70 ? 14 : hlLen > 40 ? 16 : 18,
   };
+  // Für exportUndFreigabe verfügbar machen
+  window._studioPayload = { fulltext: p.fulltext || '', kurs: p.kurs || '', anlass: p.anlass || '', pb: p.pb || '', autor: p.autor || '', autorId: p.autorId || '' };
   applyRedaktionPayload();
   showStudioBanner(p.anlass, p.kurs, p.fulltext);
 });
@@ -1143,6 +1154,82 @@ async function exportPNG(){
   }
 }
 
+async function exportUndFreigabe() {
+  const btn = document.getElementById('btn-freigabe-submit');
+  const statusEl = document.getElementById('freigabe-cta-status');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ PNG wird erstellt …'; }
+
+  const svgEl = document.getElementById('safe-zone-svg');
+  const wasVisible = safeZonesVisible;
+  if (wasVisible) svgEl.style.display = 'none';
+  const tb = document.getElementById('text-block');
+  tb.classList.remove('selected');
+  const frame = document.getElementById('canvas-frame');
+  const origT = frame.style.transform;
+  frame.style.transform = 'scale(1)';
+  const res = EXPORT_RES[currentFormatIdx] || { w:1080, h:1920 };
+  const f = FORMATS[currentFormatIdx];
+
+  let pngDataUrl = null;
+  try {
+    const canvas = await html2canvas(frame, {
+      scale: res.w / f.w, useCORS: true, allowTaint: true,
+      backgroundColor: null, logging: false, width: f.w, height: f.h,
+    });
+    pngDataUrl = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'vhs-spandau-' + Date.now() + '.png';
+    link.href = pngDataUrl; link.click();
+  } catch(err) {
+    frame.style.transform = origT; tb.classList.add('selected');
+    if (wasVisible) svgEl.style.display = 'block';
+    showToast('❌ PNG-Export fehlgeschlagen');
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+    return;
+  } finally {
+    frame.style.transform = origT; tb.classList.add('selected');
+    if (wasVisible) svgEl.style.display = 'block';
+  }
+
+  if (btn) btn.textContent = '⏳ Wird eingereicht …';
+  const anlass = document.getElementById('exp-anlass')?.value.trim() || 'Visueller Post';
+  const kanal  = document.getElementById('exp-kanal')?.value  || 'Instagram';
+  const datum  = document.getElementById('exp-datum')?.value  || '';
+  const payload = window._studioPayload || {};
+
+  const post = {
+    anlass, kanal, datum,
+    kurs:    payload.kurs    || '',
+    text:    payload.fulltext || '',
+    status:  'freigabe_ausstehend',
+    format:  FORMATS[currentFormatIdx]?.label || 'Story',
+    bild:    pngDataUrl || null,
+    pb:      payload.pb      || '',
+    autor:   payload.autor   || '',
+    autorId: payload.autorId || '',
+    eingereicht: true,
+  };
+
+  try {
+    const r = await fetch('/api/posts', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(post)
+    });
+    if (r.ok) {
+      if (btn) { btn.textContent = '✅ Eingereicht!'; }
+      if (statusEl) statusEl.textContent = 'Post wartet im Freigabe-Board auf Prüfung.';
+      showToast('✅ Grafik eingereicht — wartet auf Freigabe');
+    } else {
+      showToast('⚠️ PNG ok, aber Einreichen fehlgeschlagen');
+      if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+    }
+  } catch {
+    showToast('⚠️ Server nicht erreichbar');
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // REDAKTIONSPLAN
 // ═══════════════════════════════════════════════════════════════
@@ -1218,34 +1305,11 @@ function showStudioBanner(anlass, kurs, fulltext) {
 }
 
 function injectFreigabeCTA(anlass) {
-  const expTab = document.getElementById('rtab-2');
-  if (!expTab) return;
-  const existing = document.getElementById('freigabe-cta');
-  if (existing) existing.remove();
-  const cta = document.createElement('div');
-  cta.id = 'freigabe-cta';
-  cta.style.cssText = 'border-top:1px solid var(--border);';
-  cta.innerHTML = `
-    <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
-      <div class="p-label" style="color:var(--gelb)">Schritt 6 — Freigabe</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:10px">
-        Grafik fertig? PNG exportieren, dann direkt zur Freigabe weiterleiten.
-      </div>
-      <button class="exp-btn exp-main" onclick="exportPNG()">⬇ PNG exportieren</button>
-      <a href="/freigabe" target="_blank"
-         style="display:block;text-align:center;padding:8px;border-radius:6px;font-size:11px;font-weight:700;
-                border:1.5px solid var(--orange);color:var(--orange);text-decoration:none;
-                background:rgba(235,100,15,.08);margin-top:5px;transition:all .15s"
-         onmouseover="this.style.background='rgba(235,100,15,.18)'"
-         onmouseout="this.style.background='rgba(235,100,15,.08)'">
-        ✅ Weiter zur Freigabe ↗
-      </a>
-    </div>
-  `;
-  expTab.prepend(cta);
-  // Export-Tab aktiv schalten damit CTA sichtbar
+  // Anlass-Feld vorausfüllen falls übergeben
+  const anlassEl = document.getElementById('exp-anlass');
+  if (anlassEl && anlass) anlassEl.value = anlass;
+  // Direkt zum Freigabe-Tab springen
   setRTab(2);
-  setTimeout(() => setRTab(0), 200);
 }
 function showToast(msg){
   const t=document.getElementById('toast');

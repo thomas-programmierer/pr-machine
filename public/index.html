@@ -2033,7 +2033,7 @@ async function generate() {
     // Schriftgröße an Headline-Länge anpassen
     const autoHlSize = headline.length > 60 ? 14 : headline.length > 40 ? 16 : headline.length > 25 ? 18 : 22;
 
-    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null };
+    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null, pb: currentUser?.pb || '', autor: currentUser?.name || '', autorId: currentUser?.id || '' };
 
     // ── Vorschau was ins Grafik-Template geht ──
     const previewHl  = window._lastStudioPayload.hl  || '';
