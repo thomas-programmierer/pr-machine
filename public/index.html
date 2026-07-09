@@ -3112,4 +3112,129 @@ function showStudioBanner(anlass, kurs, fulltext) {
     box-shadow:0 4px 20px rgba(0,0,0,.4);
   `;
   banner.innerHTML = `
-    <div style="font-size:22px;flex-shrink:0">�
+    <div style="font-size:22px;flex-shrink:0">🎨</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:700;color:#FAB90F;margin-bottom:1px">Schritt 5 · Grafik-Studio</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        Text aus Redaktion geladen${anlass?' · '+anlass:''}
+      </div>
+    </div>
+    <button onclick="document.getElementById('studio-banner').remove()"
+      style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;
+             color:rgba(255,255,255,.6);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;flex-shrink:0">
+      ✕
+    </button>
+  `;
+  area.style.position = 'relative';
+  area.appendChild(banner);
+  setTimeout(() => { if(banner.parentNode) banner.remove(); }, 8000);
+
+  // Volltext in ein Panel-Element schreiben falls vorhanden
+  if (fulltext) {
+    const ft = document.getElementById('tf-fulltext-preview');
+    if (ft) { ft.value = fulltext; ft.closest('.p-section').style.display='block'; }
+  }
+
+  // Freigabe-CTA in Export-Tab einblenden
+  injectFreigabeCTA(anlass);
+  showToast('🎨 Text aus Redaktion geladen · Schritt 5 aktiv');
+}
+
+function injectFreigabeCTA(anlass) {
+  // Anlass-Feld vorausfüllen
+  const anlassEl = document.getElementById('exp-anlass');
+  if (anlassEl && anlass) anlassEl.value = anlass;
+  // Direkt zum Freigabe-Tab — bleibt offen
+  setRTab(2);
+}
+
+async function exportUndFreigabe() {
+  const btn = document.getElementById('btn-freigabe-submit');
+  const statusEl = document.getElementById('freigabe-cta-status');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Wird erstellt …'; }
+
+  // 1. PNG rendern
+  const svgEl = document.getElementById('safe-zone-svg');
+  const wasVisible = safeZonesVisible;
+  if (wasVisible) svgEl.style.display = 'none';
+  const tb = document.getElementById('text-block');
+  tb.classList.remove('selected');
+  const frame = document.getElementById('canvas-frame');
+  const origT = frame.style.transform;
+  frame.style.transform = 'scale(1)';
+  const res = EXPORT_RES[currentFormatIdx] || { w:1080, h:1920 };
+  const f = FORMATS[currentFormatIdx];
+
+  let pngDataUrl = null;
+  try {
+    const canvas = await html2canvas(frame, {
+      scale: res.w / f.w, useCORS: true, allowTaint: true,
+      backgroundColor: null, logging: false, width: f.w, height: f.h,
+    });
+    pngDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    // Download
+    const link = document.createElement('a');
+    link.download = 'vhs-spandau-' + Date.now() + '.jpg';
+    link.href = pngDataUrl;
+    link.click();
+  } catch(err) {
+    showToast('❌ PNG-Export fehlgeschlagen');
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+    return;
+  } finally {
+    frame.style.transform = origT;
+    tb.classList.add('selected');
+    if (wasVisible) svgEl.style.display = 'block';
+  }
+
+  // 2. Post zur Freigabe einreichen
+  const anlass = document.getElementById('exp-anlass')?.value.trim() ||
+                 (redaktionPayload?.anlass) || 'Visueller Post';
+  const headline = document.getElementById('tf-headline')?.value || '';
+  const kanal = document.getElementById('exp-kanal')?.value || 'Instagram';
+  const datum = document.getElementById('exp-datum')?.value || '';
+
+  const post = {
+    anlass,
+    kurs:    redaktionPayload?.kurs || '',
+    text:    redaktionPayload?.fulltext || '',
+    kanal, datum,
+    status:  'freigabe_ausstehend',
+    format:  FORMATS[currentFormatIdx]?.label || 'Story',
+    bild:    pngDataUrl || null,
+    pb:      currentUser?.pb   || '',
+    autor:   currentUser?.name || '',
+    autorId: currentUser?.id   || '',
+    eingereicht: true,
+  };
+
+  try {
+    const r = await fetch('/api/posts', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(post)
+    });
+    if (r.ok) {
+      showToast('✅ Grafik eingereicht — weiter zur Voransicht');
+      setTimeout(() => { window.location.href = '/voransicht'; }, 1200);
+    } else {
+      showToast('⚠️ PNG ok, aber Freigabe-Speicherung fehlgeschlagen');
+      if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+    }
+  } catch {
+    showToast('⚠️ Server nicht erreichbar');
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
+  }
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+
+
+</script>
+</body>
+</html>
