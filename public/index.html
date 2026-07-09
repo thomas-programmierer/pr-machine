@@ -1441,12 +1441,13 @@ function initApp() {
     if (screenParam === 'pbl')   initPBL();
     if (screenParam === 'kurse') kurseInit();
   } else if (!params.get('einreichung')) {
-    // PBL → Redaktionsplan; alle anderen → Dashboard
-    if (role === 'pbl') {
+    // Admin & Direktion → Dashboard; alle anderen → Kalender
+    if (role === 'admin' || role === 'direktion') {
+      showScreen('direktion');
+    } else {
       window.location.href = '/kalender';
       return;
     }
-    showScreen('direktion');
   }
 
   if (params.get('einreichung')) {
