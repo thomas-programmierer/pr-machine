@@ -522,43 +522,44 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     </div>
   </div>
 
-  <!-- NAV — Workflow-Reihenfolge mit Schrittnummern -->
+  <!-- NAV -->
   <div class="nav" id="nav">
+    <div class="nav-tab" id="tab-direktion"   onclick="showScreen('direktion')">
+      📊 Dashboard
+    </div>
+    <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-kalender"    onclick="window.open('/kalender','_blank')">
-      <span class="nav-step">1</span>📅 Redaktionsplan ↗
+      📅 Redaktionsplan ↗
     </div>
     <div class="nav-sep"></div>
     <div class="nav-tab" id="tab-pbl"         onclick="showScreen('pbl')">
-      <span class="nav-step">2</span>📬 Kursvorschläge <span class="nbadge" id="nb-pbl">5</span>
+      📬 Kursvorschläge <span class="nbadge" id="nb-pbl">5</span>
     </div>
     <div class="nav-sep"></div>
     <div class="nav-tab" id="tab-kurse"       onclick="showScreen('kurse'); kurseInit()">
-      <span class="nav-step">3</span>📚 Kursliste
+      📚 Kursliste
     </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-redakteur"   onclick="showScreen('redakteur')">
-      <span class="nav-step">4</span>✏️ Redaktion
+      ✏️ Redaktion
     </div>
     <div class="nav-tab studio" id="tab-editor" onclick="showScreen('editor')">
-      <span class="nav-step">5</span>🎨 Grafik-Studio
+      🎨 Grafik-Studio
     </div>
     <div class="nav-tab" id="tab-voransicht"  onclick="window.open('/voransicht','_blank')">
-      <span class="nav-step">5b</span>👁 Voransicht ↗
+      👁 Voransicht ↗
     </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-freigabe"    onclick="window.open('/freigabe','_blank')">
-      <span class="nav-step">6</span>✅ Freigabe ↗
+      ✅ Freigabe ↗
     </div>
     <div class="nav-sep"></div>
-    <div class="nav-tab" id="tab-direktion"   onclick="showScreen('direktion')">
-      <span class="nav-step">7</span>📊 Dashboard
-    </div>
     <div class="nav-tab" id="tab-performance" onclick="window.open('/performance','_blank')">
-      <span class="nav-step">8</span>📈 Performance ↗
+      📈 Performance ↗
     </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-admin"       onclick="showScreen('admin')">
-      <span class="nav-step">⚙</span>Administration <span class="nbadge" id="nb-admin">6</span>
+      ⚙️ Administration <span class="nbadge" id="nb-admin">6</span>
     </div>
   </div>
 
@@ -795,6 +796,15 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <!-- ── DIREKTION ── -->
     <div class="screen" id="screen-direktion">
       <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1">
+        <!-- Redaktionsplan CTA -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button onclick="window.open('/kalender','_blank')" style="flex:1;min-width:200px;background:var(--blau);color:#fff;border:none;border-radius:10px;padding:16px 22px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+            <span style="font-size:22px">📅</span> Redaktionsplan öffnen <span style="margin-left:auto;opacity:.7">↗</span>
+          </button>
+          <button onclick="window.open('/freigabe','_blank')" style="background:var(--blau10);color:var(--blau);border:1.5px solid var(--blau20);border-radius:10px;padding:16px 22px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .15s" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">
+            <span style="font-size:18px">✅</span> Freigabe
+          </button>
+        </div>
         <div>
           <div class="section-label">Pipeline-Übersicht <span id="dir-aktualisiert" style="font-size:10px;font-weight:400;color:var(--blau60)"></span></div>
           <div class="stat-grid" id="dir-stats">
@@ -1407,10 +1417,10 @@ function initApp() {
 
   // Sichtbarkeitsmatrix: Rolle → sichtbare Tab-IDs
   const NAV = {
-    admin:     ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance','tab-admin'],
-    redakteur: ['tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-direktion','tab-performance'],
+    admin:     ['tab-direktion','tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-performance','tab-admin'],
+    redakteur: ['tab-direktion','tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-performance'],
     pbl:       ['tab-kalender','tab-pbl','tab-kurse'],
-    direktion: ['tab-kalender','tab-direktion','tab-freigabe','tab-performance'],
+    direktion: ['tab-direktion','tab-kalender','tab-freigabe','tab-performance'],
   };
   (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
 
@@ -1426,9 +1436,12 @@ function initApp() {
     if (screenParam === 'pbl')   initPBL();
     if (screenParam === 'kurse') kurseInit();
   } else if (!params.get('einreichung')) {
-    // Standard nach Login: immer zum Redaktionsplan
-    window.location.href = '/kalender';
-    return;
+    // PBL → Redaktionsplan; alle anderen → Dashboard
+    if (role === 'pbl') {
+      window.location.href = '/kalender';
+      return;
+    }
+    showScreen('direktion');
   }
 
   if (params.get('einreichung')) {
