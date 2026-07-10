@@ -462,6 +462,16 @@ const server = http.createServer(async (req, res) => {
         autor:    sess.user.name,
         autorId:  sess.user.id
       });
+      // E-Mail an alle Redakteure und Admins
+      try {
+        const alleUser = loadUsers();
+        const empfaenger = alleUser
+          .filter(u => u.aktiv && ['admin','redakteur'].includes(u.role) && u.email && u.emailBenachrichtigung)
+          .map(u => ({ name: u.name, email: u.email }));
+        mailer.sendeEinreichungsBenachrichtigung(neu, empfaenger).catch(e =>
+          console.error('[Mailer] Hintergrundfehler:', e.message)
+        );
+      } catch(me) { console.error('[Mailer] Setup-Fehler:', me.message); }
       return jsonRes(res, 201, { ok:true, einreichung: neu });
     } catch(e) {
       console.error("Einreichung mit-Bild POST Fehler:", e.message);
