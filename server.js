@@ -500,6 +500,16 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, { ok:true });
   }
 
+  // ── TEMP CLEANUP: Demo-Posts löschen (einmalig) ───────────────────────────
+  if (req.method === "POST" && url === "/api/admin/cleanup-demo-posts") {
+    if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
+    const DEMO = ['Sommerprogramm 2026','Internationaler Yogatag','Fête de la Musique','Welt-Fototag','Tag der Sprachen','Mauerfall-Jahrestag'];
+    const alle = await db.getPosts();
+    const zuLoeschen = alle.filter(p => DEMO.includes(p.anlass));
+    for (const p of zuLoeschen) await db.deletePost(p.id);
+    return jsonRes(res, 200, { geloescht: zuLoeschen.length, posts: zuLoeschen.map(p=>p.anlass+' '+p.datum) });
+  }
+
   // ── ADMIN INPUT: Redaktionsplan-URLs ──────────────────────────────────────
   if (req.method === "GET" && url === "/api/admin/redaktionsplan-urls") {
     if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
@@ -804,24 +814,4 @@ async function migratePasswordsOnStartup() {
       ovChanged++;
     }
     if (ovChanged > 0) {
-      fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
-      console.log(`  🔒  ${ovChanged} Override-Passwörter auf bcrypt migriert`);
-    }
-  }
-}
-
-server.listen(PORT, async () => {
-  console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
-  console.log(`  🌐  http://localhost:${PORT}`);
-  console.log("  🔑  API-Key: aktiv");
-  await migratePasswordsOnStartup();
-  try {
-    const n = await db.testConnection();
-    console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
-    await db.ensureTables();
-    console.log(`  📋  Tabellen geprüft/erstellt`);
-  } catch (e) {
-    console.error("  ❌  Postgres NICHT erreichbar:", e.message);
-  }
-  console.log("  Stoppen: Strg+C\n");
-});
+      fs.writeFileSync(PW_OVE
