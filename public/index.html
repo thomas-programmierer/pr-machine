@@ -1497,7 +1497,7 @@ function initApp() {
   document.getElementById('hdr-name').textContent = currentUser.name;
   document.getElementById('hdr-role').textContent = ROLE_LABELS[currentUser.role];
   if (['admin','redakteur'].includes(currentUser.role)) {
-    document.getElementById('einreichungen-btn').style.display = '';
+    document.getElementById('einreichungen-btn').style.display = 'inline-block';
   }
 
   // Tabs je Rolle — vollständige Sichtbarkeitsmatrix
@@ -3343,5 +3343,4 @@ function showToast(msg){
 
 
 </script>
-</body>
-</html>
+</bo
