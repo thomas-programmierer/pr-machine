@@ -326,16 +326,14 @@ const server = http.createServer(async (req, res) => {
   // ── POSTS ─────────────────────────────────────────────────────────────────
   if (req.method === "GET" && url === "/api/posts") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    return jsonRes(res, 200, loadJSON(POSTS_FILE, { posts: [] }).posts || loadJSON(POSTS_FILE, []));
+    const posts = await db.getPosts();
+    return jsonRes(res, 200, posts);
   }
 
   if (req.method === "POST" && url === "/api/posts") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
-    const posts = loadJSON(POSTS_FILE, []);
-    const neu = { id:String(Date.now()), ...b, erstellt:new Date().toISOString(), autor:sess.user.name, autorId:sess.user.id };
-    posts.push(neu);
-    saveJSON(POSTS_FILE, posts);
+    const neu = await db.addPost({ ...b, autor: sess.user.name, autorId: sess.user.id });
     return jsonRes(res, 201, { ok:true, post:neu });
   }
 
@@ -346,19 +344,16 @@ const server = http.createServer(async (req, res) => {
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
     const b = await readBody(req);
-    const posts = loadJSON(POSTS_FILE, []);
-    const idx = posts.findIndex(p => p.id === id);
-    if (idx === -1) return jsonRes(res, 404, { error:"Post nicht gefunden" });
-    posts[idx] = { ...posts[idx], ...b };
-    saveJSON(POSTS_FILE, posts);
-    return jsonRes(res, 200, { ok:true, post: posts[idx] });
+    const updated = await db.updatePost(id, b);
+    if (!updated) return jsonRes(res, 404, { error:"Post nicht gefunden" });
+    return jsonRes(res, 200, { ok:true, post: updated });
   }
 
   if (req.method === "DELETE" && url.startsWith("/api/posts/")) {
     if (!sess || !["admin","redakteur"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
-    const posts = loadJSON(POSTS_FILE, []).filter(p => p.id !== id);saveJSON(POSTS_FILE, posts);saveJSON(POSTS_FILE, posts);
+    await db.deletePost(id);
     return jsonRes(res, 200, { ok:true });
   }
 

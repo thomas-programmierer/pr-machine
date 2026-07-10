@@ -145,6 +145,72 @@ async function upsertKurse(kurse) {
   }
 }
 
+// ── Posts ──────────────────────────────────────────────────────────────────────
+
+function rowToPost(r) {
+  return {
+    id:             String(r.id),
+    datum:          r.datum ? r.datum.toISOString().slice(0,10) : null,
+    uhrzeit:        r.uhrzeit,
+    kanal:          r.kanal,
+    anlass:         r.anlass,
+    text:           r.text,
+    tags:           r.tags,
+    status:         r.status,
+    ziel:           r.ziel,
+    freigabe:       r.freigabe,
+    freigegebenVon: r.freigegeben_von,
+    paid:           r.paid,
+    url:            r.url,
+    erstellt:       r.erstellt ? r.erstellt.toISOString() : null,
+    autor:          r.autor,
+    autorId:        r.autor_id
+  };
+}
+
+async function getPosts() {
+  var res = await pool.query('SELECT * FROM posts ORDER BY datum, uhrzeit');
+  return res.rows.map(rowToPost);
+}
+
+async function addPost(p) {
+  var res = await pool.query(
+    `INSERT INTO posts
+       (datum, uhrzeit, kanal, anlass, text, tags, status, ziel,
+        freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+     RETURNING *`,
+    [ p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
+      p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
+      p.freigabe || null, p.freigegebenVon || p.freigegeben_von || null,
+      p.paid || 'nein', p.url || null,
+      p.erstellt || new Date().toISOString(), p.autor || null, p.autorId || p.autor_id || null ]
+  );
+  return rowToPost(res.rows[0]);
+}
+
+async function updatePost(id, p) {
+  var res = await pool.query(
+    `UPDATE posts SET
+       datum=$2, uhrzeit=$3, kanal=$4, anlass=$5, text=$6, tags=$7,
+       status=$8, ziel=$9, freigabe=$10, freigegeben_von=$11,
+       paid=$12, url=$13, autor=$14, autor_id=$15
+     WHERE id=$1
+     RETURNING *`,
+    [ id, p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
+      p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
+      p.freigabe || null, p.freigegebenVon || p.freigegeben_von || null,
+      p.paid || 'nein', p.url || null, p.autor || null, p.autorId || p.autor_id || null ]
+  );
+  return res.rows[0] ? rowToPost(res.rows[0]) : null;
+}
+
+async function deletePost(id) {
+  await pool.query('DELETE FROM posts WHERE id=$1', [id]);
+}
+
+// ── ensureTables ───────────────────────────────────────────────────────────────
+
 async function ensureTables() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS einreichungen (
@@ -169,6 +235,26 @@ async function ensureTables() {
       bild            TEXT
     )
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS posts (
+      id              SERIAL PRIMARY KEY,
+      datum           DATE,
+      uhrzeit         TEXT,
+      kanal           TEXT,
+      anlass          TEXT,
+      text            TEXT,
+      tags            TEXT,
+      status          TEXT DEFAULT 'geplant',
+      ziel            TEXT,
+      freigabe        TEXT,
+      freigegeben_von TEXT,
+      paid            TEXT DEFAULT 'nein',
+      url             TEXT,
+      erstellt        TIMESTAMPTZ DEFAULT now(),
+      autor           TEXT,
+      autor_id        TEXT
+    )
+  `);
 }
 
 async function testConnection() {
@@ -181,5 +267,6 @@ module.exports = {
   getEinreichungen, addEinreichung, updateEinreichung, deleteEinreichung,
   setEinreichungStatus,
   getKurse, getKursByCode, getKategorien, upsertKurse,
+  getPosts, addPost, updatePost, deletePost,
   testConnection, ensureTables
 };
