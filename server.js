@@ -814,4 +814,24 @@ async function migratePasswordsOnStartup() {
       ovChanged++;
     }
     if (ovChanged > 0) {
-      fs.writeFileSync(PW_OVE
+      fs.writeFileSync(PW_OVERRIDE_FILE, JSON.stringify(ov, null, 2), 'utf8');
+      console.log(`  🔒  ${ovChanged} Override-Passwörter auf bcrypt migriert`);
+    }
+  }
+}
+
+server.listen(PORT, async () => {
+  console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
+  console.log(`  🌐  http://localhost:${PORT}`);
+  console.log("  🔑  API-Key: aktiv");
+  await migratePasswordsOnStartup();
+  try {
+    const n = await db.testConnection();
+    console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
+    await db.ensureTables();
+    console.log(`  📋  Tabellen geprüft/erstellt`);
+  } catch (e) {
+    console.error("  ❌  Postgres NICHT erreichbar:", e.message);
+  }
+  console.log("  Stoppen: Strg+C\n");
+});
