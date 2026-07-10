@@ -29,6 +29,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.5);padding:0 6px;flex-shrink:0}
 .ext-logout-btn{margin-left:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:5px 11px;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .15s;flex-shrink:0}
 .ext-logout-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+.ext-pw-btn{margin-left:0;background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 8px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;transition:all .15s;line-height:1;flex-shrink:0}
+.ext-pw-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+/* PW-Modal */
+.pw-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center}
+.pw-modal-overlay.open{display:flex}
+.pw-modal{background:#fff;border-radius:12px;padding:28px 28px 22px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.pw-modal h3{margin:0 0 18px;font-size:15px;color:#00285A;font-weight:700}
+.pw-field{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.pw-field label{font-size:11px;font-weight:600;color:#69829B}
+.pw-field input{border:1px solid #d0d8e4;border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+.pw-field input:focus{border-color:#00285A}
+.pw-msg{font-size:12px;min-height:16px;margin-bottom:12px}
+.pw-msg.err{color:#E1000F}.pw-msg.ok{color:#2e7d32}
+.pw-actions{display:flex;gap:8px;justify-content:flex-end}
+.pw-save{background:#00285A;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.pw-save:hover{background:#001e45}
+.pw-cancel{background:transparent;color:#69829B;border:1px solid #d0d8e4;border-radius:7px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.pw-cancel:hover{background:#f5f7fa}
 
 /* ── TOOLBAR ── */
 .toolbar{background:#fff;border-bottom:1px solid #dde2e9;padding:10px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -309,6 +327,7 @@ input:checked+.slider:before{transform:translateX(15px)}
       }).join('');
     document.getElementById('ext-nav-bar').innerHTML = nav +
       '<span class="ext-nav-user">👤 '+user.name.split(' ')[0]+'</span>' +
+      '<button class="ext-pw-btn" onclick="openPwModal()" title="Passwort ändern">🔒</button>' +
       '<button class="ext-logout-btn" onclick="extLogout()">Abmelden</button>';
   } catch(e) {}
 })();
@@ -316,7 +335,55 @@ async function extLogout() {
   await fetch('/api/logout', { method:'POST', credentials:'include' });
   window.location.href = '/';
 }
+function openPwModal() {
+  document.getElementById('pwAlt').value = '';
+  document.getElementById('pwNeu').value = '';
+  document.getElementById('pwNeu2').value = '';
+  document.getElementById('pwMsg').textContent = '';
+  document.getElementById('pwMsg').className = 'pw-msg';
+  document.getElementById('pwModalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('pwAlt').focus(), 50);
+}
+function closePwModal() {
+  document.getElementById('pwModalOverlay').classList.remove('open');
+}
+async function doChangePw() {
+  const alt  = document.getElementById('pwAlt').value.trim();
+  const neu  = document.getElementById('pwNeu').value;
+  const neu2 = document.getElementById('pwNeu2').value;
+  const msg  = document.getElementById('pwMsg');
+  msg.className = 'pw-msg';
+  if (!alt || !neu) { msg.className='pw-msg err'; msg.textContent='Bitte alle Felder ausfüllen.'; return; }
+  if (neu.length < 8) { msg.className='pw-msg err'; msg.textContent='Mind. 8 Zeichen erforderlich.'; return; }
+  if (neu !== neu2) { msg.className='pw-msg err'; msg.textContent='Neue Passwörter stimmen nicht überein.'; return; }
+  try {
+    const r = await fetch('/api/change-password', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ altesPasswort: alt, neuesPasswort: neu })
+    });
+    const data = await r.json();
+    if (!r.ok) { msg.className='pw-msg err'; msg.textContent = data.error || 'Fehler.'; return; }
+    msg.className='pw-msg ok'; msg.textContent='Passwort erfolgreich geändert!';
+    setTimeout(closePwModal, 1500);
+  } catch(e) { msg.className='pw-msg err'; msg.textContent='Netzwerkfehler.'; }
+}
 </script>
+
+<!-- Passwort-Modal -->
+<div class="pw-modal-overlay" id="pwModalOverlay" onclick="if(event.target===this)closePwModal()">
+  <div class="pw-modal">
+    <h3>Passwort ändern</h3>
+    <div class="pw-field"><label>Aktuelles Passwort</label><input type="password" id="pwAlt" autocomplete="current-password" placeholder="••••••••"></div>
+    <div class="pw-field"><label>Neues Passwort</label><input type="password" id="pwNeu" autocomplete="new-password" placeholder="Min. 8 Zeichen"></div>
+    <div class="pw-field"><label>Neues Passwort bestätigen</label><input type="password" id="pwNeu2" autocomplete="new-password" placeholder="Wiederholen"></div>
+    <div class="pw-msg" id="pwMsg"></div>
+    <div class="pw-actions">
+      <button class="pw-cancel" onclick="closePwModal()">Abbrechen</button>
+      <button class="pw-save" onclick="doChangePw()">Speichern</button>
+    </div>
+  </div>
+</div>
 
 <!-- TOOLBAR -->
 <div class="toolbar">
