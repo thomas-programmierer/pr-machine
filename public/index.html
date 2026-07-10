@@ -1542,11 +1542,9 @@ function initApp() {
     // Admin & Direktion → Dashboard; alle anderen → Kalender
     if (role === 'admin' || role === 'direktion') {
       showScreen('direktion');
-    } else if (role === 'pbl') {
+    } else {
       window.location.href = '/kalender';
       return;
-    } else {
-      showScreen('direktion');
     }
   }
 
