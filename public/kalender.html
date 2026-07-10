@@ -602,7 +602,7 @@ let einreichungenCache = []; // eigene Einreichungen der PBL
 let pblDatumContext = null;  // Datum für offenes PBL-Modal
 
 async function ladeEigeneEinreichungen() {
-  if (!currentUser || currentUser.role !== 'pbl') return;
+  if (!currentUser || !['pbl','redakteur','admin'].includes(currentUser.role)) return;
   try {
     const r = await fetch('/api/einreichungen', { credentials:'include' });
     if (!r.ok) return;
@@ -1624,7 +1624,3 @@ function showToast(msg) {
   document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
-}
-</script>
-</body>
-</html>
