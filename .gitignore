@@ -2,6 +2,14 @@ downloads/
 uploads/
 sessions.json
 passwords_override.json
+.env
+node_modules/
+
+# Datendateien — liegen nur auf dem Server, nicht im Repo
+data/
+*.migrated-backup
+*.server-backup
+posts.archive.*.json
 
 # Server-Backups und temporäre Dateien
 server.js.backup_*
@@ -12,13 +20,3 @@ FORCE_UPDATE.bat
 update.ps1
 update2.ps1
 gitignore
-downloads/
-uploads/
-sessions.json
-passwords_override.json
-FORCE_UPDATE.bat
-update.ps1
-update2.ps1
-gitignore
-.env
-node_modules/
