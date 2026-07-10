@@ -500,16 +500,6 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, { ok:true });
   }
 
-  // ── TEMP CLEANUP: Demo-Posts löschen (einmalig) ───────────────────────────
-  if (req.method === "POST" && url === "/api/admin/cleanup-demo-posts") {
-    if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
-    const DEMO = ['Sommerprogramm 2026','Internationaler Yogatag','Fête de la Musique','Welt-Fototag','Tag der Sprachen','Mauerfall-Jahrestag'];
-    const alle = await db.getPosts();
-    const zuLoeschen = alle.filter(p => DEMO.includes(p.anlass));
-    for (const p of zuLoeschen) await db.deletePost(p.id);
-    return jsonRes(res, 200, { geloescht: zuLoeschen.length, posts: zuLoeschen.map(p=>p.anlass+' '+p.datum) });
-  }
-
   // ── ADMIN INPUT: Redaktionsplan-URLs ──────────────────────────────────────
   if (req.method === "GET" && url === "/api/admin/redaktionsplan-urls") {
     if (!adminOnly(sess)) return jsonRes(res, 403, { error:"Kein Zugriff" });
