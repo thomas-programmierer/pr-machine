@@ -273,6 +273,23 @@ const server = http.createServer(async (req, res) => {
       { "Set-Cookie":"session=; HttpOnly; Max-Age=0" });
   }
 
+  if (req.method === "POST" && url === "/api/change-password") {
+    if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
+    const b = await readBody(req);
+    if (!b.altesPasswort || !b.neuesPasswort)
+      return jsonRes(res, 400, { error:"Altes und neues Passwort erforderlich" });
+    if (b.neuesPasswort.length < 8)
+      return jsonRes(res, 400, { error:"Neues Passwort muss mindestens 8 Zeichen haben" });
+    const users = loadUsers();
+    const u = users.find(x => x.id === sess.user.id);
+    if (!u) return jsonRes(res, 404, { error:"User nicht gefunden" });
+    const hash = getPassword(u.id) || u.password;
+    const ok = hash && await bcrypt.compare(b.altesPasswort, hash);
+    if (!ok) return jsonRes(res, 403, { error:"Altes Passwort falsch" });
+    await setPassword(u.id, b.neuesPasswort);
+    return jsonRes(res, 200, { ok:true });
+  }
+
   if (req.method === "GET" && url === "/api/me") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     return jsonRes(res, 200, { user: safeUser(sess.user) });

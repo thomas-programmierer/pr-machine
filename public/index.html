@@ -61,6 +61,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .user-role{color:rgba(255,255,255,.55);font-size:10px}
 .logout-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 10px;color:rgba(255,255,255,.7);font-size:11px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+.pw-btn{background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:5px 8px;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;transition:all .15s;line-height:1}
+.pw-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+/* Passwort-Modal */
+.pw-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center}
+.pw-modal-overlay.open{display:flex}
+.pw-modal{background:#fff;border-radius:12px;padding:28px 28px 22px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.pw-modal h3{margin:0 0 18px;font-size:15px;color:var(--blau);font-weight:700}
+.pw-field{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.pw-field label{font-size:11px;font-weight:600;color:var(--blau60)}
+.pw-field input{border:1px solid #d0d8e4;border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+.pw-field input:focus{border-color:var(--blau)}
+.pw-msg{font-size:12px;min-height:16px;margin-bottom:12px}
+.pw-msg.err{color:var(--rot)}.pw-msg.ok{color:#2e7d32}
+.pw-actions{display:flex;gap:8px;justify-content:flex-end}
+.pw-save{background:var(--blau);color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.pw-save:hover{background:#001e45}
+.pw-cancel{background:transparent;color:var(--blau60);border:1px solid #d0d8e4;border-radius:7px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.pw-cancel:hover{background:#f5f7fa}
 
 /* NAV */
 .nav{background:#fff;border-bottom:1px solid #dde2e9;display:flex;padding:0 0 0 8px;overflow-x:auto;flex-shrink:0;align-items:stretch}
@@ -518,7 +536,32 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="user-role" id="hdr-role"></div>
         </div>
       </div>
+      <button class="pw-btn" onclick="openPwModal()" title="Passwort ändern">🔒</button>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    </div>
+  </div>
+
+  <!-- Passwort-Modal -->
+  <div class="pw-modal-overlay" id="pwModalOverlay" onclick="if(event.target===this)closePwModal()">
+    <div class="pw-modal">
+      <h3>Passwort ändern</h3>
+      <div class="pw-field">
+        <label>Aktuelles Passwort</label>
+        <input type="password" id="pwAlt" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div class="pw-field">
+        <label>Neues Passwort</label>
+        <input type="password" id="pwNeu" autocomplete="new-password" placeholder="Min. 8 Zeichen">
+      </div>
+      <div class="pw-field">
+        <label>Neues Passwort bestätigen</label>
+        <input type="password" id="pwNeu2" autocomplete="new-password" placeholder="Wiederholen">
+      </div>
+      <div class="pw-msg" id="pwMsg"></div>
+      <div class="pw-actions">
+        <button class="pw-cancel" onclick="closePwModal()">Abbrechen</button>
+        <button class="pw-save" onclick="doChangePw()">Speichern</button>
+      </div>
     </div>
   </div>
 
@@ -1335,6 +1378,40 @@ async function doLogin() {
     errEl.style.display = 'block';
     errEl.textContent = 'Server nicht erreichbar.';
   }
+}
+
+function openPwModal() {
+  document.getElementById('pwAlt').value = '';
+  document.getElementById('pwNeu').value = '';
+  document.getElementById('pwNeu2').value = '';
+  document.getElementById('pwMsg').textContent = '';
+  document.getElementById('pwMsg').className = 'pw-msg';
+  document.getElementById('pwModalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('pwAlt').focus(), 50);
+}
+function closePwModal() {
+  document.getElementById('pwModalOverlay').classList.remove('open');
+}
+async function doChangePw() {
+  const alt  = document.getElementById('pwAlt').value.trim();
+  const neu  = document.getElementById('pwNeu').value;
+  const neu2 = document.getElementById('pwNeu2').value;
+  const msg  = document.getElementById('pwMsg');
+  msg.className = 'pw-msg';
+  if (!alt || !neu) { msg.className='pw-msg err'; msg.textContent='Bitte alle Felder ausfüllen.'; return; }
+  if (neu.length < 8) { msg.className='pw-msg err'; msg.textContent='Neues Passwort muss mind. 8 Zeichen haben.'; return; }
+  if (neu !== neu2) { msg.className='pw-msg err'; msg.textContent='Neue Passwörter stimmen nicht überein.'; return; }
+  try {
+    const r = await fetch('/api/change-password', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ altesPasswort: alt, neuesPasswort: neu })
+    });
+    const data = await r.json();
+    if (!r.ok) { msg.className='pw-msg err'; msg.textContent = data.error || 'Fehler beim Speichern.'; return; }
+    msg.className='pw-msg ok'; msg.textContent='Passwort erfolgreich geändert!';
+    setTimeout(closePwModal, 1500);
+  } catch(e) { msg.className='pw-msg err'; msg.textContent='Netzwerkfehler.'; }
 }
 
 async function doLogout() {
