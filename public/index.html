@@ -645,16 +645,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
             <div class="empty" style="padding:16px 0"><div class="empty-icon" style="font-size:28px">⏳</div><div style="font-size:12px">Wird geladen …</div></div>
           </div>
           <!-- Annehmen/Ablehnen Aktionsleiste — erscheint nach Auswahl -->
-          <div id="inbox-annehmen-btn" data-einr-id="" style="display:none;margin-top:8px;gap:5px">
-            <button onclick="einreichungAnnehmen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
-              style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer">
-              ✅ Annehmen
-            </button>
-            <button onclick="einreichungAblehnen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
-              style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer">
-              ↩️ Ablehnen
-            </button>
-          </div>
+          <div id="inbox-annehmen-btn" data-einr-id="" style="display:none;margin-top:8px;gap:5px"></div>
         </div>
         <div><div class="sl">Hook / Anlass</div><input class="fi" id="i-anlass" value="Internationaler Yogatag — 21. Juni 2026"></div>
         <div><div class="sl">Kurs &amp; Inhalt</div><input class="fi" id="i-kurs" value="Yoga Grundkurs, Qi Gong, Pilates — Sp3.316-W" oninput="window._kursBeschreibung=''"></div>
@@ -1935,11 +1926,30 @@ function pickInbox(el, idx) {
     }
   }
   document.getElementById('red-right').innerHTML = '<div class="empty"><div class="empty-icon">✨</div><div class="empty-title">Bereit</div><div style="font-size:12px">Ton wählen und generieren</div></div>';
-  // "Annehmen"-Button einblenden
+  // Aktionsleiste: nur bei "neu" Annehmen/Ablehnen zeigen
   const aktBtn = document.getElementById('inbox-annehmen-btn');
   if (aktBtn) {
-    aktBtn.dataset.einrId = d.id;
-    aktBtn.style.display = 'flex';
+    if ((d.status || 'neu') === 'neu') {
+      aktBtn.dataset.einrId = d.id;
+      aktBtn.style.display = 'flex';
+      aktBtn.innerHTML = `
+        <button onclick="einreichungAnnehmen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
+          style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer">
+          ✅ Annehmen
+        </button>
+        <button onclick="einreichungAblehnen(document.getElementById('inbox-annehmen-btn').dataset.einrId)"
+          style="flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:700;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer">
+          ↩️ Ablehnen
+        </button>`;
+    } else if (d.status === 'angenommen') {
+      aktBtn.style.display = 'flex';
+      aktBtn.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:#185FA5;background:#E6F1FB;border-radius:6px;padding:7px">✅ Bereits angenommen</div>`;
+    } else if (d.status === 'abgelehnt') {
+      aktBtn.style.display = 'flex';
+      aktBtn.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:#791F1F;background:#FCEBEB;border-radius:6px;padding:7px">↩️ Abgelehnt</div>`;
+    } else {
+      aktBtn.style.display = 'none';
+    }
   }
 }
 
@@ -1965,6 +1975,7 @@ async function einreichungAblehnen(id) {
   });
   showToast('↩️ Einreichung abgelehnt');
   loadEinreichungen();
+  updatePBLStatusBadge(id, 'abgelehnt');
 }
 
 // Aktualisiert das PBL-Status-Badge wenn der Screen gerade offen ist
