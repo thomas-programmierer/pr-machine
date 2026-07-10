@@ -795,8 +795,12 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
             </div>
           </div>
           <div>
-            <div class="uf-label">E-Mail <span style="text-transform:none;font-weight:400;letter-spacing:0">(für Benachrichtigungen)</span></div>
+            <div class="uf-label">E-Mail</div>
             <input class="uf-input" id="uf-email" type="email" placeholder="z. B. katja@vhs-spandau.de">
+            <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--blau60);cursor:pointer">
+              <input type="checkbox" id="uf-email-notify" style="accent-color:var(--blau);width:14px;height:14px;cursor:pointer">
+              E-Mail-Benachrichtigung bei neuer Einreichung aktivieren
+            </label>
           </div>
           <div>
             <div class="uf-label">Passwort <span id="uf-pw-hint" style="text-transform:none;font-weight:400;letter-spacing:0">(leer lassen = nicht ändern)</span></div>
@@ -2315,12 +2319,14 @@ async function openUserModal(id) {
     document.getElementById('uf-name').value     = u.name;
     document.getElementById('uf-username').value = u.username;
     document.getElementById('uf-email').value    = u.email || '';
+    document.getElementById('uf-email-notify').checked = !!u.emailBenachrichtigung;
     document.getElementById('uf-password').value = '';
     document.getElementById('uf-role').value     = u.role;
     document.getElementById('uf-pb').value       = u.pb || 'alle';
   } else {
     document.getElementById('umodal-title').textContent = 'Neuer Benutzer';
     ['uf-name','uf-username','uf-email','uf-password'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('uf-email-notify').checked = false;
     document.getElementById('uf-role').value = 'pbl';
     document.getElementById('uf-pb').value  = 'alle';
   }
@@ -2341,7 +2347,8 @@ async function saveUser() {
   errEl.style.display = 'none';
   const name     = document.getElementById('uf-name').value.trim();
   const username = document.getElementById('uf-username').value.trim().toLowerCase();
-  const email    = document.getElementById('uf-email').value.trim();
+  const email              = document.getElementById('uf-email').value.trim();
+  const emailBenachrichtigung = document.getElementById('uf-email-notify').checked;
   const password = document.getElementById('uf-password').value;
   const role     = document.getElementById('uf-role').value;
   const pb       = document.getElementById('uf-pb').value;
@@ -2353,7 +2360,7 @@ async function saveUser() {
     errEl.textContent = 'Für neue Benutzer ist ein Passwort erforderlich.';
     errEl.style.display = 'block'; return;
   }
-  const body = { name, username, role, pb, email };
+  const body = { name, username, role, pb, email, emailBenachrichtigung };
   if (password) body.password = password;
   const url = editingUserId ? `/api/users/${editingUserId}` : '/api/users';
   const method = editingUserId ? 'PUT' : 'POST';

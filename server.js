@@ -431,7 +431,7 @@ const server = http.createServer(async (req, res) => {
       try {
         const alleUser = loadUsers();
         const empfaenger = alleUser
-          .filter(u => u.aktiv && ['admin','redakteur'].includes(u.role) && u.email)
+          .filter(u => u.aktiv && ['admin','redakteur'].includes(u.role) && u.email && u.emailBenachrichtigung)
           .map(u => ({ name: u.name, email: u.email }));
         mailer.sendeEinreichungsBenachrichtigung(neu, empfaenger).catch(e =>
           console.error('[Mailer] Hintergrundfehler:', e.message)
