@@ -1,17 +1,8 @@
-// mailer.js — E-Mail-Versand via Brevo SMTP für die VHS PR-Maschine
+// mailer.js — E-Mail-Versand via Brevo API für die VHS PR-Maschine
+// Kein nodemailer nötig — nutzt Brevo's HTTP Transactional Email API
 
 require('dotenv').config();
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,
-    pass: process.env.BREVO_SMTP_KEY
-  }
-});
+const https = require('https');
 
 /**
  * Sendet eine Benachrichtigung an alle Redakteure/Admins bei neuer Einreichung.
@@ -20,8 +11,8 @@ const transporter = nodemailer.createTransport({
  */
 async function sendeEinreichungsBenachrichtigung(einreichung, empfaenger) {
   if (!empfaenger || empfaenger.length === 0) return;
-  if (!process.env.BREVO_SMTP_KEY) {
-    console.warn('[Mailer] BREVO_SMTP_KEY nicht gesetzt — Mail wird nicht gesendet.');
+  if (!process.env.BREVO_API_KEY) {
+    console.warn('[Mailer] BREVO_API_KEY nicht gesetzt — Mail wird nicht gesendet.');
     return;
   }
 
@@ -29,9 +20,7 @@ async function sendeEinreichungsBenachrichtigung(einreichung, empfaenger) {
     ? new Date(einreichung.datum).toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' })
     : '(kein Datum)';
 
-  const subject = `📬 Neue Einreichung: ${einreichung.anlass || einreichung.kurs || 'Ohne Titel'}`;
-
-  const html = `
+  const htmlContent = `
     <div style="font-family:Arial,sans-serif;max-width:560px;color:#1A2943">
       <div style="background:#00285A;padding:18px 24px;border-radius:8px 8px 0 0">
         <span style="color:#FAB90F;font-weight:700;font-size:16px">VHS Spandau</span>
@@ -57,19 +46,44 @@ async function sendeEinreichungsBenachrichtigung(einreichung, empfaenger) {
     </div>
   `;
 
-  for (const emp of empfaenger) {
-    try {
-      await transporter.sendMail({
-        from: process.env.MAIL_FROM || 'PR-Maschine VHS Spandau <noreply@vhs-spandau.de>',
-        to:   `${emp.name} <${emp.email}>`,
-        subject,
-        html
+  const payload = JSON.stringify({
+    sender: {
+      name:  'PR-Maschine VHS Spandau',
+      email: process.env.BREVO_SENDER_EMAIL || process.env.BREVO_SMTP_USER
+    },
+    to: empfaenger.map(e => ({ name: e.name, email: e.email })),
+    subject: `📬 Neue Einreichung: ${einreichung.anlass || einreichung.kurs || 'Ohne Titel'}`,
+    htmlContent
+  });
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.brevo.com',
+      path:     '/v3/smtp/email',
+      method:   'POST',
+      headers: {
+        'accept':       'application/json',
+        'api-key':      process.env.BREVO_API_KEY,
+        'content-type': 'application/json',
+        'content-length': Buffer.byteLength(payload)
+      }
+    }, res => {
+      let body = '';
+      res.on('data', d => body += d);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`[Mailer] ${empfaenger.length} Mail(s) gesendet via Brevo API`);
+          resolve();
+        } else {
+          console.error(`[Mailer] Brevo API Fehler ${res.statusCode}:`, body);
+          reject(new Error(`Brevo API ${res.statusCode}: ${body}`));
+        }
       });
-      console.log(`[Mailer] Mail gesendet an ${emp.email}`);
-    } catch (err) {
-      console.error(`[Mailer] Fehler bei ${emp.email}:`, err.message);
-    }
-  }
+    });
+    req.on('error', e => { console.error('[Mailer] Netzwerkfehler:', e.message); reject(e); });
+    req.write(payload);
+    req.end();
+  });
 }
 
 module.exports = { sendeEinreichungsBenachrichtigung };
