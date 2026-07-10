@@ -4,6 +4,7 @@ const multer = require('multer');
 const XLSX   = require('xlsx');
 const bcrypt = require('bcrypt');
 const db     = require('./db');   // Postgres-Anbindung (Einreichungen + Kurse)
+const mailer = require('./mailer');
 
 const http   = require("http");
 const https  = require("https");
@@ -426,6 +427,16 @@ const server = http.createServer(async (req, res) => {
         autorId: sess.user.id,
         pb: sess.user.pb || "alle"
       });
+      // E-Mail an alle Redakteure und Admins
+      try {
+        const alleUser = loadUsers();
+        const empfaenger = alleUser
+          .filter(u => u.aktiv && ['admin','redakteur'].includes(u.role) && u.email)
+          .map(u => ({ name: u.name, email: u.email }));
+        mailer.sendeEinreichungsBenachrichtigung(neu, empfaenger).catch(e =>
+          console.error('[Mailer] Hintergrundfehler:', e.message)
+        );
+      } catch(me) { console.error('[Mailer] Setup-Fehler:', me.message); }
       return jsonRes(res, 201, { ok:true, einreichung: neu });
     } catch(e) {
       console.error("Einreichung POST Fehler:", e.message);
