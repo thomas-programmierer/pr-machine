@@ -1075,15 +1075,20 @@ function renderMonat(monat, jahr, allePosts) {
         html += `<div class="mehr-btn" onclick="event.stopPropagation();setView('liste')">+${tagPosts.length-MAX} weitere</div>`;
       }
 
-      // Eigene PBL-Einreichungen für diesen Tag anzeigen
-      if (currentUser && currentUser.role === 'pbl') {
-        const eigene = einreichungenCache.filter(e => (e.datum||'').slice(0,10) === datStr);
-        eigene.forEach(e => {
+      // Einreichungs-Chips: PBL sieht eigene, Redakteur/Admin sieht alle
+      if (currentUser && ['pbl','redakteur','admin'].includes(currentUser.role)) {
+        const sichtbar = currentUser.role === 'pbl'
+          ? einreichungenCache.filter(e => (e.datum||'').slice(0,10) === datStr)
+          : einreichungenCache.filter(e => (e.datum||'').slice(0,10) === datStr);
+        sichtbar.forEach(e => {
           const cls = e.status === 'angenommen' ? 'chip-einreichung' : 'chip-einreichung-pending';
-          const icon = e.status === 'angenommen' ? '✅' : '📬';
-          html += `<div class="post-chip ${cls}" title="${esc(e.kurs||'')} — ${e.status==='angenommen'?'Angenommen':'Eingereicht'}"
+          const icon = e.status === 'angenommen' ? '✅' : e.status === 'abgelehnt' ? '↩️' : '📬';
+          const label = currentUser.role === 'pbl'
+            ? esc((e.kurs||'Vorschlag').slice(0,22))
+            : esc((e.autor||'').split(' ')[0] + ': ' + (e.kurs||'Vorschlag').slice(0,16));
+          html += `<div class="post-chip ${cls}" title="${esc(e.autor||'')} — ${esc(e.kurs||'')} — ${e.status}"
             onclick="event.stopPropagation();openPblDetail('${esc(e.id||'')}')">
-            ${icon} ${esc((e.kurs||'Vorschlag').slice(0,22))}
+            ${icon} ${label}
           </div>`;
         });
         // "Vorschlag"-Button nur auf Tagen mit Hook oder Zulieferung
@@ -1492,7 +1497,10 @@ function openPblDetail(einrId) {
 
   document.getElementById('pbl-modal-datum').textContent = datLabel;
   document.getElementById('pbl-modal-hook').textContent  = hook ? '🎯 ' + hook : '';
-  document.getElementById('pbl-modal-title').textContent = 'Mein Vorschlag';
+  const isRedAdmin = currentUser && ['redakteur','admin'].includes(currentUser.role);
+  document.getElementById('pbl-modal-title').textContent = isRedAdmin
+    ? '📬 ' + (e.autor || 'Vorschlag') + ' · ' + (e.pb || '')
+    : 'Mein Vorschlag';
 
   document.getElementById('pbl-kurs').value = e.kurs  || '';
   document.getElementById('pbl-nr').value   = e.kursNr || '';
