@@ -881,7 +881,6 @@ window.addEventListener('load', async () => {
 
   await ladePosts();
   await ladeEigeneEinreichungen();
-  if (postsCache.length === 0) { await ladeDemoPosts(); return; }
   renderKalender();
 });
 
