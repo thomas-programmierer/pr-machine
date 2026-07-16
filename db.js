@@ -260,4 +260,36 @@ async function ensureTables() {
       kanal           TEXT,
       anlass          TEXT,
       text            TEXT,
-      tags         
+      tags            TEXT,
+      status          TEXT DEFAULT 'geplant',
+      ziel            TEXT,
+      freigabe        TEXT,
+      freigegeben_von TEXT,
+      paid            TEXT DEFAULT 'nein',
+      url             TEXT,
+      erstellt        TIMESTAMPTZ DEFAULT now(),
+      autor           TEXT,
+      autor_id        TEXT
+    )
+  `);
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS bild TEXT
+  `);
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS pb TEXT
+  `);
+}
+
+async function testConnection() {
+  var res = await pool.query('SELECT count(*)::int AS n FROM kurse');
+  return res.rows[0].n;
+}
+
+module.exports = {
+  pool,
+  getEinreichungen, addEinreichung, updateEinreichung, deleteEinreichung,
+  setEinreichungStatus,
+  getKurse, getKursByCode, getKategorien, upsertKurse,
+  getPosts, addPost, updatePost, deletePost, setPostStatus,
+  testConnection, ensureTables
+};
