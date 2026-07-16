@@ -821,5 +821,19 @@ async function migratePasswordsOnStartup() {
   }
 }
 
+
 server.listen(PORT, async () => {
-  conso
+  console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
+  console.log(`  🌐  http://localhost:${PORT}`);
+  console.log("  🔑  API-Key: aktiv");
+  await migratePasswordsOnStartup();
+  try {
+    const n = await db.testConnection();
+    console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
+    await db.ensureTables();
+    console.log(`  📋  Tabellen geprüft/erstellt`);
+  } catch (e) {
+    console.error("  ❌  Postgres NICHT erreichbar:", e.message);
+  }
+  console.log("  Stoppen: Strg+C\n");
+});
