@@ -271,7 +271,8 @@ function renderPosts() {
         <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--blau60);cursor:pointer;margin:6px 0 10px">
           <input type="checkbox" id="${cbId}"> Freigabe durch Direktorin (Sonderfall)
         </label>
-        <button class="btn-reject" onclick="ablehnen('${p.id}')">✕ Ablehnen</button>`;
+        <button class="btn-reject" onclick="ablehnen('${p.id}')">✕ Ablehnen</button>
+        <button class="btn-undo" onclick="direktFreigeben('${p.id}')" style="margin-top:6px;font-size:11px;color:var(--blau60)">⚡ Direkt freigeben (Admin/Redaktion)</button>`;
     } else if (p.status === 'pb_freigabe' && canAct) {
       actions = `<div style="font-size:11px;color:var(--gruen);font-weight:600;margin-bottom:6px">⏳ Wartet auf Freigabe der Programmbereichsleitung</div>
         <button class="btn-undo" onclick="zurueck('${p.id}')">↩ Weitergabe zurückziehen</button>`;
@@ -290,6 +291,7 @@ function renderPosts() {
       p.anlass   ? 'anlass=' + encodeURIComponent(p.anlass) : '',
       p.kurs     ? 'kurs='   + encodeURIComponent(p.kurs)   : '',
       postText   ? 'fulltext=' + encodeURIComponent(postText.slice(0, 800)) : '',
+      p.pb       ? 'pb='    + encodeURIComponent(p.pb)     : '',
       'from=voransicht',
       'postId=' + p.id
     ].filter(Boolean).join('&');
@@ -341,6 +343,11 @@ function renderPosts() {
 }
 
 // ── AKTIONEN ──────────────────────────────────────────────────────────────────
+async function direktFreigeben(id) {
+  if (!confirm('Post direkt freigeben (ohne PBL/Direktion)?')) return;
+  await setStatus(id, 'bereit_zur_veroeffentlichung');
+  showToast('⚡ Direkt freigegeben');
+}
 async function zurFreigabe(id, cbId) {
   const direktorin = document.getElementById(cbId)?.checked;
   if (direktorin) {

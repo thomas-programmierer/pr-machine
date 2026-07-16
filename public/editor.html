@@ -650,6 +650,7 @@ window.addEventListener('load', async () => {
   const inKurs   = qp.get('kurs')     || '';
   const inFull   = qp.get('fulltext') || '';
   const inPostId = qp.get('postId')   || '';
+  const inPb     = qp.get('pb')       || '';
   const hasURLPayload = !!(inHL || inFull || inAnlass);
 
   // Auth
@@ -694,7 +695,7 @@ window.addEventListener('load', async () => {
       hl: inHL, sub: inSub, anlass: inAnlass, kurs: inKurs, full: inFull,
       hlsize: hlLen > 100 ? 12 : hlLen > 70 ? 14 : hlLen > 40 ? 16 : 18,
     };
-    window._studioPayload = { fulltext: inFull, kurs: inKurs, anlass: inAnlass, postId: inPostId };
+    window._studioPayload = { fulltext: inFull, kurs: inKurs, anlass: inAnlass, postId: inPostId, pb: inPb };
     if (inAnlass) {
       const anlassEl = document.getElementById('exp-anlass');
       if (anlassEl) anlassEl.value = inAnlass;

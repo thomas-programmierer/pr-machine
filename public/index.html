@@ -2240,7 +2240,9 @@ async function generate() {
     // Schriftgröße an Headline-Länge anpassen
     const autoHlSize = headline.length > 60 ? 14 : headline.length > 40 ? 16 : headline.length > 25 ? 18 : 22;
 
-    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null, pb: currentUser?.pb || '', autor: currentUser?.name || '', autorId: currentUser?.id || '' };
+    const selEinrId = document.getElementById('inbox-annehmen-btn')?.dataset?.einrId;
+    const selEinr = einreichungenCache.find(e => String(e.id) === String(selEinrId));
+    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: selEinr?.bild || einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null, pb: selEinr?.pb || '', autor: currentUser?.name || '', autorId: currentUser?.id || '' };
 
     // Headline-Vorschau entfällt — wird direkt im Grafik-Studio sichtbar
 
