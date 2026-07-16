@@ -246,11 +246,13 @@ function renderPosts() {
 
   const canAct = ['admin','redakteur'].includes(currentUser?.role);
   const STATUS = {
-    freigabe_ausstehend: { label:'Bei Redaktion',       cls:'sb-ausstehend' },
-    redaktion_frei:      { label:'Wartet auf Direktion', cls:'sb-ausstehend' },
-    freigegeben:         { label:'✓ Freigegeben',       cls:'sb-freigegeben' },
-    abgelehnt:           { label:'Abgelehnt',            cls:'sb-abgelehnt' },
-    geplant:             { label:'Geplant',               cls:'sb-ausstehend' },
+    freigabe_ausstehend:          { label:'Bei Redaktion',         cls:'sb-ausstehend' },
+    pb_freigabe:                  { label:'Bei PBL',               cls:'sb-ausstehend' },
+    redaktion_frei:               { label:'Wartet auf Direktion',  cls:'sb-ausstehend' },
+    bereit_zur_veroeffentlichung: { label:'Bereit zur Veröff.',    cls:'sb-freigegeben' },
+    freigegeben:                  { label:'✓ Freigegeben',         cls:'sb-freigegeben' },
+    abgelehnt:                    { label:'Abgelehnt',              cls:'sb-abgelehnt' },
+    geplant:                      { label:'Geplant',                cls:'sb-ausstehend' },
   };
 
   container.innerHTML = gefiltert.map(p => {
@@ -263,9 +265,16 @@ function renderPosts() {
     // Action-Buttons
     let actions = '';
     if (p.status === 'freigabe_ausstehend' && canAct) {
+      const cbId = 'cb-dir-' + p.id;
       actions = `
-        <button class="btn-approve" onclick="freigeben('${p.id}')">✅ An Direktion weitergeben</button>
+        <button class="btn-approve" onclick="zurFreigabe('${p.id}','${cbId}')">✅ Zur Freigabe</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--blau60);cursor:pointer;margin:6px 0 10px">
+          <input type="checkbox" id="${cbId}"> Freigabe durch Direktorin (Sonderfall)
+        </label>
         <button class="btn-reject" onclick="ablehnen('${p.id}')">✕ Ablehnen</button>`;
+    } else if (p.status === 'pb_freigabe' && canAct) {
+      actions = `<div style="font-size:11px;color:var(--gruen);font-weight:600;margin-bottom:6px">⏳ Wartet auf Freigabe der Programmbereichsleitung</div>
+        <button class="btn-undo" onclick="zurueck('${p.id}')">↩ Weitergabe zurückziehen</button>`;
     } else if (p.status === 'redaktion_frei' && canAct) {
       actions = `<div style="font-size:11px;color:var(--hellblau);font-weight:600;margin-bottom:6px">⏳ Wartet auf Freigabe der Direktion</div>
         <button class="btn-undo" onclick="zurueck('${p.id}')">↩ Weitergabe zurückziehen</button>`;
@@ -332,9 +341,15 @@ function renderPosts() {
 }
 
 // ── AKTIONEN ──────────────────────────────────────────────────────────────────
-async function freigeben(id) {
-  await setStatus(id, 'redaktion_frei');
-  showToast('✅ An die Direktion weitergegeben!');
+async function zurFreigabe(id, cbId) {
+  const direktorin = document.getElementById(cbId)?.checked;
+  if (direktorin) {
+    await setStatus(id, 'redaktion_frei');
+    showToast('✅ An die Direktorin weitergeleitet');
+  } else {
+    await setStatus(id, 'pb_freigabe');
+    showToast('✅ Zur Programmbereichsleitung weitergeleitet');
+  }
 }
 async function ablehnen(id) {
   await setStatus(id, 'abgelehnt');
