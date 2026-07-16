@@ -164,7 +164,8 @@ function rowToPost(r) {
     url:            r.url,
     erstellt:       r.erstellt ? r.erstellt.toISOString() : null,
     autor:          r.autor,
-    autorId:        r.autor_id
+    autorId:        r.autor_id,
+    bild:           r.bild || null
   };
 }
 
@@ -177,14 +178,15 @@ async function addPost(p) {
   var res = await pool.query(
     `INSERT INTO posts
        (datum, uhrzeit, kanal, anlass, text, tags, status, ziel,
-        freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+        freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id, bild)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
      RETURNING *`,
     [ p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
       p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
       p.freigabe || null, p.freigegebenVon || p.freigegeben_von || null,
       p.paid || 'nein', p.url || null,
-      p.erstellt || new Date().toISOString(), p.autor || null, p.autorId || p.autor_id || null ]
+      p.erstellt || new Date().toISOString(), p.autor || null, p.autorId || p.autor_id || null,
+      p.bild || null ]
   );
   return rowToPost(res.rows[0]);
 }
@@ -254,6 +256,9 @@ async function ensureTables() {
       autor           TEXT,
       autor_id        TEXT
     )
+  `);
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS bild TEXT
   `);
 }
 
