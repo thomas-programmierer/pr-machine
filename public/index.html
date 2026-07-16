@@ -1962,7 +1962,11 @@ function pickInbox(el, idx) {
       aktBtn.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:#185FA5;background:#E6F1FB;border-radius:6px;padding:7px">✅ Bereits angenommen</div>`;
     } else if (d.status === 'abgelehnt') {
       aktBtn.style.display = 'flex';
-      aktBtn.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:#791F1F;background:#FCEBEB;border-radius:6px;padding:7px">↩️ Abgelehnt</div>`;
+      aktBtn.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:#791F1F;background:#FCEBEB;border-radius:6px;padding:7px">↩️ Abgelehnt</div>
+        <button onclick="einreichungLoeschen('${d.id}')"
+          style="padding:6px 10px;border-radius:6px;font-size:10px;font-weight:700;background:#fff;color:#E1000F;border:1.5px solid #E1000F;cursor:pointer">
+          🗑 Löschen
+        </button>`;
     } else {
       aktBtn.style.display = 'none';
     }
@@ -1992,6 +1996,17 @@ async function einreichungAblehnen(id) {
   showToast('↩️ Einreichung abgelehnt');
   loadEinreichungen();
   updatePBLStatusBadge(id, 'abgelehnt');
+}
+
+async function einreichungLoeschen(id) {
+  if (!id) return;
+  if (!confirm('Einreichung endgültig löschen? Das kann nicht rückgängig gemacht werden.')) return;
+  try {
+    const r = await fetch('/api/einreichungen/' + id, { method:'DELETE', credentials:'include' });
+    if (!r.ok) { showToast('⚠️ Fehler beim Löschen'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  showToast('🗑 Einreichung gelöscht');
+  loadEinreichungen();
 }
 
 // Aktualisiert das PBL-Status-Badge wenn der Screen gerade offen ist
