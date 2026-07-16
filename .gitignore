@@ -20,3 +20,10 @@ FORCE_UPDATE.bat
 update.ps1
 update2.ps1
 gitignore
+
+# Temporäre Dateien aus Tests (16-07-2026)
+checkup.sh
+cleanup_demo_posts.js
+setup_thema_clone.sh
+tmp_thema/
+tmp_users_thema.json

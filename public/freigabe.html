@@ -75,6 +75,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .btn-zurueck:hover{background:var(--blau10);color:var(--blau80)}
 .btn-ablehnen{padding:9px 12px;border-radius:9px;font-size:12px;font-weight:600;background:#fff;color:var(--blau60);border:1.5px solid #dde2e9;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn-ablehnen:hover{border-color:var(--rot);color:var(--rot);background:#FCEBEB}
+.btn-loeschen{padding:9px 12px;border-radius:9px;font-size:12px;font-weight:600;background:#fff;color:var(--rot);border:1.5px solid var(--rot);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-loeschen:hover{background:var(--rot);color:#fff}
 
 /* POST CARD (Standard für Admin/Redakteur) */
 .post-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
@@ -456,6 +458,9 @@ function kartenAktionen(p, kompakt) {
   if (p.status === 'freigegeben' && istDirektion()) {
     return `<button class="${undo}" onclick="${stop}zurueckDirektion('${p.id}')">↩ Freigabe zurücknehmen</button>`;
   }
+  if (p.status === 'abgelehnt' && istRedaktion()) {
+    return `<button class="btn-loeschen" onclick="${stop}loeschen('${p.id}')">🗑 Löschen</button>`;
+  }
   return '';
 }
 
@@ -472,6 +477,18 @@ async function ablehnen(id) {
   if (!confirm('Post wirklich ablehnen?')) return;
   await setStatus(id, 'abgelehnt');
   showToast('❌ Post abgelehnt');
+}
+async function loeschen(id) {
+  if (!confirm('Post endgültig löschen? Das kann nicht rückgängig gemacht werden.')) return;
+  try {
+    const r = await fetch('/api/posts/' + id, { method:'DELETE', credentials:'include' });
+    if (!r.ok) { showToast('⚠️ Fehler beim Löschen'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  allePosts = allePosts.filter(p => p.id !== id);
+  if (modalPostId === id) closeModalDirect();
+  updateCounts();
+  renderCards();
+  showToast('🗑 Post gelöscht');
 }
 async function zurueckRedaktion(id) {
   await setStatus(id, 'freigabe_ausstehend');
