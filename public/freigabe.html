@@ -545,8 +545,8 @@ async function sendeZurueck() {
 
 async function setStatus(id, status, extra = {}) {
   try {
-    const r = await fetch('/api/posts/' + id, {
-      method:'PUT', credentials:'include',
+    const r = await fetch('/api/posts/' + id + '/status', {
+      method:'PATCH', credentials:'include',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ status, ...extra })
     });
@@ -568,42 +568,4 @@ function openDetail(id) {
   const bildsrc    = p.bild || p.preview || '';
   const hasPreview = bildsrc.startsWith('data:image');
   document.getElementById('modal-title').textContent = p.anlass || 'Post-Details';
-  document.getElementById('modal-body').innerHTML = `
-    ${hasPreview ? `<div><div class="ml">Grafik-Vorschau</div><div class="modal-preview-wrap"><img src="${bildsrc}" alt="Vorschau"></div></div>` : ''}
-    ${p.direktion_kommentar ? `<div class="dir-kommentar-box"><div class="dir-kommentar-label">↩️ Kommentar der Direktion</div>${esc(p.direktion_kommentar)}</div>` : ''}
-    <div>
-      <div class="ml">Details</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
-        <div><span style="color:var(--blau60)">Kanal:</span> ${esc(p.kanal||'—')}</div>
-        <div><span style="color:var(--blau60)">Format:</span> ${esc(p.format||'—')}</div>
-        <div><span style="color:var(--blau60)">Autor:</span> ${esc(p.autor||'—')}</div>
-        <div><span style="color:var(--blau60)">Eingereicht:</span> ${datum}</div>
-        ${p.kurs ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Kurs:</span> ${esc(p.kurs)}</div>` : ''}
-        ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
-      </div>
-    </div>
-    ${p.text ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.text)}</div></div>` : ''}
-  `;
-  document.getElementById('modal-foot').innerHTML = kartenAktionen(p, false);
-  document.getElementById('modal-bg').classList.add('open');
-}
-function closeModal(e) { if (e.target === document.getElementById('modal-bg')) closeModalDirect(); }
-function closeModalDirect() {
-  document.getElementById('modal-bg').classList.remove('open');
-  modalPostId = null;
-}
-
-// ── UTILS ────────────────────────────────────────────────────────────────────
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-setInterval(ladePosts, 30000);
-window.addEventListener('load', init);
-</script>
-</body>
-</html>
+  document.getElementById('modal-body').innerHT

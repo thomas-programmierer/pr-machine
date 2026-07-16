@@ -379,42 +379,5 @@ async function loeschen(id) {
 
 async function setStatus(id, status) {
   try {
-    const r = await fetch('/api/posts/' + id, {
-      method:'PUT', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ status, freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString() })
-    });
-    if (!r.ok) { showToast('⚠️ Fehler'); return; }
-  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
-  const idx = allePosts.findIndex(p => p.id === id);
-  if (idx !== -1) allePosts[idx].status = status;
-  updateCounts();
-  renderPosts();
-}
-
-async function kommentarSpeichern(id) {
-  const text = document.getElementById('komm-' + id)?.value || '';
-  try {
-    await fetch('/api/posts/' + id, {
-      method:'PUT', credentials:'include',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ kommentar: text })
-    });
-    showToast('💬 Kommentar gespeichert');
-  } catch { showToast('⚠️ Fehler'); }
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-setInterval(ladePosts, 30000);
-window.addEventListener('load', init);
-</script>
-</body>
-</html>
+    const r = await fetch('/api/posts/' + id + '/status', {
+      method:'PATC

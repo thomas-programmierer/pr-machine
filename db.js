@@ -212,6 +212,20 @@ async function deletePost(id) {
   await pool.query('DELETE FROM posts WHERE id=$1', [id]);
 }
 
+async function setPostStatus(id, status, extra) {
+  // Nur Status (und optionale Felder) aendern — alle anderen Felder bleiben
+  var sets = ['status=$2'];
+  var vals = [id, status];
+  var idx  = 3;
+  if (extra && extra.freigegeben_von) { sets.push('freigegeben_von=$' + idx++); vals.push(extra.freigegeben_von); }
+  if (extra && extra.freigegebenVon)  { sets.push('freigegeben_von=$' + idx++); vals.push(extra.freigegebenVon); }
+  var res = await pool.query(
+    'UPDATE posts SET ' + sets.join(',') + ' WHERE id=$1 RETURNING *',
+    vals
+  );
+  return res.rows[0] ? rowToPost(res.rows[0]) : null;
+}
+
 // ── ensureTables ───────────────────────────────────────────────────────────────
 
 async function ensureTables() {
@@ -246,36 +260,4 @@ async function ensureTables() {
       kanal           TEXT,
       anlass          TEXT,
       text            TEXT,
-      tags            TEXT,
-      status          TEXT DEFAULT 'geplant',
-      ziel            TEXT,
-      freigabe        TEXT,
-      freigegeben_von TEXT,
-      paid            TEXT DEFAULT 'nein',
-      url             TEXT,
-      erstellt        TIMESTAMPTZ DEFAULT now(),
-      autor           TEXT,
-      autor_id        TEXT
-    )
-  `);
-  await pool.query(`
-    ALTER TABLE posts ADD COLUMN IF NOT EXISTS bild TEXT
-  `);
-  await pool.query(`
-    ALTER TABLE posts ADD COLUMN IF NOT EXISTS pb TEXT
-  `);
-}
-
-async function testConnection() {
-  var res = await pool.query('SELECT count(*)::int AS n FROM kurse');
-  return res.rows[0].n;
-}
-
-module.exports = {
-  pool,
-  getEinreichungen, addEinreichung, updateEinreichung, deleteEinreichung,
-  setEinreichungStatus,
-  getKurse, getKursByCode, getKategorien, upsertKurse,
-  getPosts, addPost, updatePost, deletePost,
-  testConnection, ensureTables
-};
+      tags         

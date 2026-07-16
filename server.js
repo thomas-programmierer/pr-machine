@@ -355,9 +355,20 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 201, { ok:true, post:neu });
   }
 
+  // PATCH /api/posts/:id/status — nur Status ändern, alle anderen Felder bleiben
+  // Erlaubt für: admin, redakteur, direktion, pbl
+  if (req.method === "PATCH" && /^\/api\/posts\/[^/]+\/status/.test(url)) {
+    if (!sess || !["admin","redakteur","direktion","pbl"].includes(sess.user.role))
+      return jsonRes(res, 403, { error:"Kein Zugriff" });
+    const id = url.split("/")[3];
+    const b = await readBody(req);
+    const updated = await db.setPostStatus(id, b.status, b);
+    if (!updated) return jsonRes(res, 404, { error:"Post nicht gefunden" });
+    return jsonRes(res, 200, { ok:true, post: updated });
+  }
+
   if (req.method === "PUT" && url.startsWith("/api/posts/")) {
-    // Redaktion (admin/redakteur) und Direktion duerfen den Status aendern —
-    // zweistufige Freigabe: Redaktion -> redaktion_frei -> Direktion -> freigegeben
+    // Vollständiges Update — nur für Redaktion/Admin
     if (!sess || !["admin","redakteur","direktion"].includes(sess.user.role))
       return jsonRes(res, 403, { error:"Kein Zugriff" });
     const id = url.split("/")[3];
@@ -811,17 +822,4 @@ async function migratePasswordsOnStartup() {
 }
 
 server.listen(PORT, async () => {
-  console.log("\n  ✅  VHS Spandau PR-Maschine läuft");
-  console.log(`  🌐  http://localhost:${PORT}`);
-  console.log("  🔑  API-Key: aktiv");
-  await migratePasswordsOnStartup();
-  try {
-    const n = await db.testConnection();
-    console.log(`  🗄️   Postgres verbunden — ${n} Kurse in der DB`);
-    await db.ensureTables();
-    console.log(`  📋  Tabellen geprüft/erstellt`);
-  } catch (e) {
-    console.error("  ❌  Postgres NICHT erreichbar:", e.message);
-  }
-  console.log("  Stoppen: Strg+C\n");
-});
+  conso
