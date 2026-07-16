@@ -201,12 +201,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
   <div id="view-redaktion" style="display:none">
     <div style="margin-bottom:16px">
       <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
-      <div style="font-size:12px;color:var(--blau60)">Zweistufig: Die Redaktion prüft zuerst und gibt an die Direktion weiter — die Direktion erteilt die endgültige Freigabe.</div>
+      <div style="font-size:12px;color:var(--blau60)">Die Redaktion prüft und leitet zur Freigabe weiter — an die Programmbereichsleitung oder (Sonderfall) an die Direktorin.</div>
     </div>
     <div class="stats-bar" id="stats-bar"></div>
     <div class="tabs">
       <button class="tab-btn active" id="tab-alle"      onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
       <button class="tab-btn"       id="tab-warten"    onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+      <button class="tab-btn"       id="tab-pbl"       onclick="setFilter('pb_freigabe')">Bei PBL <span class="tab-count" id="cnt-pbl" style="background:var(--gruen);color:#fff">0</span></button>
       <button class="tab-btn"       id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
       <button class="tab-btn"       id="tab-frei"      onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
       <button class="tab-btn"       id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
@@ -372,8 +373,9 @@ function updateCounts() {
   const cnt = (s) => allePosts.filter(p => !s || p.status === s).length;
   document.getElementById('cnt-alle').textContent      = cnt('');
   document.getElementById('cnt-warten').textContent    = cnt('freigabe_ausstehend');
+  document.getElementById('cnt-pbl').textContent       = cnt('pb_freigabe');
   document.getElementById('cnt-direktion').textContent = cnt('redaktion_frei');
-  document.getElementById('cnt-frei').textContent      = cnt('freigegeben');
+  document.getElementById('cnt-frei').textContent      = cnt('freigegeben') + cnt('bereit_zur_veroeffentlichung');
   document.getElementById('cnt-abgelehnt').textContent = cnt('abgelehnt');
   document.getElementById('stats-bar').innerHTML = [
     `<div class="stat-pill orange"><span>${cnt('freigabe_ausstehend')}</span> bei der Redaktion</div>`,
@@ -398,11 +400,13 @@ function renderCards() {
     : allePosts.filter(p => p.status === currentFilter);
 
   const STATUS = {
-    freigabe_ausstehend: { label:'Bei Redaktion', pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
-    redaktion_frei:      { label:'Bei Direktion', pill:'pill-direktion',   dot:'s-direktion',  cls:'direktion' },
-    freigegeben:         { label:'✓ Freigegeben', pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
-    abgelehnt:           { label:'Abgelehnt',     pill:'pill-abgelehnt',   dot:'s-abgelehnt',  cls:'abgelehnt' },
-    geplant:             { label:'Geplant',        pill:'',                 dot:'s-warten',     cls:'warten' },
+    freigabe_ausstehend:      { label:'Bei Redaktion',  pill:'pill-warten',     dot:'s-warten',     cls:'warten' },
+    pb_freigabe:              { label:'Bei PBL',        pill:'pill-direktion',   dot:'s-direktion',  cls:'direktion' },
+    redaktion_frei:           { label:'Bei Direktion',  pill:'pill-direktion',   dot:'s-direktion',  cls:'direktion' },
+    bereit_zur_veroeffentlichung: { label:'✓ Bereit',   pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
+    freigegeben:              { label:'✓ Freigegeben',  pill:'pill-freigegeben', dot:'s-freigegeben', cls:'freigegeben' },
+    abgelehnt:                { label:'Abgelehnt',      pill:'pill-abgelehnt',   dot:'s-abgelehnt',  cls:'abgelehnt' },
+    geplant:                  { label:'Geplant',        pill:'',                 dot:'s-warten',     cls:'warten' },
   };
 
   if (!gefiltert.length) {
@@ -444,8 +448,17 @@ function kartenAktionen(p, kompakt) {
   const rej  = kompakt ? 'btn-reject'       : 'btn-modal-reject';
   const undo = kompakt ? 'btn-undo'         : 'btn-modal-reject';
   if (p.status === 'freigabe_ausstehend' && istRedaktion()) {
-    return `<button class="${app}" onclick="${stop}anDirektion('${p.id}')">✅ An Direktion</button>
-            <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>`;
+    const cbId = 'cb-dir-' + p.id;
+    return `<div style="display:flex;flex-direction:column;gap:5px;width:100%">
+      <div style="display:flex;gap:5px">
+        <button class="${app}" onclick="${stop}zurFreigabe('${p.id}','${cbId}')">✅ Zur Freigabe</button>
+        <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>
+      </div>
+      <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--blau60);cursor:pointer" onclick="${stop}void(0)">
+        <input type="checkbox" id="${cbId}" style="cursor:pointer">
+        Freigabe durch Direktorin
+      </label>
+    </div>`;
   }
   if (p.status === 'redaktion_frei' && istDirektion()) {
     return `<button class="${app}" onclick="${stop}freigeben('${p.id}')">✅ Freigeben</button>
@@ -465,9 +478,15 @@ function kartenAktionen(p, kompakt) {
 }
 
 // ── AKTIONEN ─────────────────────────────────────────────────────────────────
-async function anDirektion(id) {
-  await setStatus(id, 'redaktion_frei');
-  showToast('✅ An die Direktion weitergeleitet');
+async function zurFreigabe(id, cbId) {
+  const direktorin = document.getElementById(cbId)?.checked;
+  if (direktorin) {
+    await setStatus(id, 'redaktion_frei');
+    showToast('✅ An die Direktorin weitergeleitet');
+  } else {
+    await setStatus(id, 'pb_freigabe');
+    showToast('✅ Zur Programmbereichsleitung weitergeleitet');
+  }
 }
 async function freigeben(id) {
   await setStatus(id, 'freigegeben', { freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString(), direktion_kommentar: '' });

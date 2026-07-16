@@ -634,6 +634,11 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div class="section-label" id="status-label" style="display:none">Meine Einreichungen</div>
         <div id="status-liste"></div>
       </div>
+      <!-- ── PBL FREIGABE-BEREICH ── -->
+      <div id="pbl-freigabe-wrap" style="display:none;padding:0 22px 24px">
+        <div class="section-label" style="margin-bottom:12px">✅ Zur Freigabe — Entwürfe der Redaktion</div>
+        <div id="pbl-freigabe-liste" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+      </div>
     </div>
 
     <!-- ── REDAKTEUR ── -->
@@ -716,6 +721,16 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <!-- ── ADMIN ── -->
     <div class="screen" id="screen-admin">
       <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1">
+
+        <!-- ── BEREIT ZUR VERÖFFENTLICHUNG ── -->
+        <div id="publish-queue-wrap" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div class="section-label" style="margin-bottom:0">🚀 Bereit zur Veröffentlichung</div>
+            <span id="publish-queue-count" style="background:var(--gelb);color:var(--blau);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700"></span>
+          </div>
+          <div id="publish-queue-liste" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+        </div>
+
         <div>
           <div class="section-label">Systemstatistik</div>
           <div class="stat-grid">
@@ -1586,7 +1601,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('screen-' + name)?.classList.add('active');
   document.getElementById('tab-' + name)?.classList.add('active');
-  if (name === 'admin')     { loadAdminUsers(); loadAdminStatus(); }
+  if (name === 'admin')     { loadAdminUsers(); loadAdminStatus(); ladePublishQueue(); }
   if (name === 'redakteur') { loadEinreichungen(); }
   if (name === 'pbl')       { loadPBLEinreichungsStatus(); }
   if (name === 'direktion') { loadDirektion(); }
@@ -1753,6 +1768,67 @@ function initPBL() {
   document.getElementById('pbl-pb-badge').textContent = currentUser.pb;
   renderKarten();
   ladeKurseDemnaechst();
+  ladePBLFreigaben();
+}
+
+async function ladePBLFreigaben() {
+  try {
+    const r = await fetch('/api/posts', { credentials:'include' });
+    if (!r.ok) return;
+    const posts = await r.json();
+    const meineFreigaben = posts.filter(p =>
+      p.status === 'pb_freigabe' && p.pb === currentUser.pb
+    );
+    renderPBLFreigaben(meineFreigaben);
+  } catch(e) { console.warn('PBL-Freigaben:', e); }
+}
+
+function renderPBLFreigaben(posts) {
+  const wrap = document.getElementById('pbl-freigabe-wrap');
+  const liste = document.getElementById('pbl-freigabe-liste');
+  if (!posts.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  liste.innerHTML = posts.map(p => {
+    const hasImg = (p.bild||'').startsWith('data:image');
+    const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'}) : '';
+    return `<div style="background:#fff;border:2px solid var(--gelb);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,40,90,.08)">
+      ${hasImg ? `<img src="${p.bild}" style="width:100%;max-height:200px;object-fit:cover">` : `<div style="background:var(--blau10);height:100px;display:flex;align-items:center;justify-content:center;font-size:32px">🖼</div>`}
+      <div style="padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:14px;font-weight:700;color:var(--blau)">${esc(p.anlass||'Entwurf')}</div>
+        <div style="font-size:11px;color:var(--blau60)">${esc(p.kanal||'')} · ${esc(p.format||'')} · ${datum}</div>
+        ${p.text ? `<div style="font-size:11px;color:var(--blau);background:var(--blau10);border-radius:6px;padding:8px;line-height:1.6;max-height:80px;overflow:hidden">${esc(p.text)}</div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button onclick="pblFreigeben('${p.id}')" style="flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:700;background:var(--gruen);color:#fff;border:none;cursor:pointer">✅ Freigeben</button>
+          <button onclick="pblAblehnen('${p.id}')" style="padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;background:#fff;color:var(--rot);border:1.5px solid var(--rot);cursor:pointer">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function pblFreigeben(id) {
+  try {
+    await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'bereit_zur_veroeffentlichung', freigegeben_von: currentUser.name, freigegeben_am: new Date().toISOString() })
+    });
+    showToast('✅ Freigegeben — geht an die Veröffentlichung');
+    ladePBLFreigaben();
+  } catch(e) { showToast('⚠️ Fehler beim Freigeben'); }
+}
+
+async function pblAblehnen(id) {
+  if (!confirm('Entwurf ablehnen?')) return;
+  try {
+    await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'abgelehnt' })
+    });
+    showToast('↩️ Abgelehnt');
+    ladePBLFreigaben();
+  } catch(e) { showToast('⚠️ Fehler'); }
 }
 
 async function ladeKurseDemnaechst() {
@@ -2217,6 +2293,63 @@ function copyPost(btn){const t=document.getElementById(btn.dataset.tid).textCont
 let editingUserId = null;
 
 // ── Admin Grunddaten ─────────────────────────────────────────────────────────
+async function ladePublishQueue() {
+  try {
+    const r = await fetch('/api/posts', { credentials:'include' });
+    if (!r.ok) return;
+    const posts = await r.json();
+    const queue = posts.filter(p => p.status === 'bereit_zur_veroeffentlichung');
+    const wrap  = document.getElementById('publish-queue-wrap');
+    const liste = document.getElementById('publish-queue-liste');
+    const count = document.getElementById('publish-queue-count');
+    if (!queue.length) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    count.textContent = queue.length + ' Posts';
+    liste.innerHTML = queue.map(p => {
+      const hasImg = (p.bild||'').startsWith('data:image');
+      const datum = p.erstellt ? new Date(p.erstellt).toLocaleDateString('de-DE',{day:'2-digit',month:'short'}) : '';
+      return `<div style="background:#fff;border:2px solid var(--gelb);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+        ${hasImg ? `<img src="${p.bild}" style="width:100%;height:140px;object-fit:cover">` : `<div style="background:var(--blau10);height:80px;display:flex;align-items:center;justify-content:center;font-size:28px">🖼</div>`}
+        <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--blau)">${esc(p.anlass||'Post')}</div>
+          <div style="font-size:10px;color:var(--blau60)">${esc(p.kanal||'')} · ${esc(p.pb||'')} · ${datum}</div>
+          <div style="font-size:10px;color:#3B6D11;font-weight:600">Freigegeben von: ${esc(p.freigegebenVon||p.freigegeben_von||'PBL')}</div>
+          ${p.text ? `<div style="font-size:10px;color:var(--blau);background:var(--blau10);border-radius:5px;padding:6px;max-height:60px;overflow:hidden">${esc(p.text)}</div>` : ''}
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button onclick="adminVeroeffentlichen('${p.id}')" style="flex:1;padding:8px;border-radius:7px;font-size:11px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer">🚀 Veröffentlichen</button>
+            <button onclick="adminInRedaktionsplan('${p.id}')" style="padding:8px 10px;border-radius:7px;font-size:11px;font-weight:600;background:#EEF1F6;color:var(--blau);border:none;cursor:pointer">📅</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.warn('Publish-Queue:', e); }
+}
+
+async function adminVeroeffentlichen(id) {
+  if (!confirm('Post als veröffentlicht markieren?')) return;
+  try {
+    await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'freigegeben' })
+    });
+    showToast('🚀 Als veröffentlicht markiert');
+    ladePublishQueue();
+  } catch(e) { showToast('⚠️ Fehler'); }
+}
+
+async function adminInRedaktionsplan(id) {
+  try {
+    await fetch('/api/posts/' + id, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'geplant' })
+    });
+    showToast('📅 In den Redaktionsplan verschoben');
+    ladePublishQueue();
+  } catch(e) { showToast('⚠️ Fehler'); }
+}
+
 async function loadAdminStatus() {
   try {
     const r = await fetch('/api/admin/status', { credentials:'include' });
