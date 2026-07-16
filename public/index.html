@@ -2004,7 +2004,7 @@ async function einreichungLoeschen(id) {
   try {
     const r = await fetch('/api/einreichungen/' + id, { method:'DELETE', credentials:'include' });
     if (!r.ok) { showToast('⚠️ Fehler beim Löschen'); return; }
-  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  } catch(e) { showToast('⚠️ Server nicht erreichbar'); return; }
   showToast('🗑 Einreichung gelöscht');
   loadEinreichungen();
 }
