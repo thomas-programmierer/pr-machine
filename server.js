@@ -504,8 +504,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "DELETE" && url.startsWith("/api/einreichungen/")) {
-    if (!sess || !["admin","redakteur"].includes(sess.user.role))
-      return jsonRes(res, 403, { error:"Kein Zugriff" });
+    if (!adminOnly(sess))
+      return jsonRes(res, 403, { error:"Kein Zugriff — nur Admin" });
     const id = url.split("/")[3];
     await db.deleteEinreichung(id);
     return jsonRes(res, 200, { ok:true });

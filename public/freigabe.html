@@ -78,6 +78,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .btn-loeschen{padding:9px 12px;border-radius:9px;font-size:12px;font-weight:600;background:#fff;color:var(--rot);border:1.5px solid var(--rot);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn-loeschen:hover{background:var(--rot);color:#fff}
 
+/* EINREICHUNGEN-PANEL ──────────────────────────────── */
+.mode-toggle{display:flex;gap:4px;background:#fff;border:1.5px solid #dde2e9;border-radius:10px;padding:3px;margin-bottom:16px;width:fit-content}
+.mode-btn{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--blau60);transition:all .15s;font-family:'DM Sans',sans-serif}
+.mode-btn.active{background:var(--blau);color:#fff}
+.einr-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow .15s}
+.einr-card:hover{box-shadow:0 4px 16px rgba(0,40,90,.1)}
+.einr-card-body{flex:1;min-width:0}
+.einr-card-title{font-size:13px;font-weight:600;color:var(--blau);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.einr-card-meta{font-size:10px;color:var(--blau60);display:flex;gap:10px;flex-wrap:wrap}
+.einr-status-pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--blau10);color:var(--blau60);text-transform:uppercase;letter-spacing:.3px}
+.btn-einr-loeschen{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:700;background:#fff;color:#DC0000;border:1.5px solid #DC0000;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.btn-einr-loeschen:hover{background:#DC0000;color:#fff}
+
 /* POST CARD (Standard für Admin/Redakteur) */
 .post-card{background:#fff;border-radius:12px;border:1.5px solid #e2e7ef;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s}
 .post-card:hover{box-shadow:0 4px 16px rgba(0,40,90,.1)}
@@ -203,18 +216,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
       <div style="font-size:18px;font-weight:700;color:var(--blau);margin-bottom:3px">Freigabe-Cockpit</div>
       <div style="font-size:12px;color:var(--blau60)">Die Redaktion prüft und leitet zur Freigabe weiter — an die Programmbereichsleitung oder (Sonderfall) an die Direktorin.</div>
     </div>
-    <div class="stats-bar" id="stats-bar"></div>
-    <div class="tabs">
-      <button class="tab-btn active" id="tab-alle"      onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
-      <button class="tab-btn"       id="tab-warten"    onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
-      <button class="tab-btn"       id="tab-pbl"       onclick="setFilter('pb_freigabe')">Bei PBL <span class="tab-count" id="cnt-pbl" style="background:var(--gruen);color:#fff">0</span></button>
-      <button class="tab-btn"       id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
-      <button class="tab-btn"       id="tab-frei"      onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
-      <button class="tab-btn"       id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
+    <!-- MODE TOGGLE: Posts-Cockpit / Einreichungen -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-btn-posts" onclick="switchMode('posts')">Posts-Cockpit</button>
+      <button class="mode-btn"        id="mode-btn-einr"  onclick="switchMode('einreichungen')">Einreichungen</button>
     </div>
-    <div class="cards-grid" id="cards-grid">
-      <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
-    </div>
+
+    <!-- ── POSTS SECTION ── -->
+    <div id="posts-section">
+      <div class="stats-bar" id="stats-bar"></div>
+      <div class="tabs">
+        <button class="tab-btn active" id="tab-alle"      onclick="setFilter('alle')">Alle <span class="tab-count" id="cnt-alle">0</span></button>
+        <button class="tab-btn"       id="tab-warten"    onclick="setFilter('freigabe_ausstehend')">Bei Redaktion <span class="tab-count" id="cnt-warten" style="background:var(--orange);color:#fff">0</span></button>
+        <button class="tab-btn"       id="tab-pbl"       onclick="setFilter('pb_freigabe')">Bei PBL <span class="tab-count" id="cnt-pbl" style="background:var(--gruen);color:#fff">0</span></button>
+        <button class="tab-btn"       id="tab-direktion" onclick="setFilter('redaktion_frei')">Bei Direktion <span class="tab-count" id="cnt-direktion" style="background:var(--hellblau);color:#fff">0</span></button>
+        <button class="tab-btn"       id="tab-frei"      onclick="setFilter('freigegeben')">Freigegeben <span class="tab-count" id="cnt-frei" style="background:var(--gruen);color:#fff">0</span></button>
+        <button class="tab-btn"       id="tab-abgelehnt" onclick="setFilter('abgelehnt')">Abgelehnt <span class="tab-count" id="cnt-abgelehnt">0</span></button>
+      </div>
+      <div class="cards-grid" id="cards-grid">
+        <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+      </div>
+    </div><!-- /posts-section -->
+
+    <!-- ── EINREICHUNGEN SECTION (Liste + Admin-Löschen) ── -->
+    <div id="einreichungen-section" style="display:none">
+      <div class="cards-grid" id="einr-grid">
+        <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
+      </div>
+    </div><!-- /einreichungen-section -->
+
   </div>
 
 </div>
@@ -261,6 +291,8 @@ let allePosts    = [];
 let currentFilter = 'alle';
 let modalPostId  = null;
 let komPostId    = null;
+let alleEinreichungen = [];
+let currentMode  = 'posts';
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 async function init() {
@@ -600,6 +632,70 @@ function showToast(msg) {
   document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── MODE TOGGLE (Posts / Einreichungen) ──────────────────────────────────────
+function switchMode(m) {
+  currentMode = m;
+  document.getElementById('mode-btn-posts').classList.toggle('active', m === 'posts');
+  document.getElementById('mode-btn-einr').classList.toggle('active', m === 'einreichungen');
+  document.getElementById('posts-section').style.display        = m === 'posts' ? '' : 'none';
+  document.getElementById('einreichungen-section').style.display = m === 'einreichungen' ? '' : 'none';
+  if (m === 'einreichungen') ladeEinreichungen();
+}
+
+// ── EINREICHUNGEN ─────────────────────────────────────────────────────────────
+async function ladeEinreichungen() {
+  try {
+    const r = await fetch('/api/einreichungen', { credentials:'include' });
+    if (!r.ok) return;
+    alleEinreichungen = await r.json();
+    alleEinreichungen.sort((a,b) => (b.eingereicht||'').localeCompare(a.eingereicht||''));
+    renderEinreichungen();
+  } catch(e) { console.error(e); }
+}
+
+function renderEinreichungen() {
+  const grid = document.getElementById('einr-grid');
+  if (!alleEinreichungen.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">Keine Einreichungen vorhanden</div>
+    </div>`;
+    return;
+  }
+  const istAdmin = currentUser?.role === 'admin';
+  grid.innerHTML = alleEinreichungen.map(e => {
+    const datum = e.eingereicht
+      ? new Date(e.eingereicht).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' })
+      : '';
+    const loeschBtn = istAdmin
+      ? `<button class="btn-einr-loeschen" onclick="einreichungLoeschen('${e.id}')">Löschen</button>`
+      : '';
+    return `<div class="einr-card">
+      <div class="einr-card-body">
+        <div class="einr-card-title">${esc(e.anlass || e.kurs || 'Ohne Titel')}</div>
+        <div class="einr-card-meta">
+          ${datum ? `<span>${datum}</span>` : ''}
+          ${e.autor  ? `<span>von ${esc(e.autor)}</span>` : ''}
+          ${e.kanal  ? `<span>${esc(e.kanal)}</span>` : ''}
+          ${e.status ? `<span class="einr-status-pill">${esc(e.status)}</span>` : ''}
+        </div>
+      </div>
+      ${loeschBtn}
+    </div>`;
+  }).join('');
+}
+
+async function einreichungLoeschen(id) {
+  if (!confirm('Einreichung wirklich löschen?')) return;
+  try {
+    const r = await fetch('/api/einreichungen/' + id, { method:'DELETE', credentials:'include' });
+    if (!r.ok) { showToast('⚠️ Fehler beim Löschen'); return; }
+  } catch { showToast('⚠️ Server nicht erreichbar'); return; }
+  alleEinreichungen = alleEinreichungen.filter(e => String(e.id) !== String(id));
+  renderEinreichungen();
+  showToast('🗑 Einreichung gelöscht');
 }
 
 setInterval(ladePosts, 30000);
