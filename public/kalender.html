@@ -970,7 +970,7 @@ function renderKalender() {
     document.getElementById('month-label').textContent =
       aktuellesDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     const datStr = aktuellesDatum.toISOString().split('T')[0];
-    const tagPosts = posts.filter(p => p.datum === datStr);
+    const tagPosts = posts.filter(p => (p.datum||'').slice(0,10) === datStr);
     document.getElementById('post-count').textContent = tagPosts.length + ' Posts heute';
     renderTag(aktuellesDatum, posts);
   } else {
@@ -1041,7 +1041,7 @@ function renderMonat(monat, jahr, allePosts) {
       }
       const { datStr, tagNr, istHeute } = tag;
       const hook = HOOKS[datStr];
-      const tagPosts = allePosts.filter(p => p.datum === datStr).sort((a,b) => a.uhrzeit.localeCompare(b.uhrzeit));
+      const tagPosts = allePosts.filter(p => (p.datum||'').slice(0,10) === datStr).sort((a,b) => (a.uhrzeit||'').localeCompare(b.uhrzeit||''));
       const feiertagInfo = FEIERTAGE[datStr];
       const istFeiertag = showFeiertage && (feiertagInfo || istSonntag(datStr));
 
@@ -1112,7 +1112,7 @@ function renderListe(allePosts) {
   const jahr  = aktuellesDatum.getFullYear();
   const posts = allePosts
     .filter(p => p.datum && p.datum.startsWith(`${jahr}-${String(monat+1).padStart(2,'0')}`))
-    .sort((a,b) => a.datum.localeCompare(b.datum) || a.uhrzeit.localeCompare(b.uhrzeit));
+    .sort((a,b) => (a.datum||'').localeCompare(b.datum||'') || (a.uhrzeit||'').localeCompare(b.uhrzeit||''));
 
   if (!posts.length) {
     document.getElementById('kalender-wrap').innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Keine Posts in diesem Monat</div><div>Klicke auf „+ Post planen" um loszulegen.</div></div>`;
@@ -1214,7 +1214,7 @@ function renderWoche(wocheMo, allePosts) {
       const hook = showHooks && HOOKS[datStr];
       const feiertagInfo = FEIERTAGE[datStr];
       const tagPosts = allePosts.filter(p =>
-        p.datum === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
+        (p.datum||'').slice(0,10) === datStr && p.uhrzeit && p.uhrzeit.startsWith(std)
       );
       const hatContent = tagPosts.length > 0;
       const oddCls = (i % 2 === 1) ? ' col-odd' : '';
@@ -1255,7 +1255,7 @@ function renderTag(datum, allePosts) {
   const kw = getKW(datum);
   const hook = HOOKS[datStr];
   const feiertagInfo = FEIERTAGE[datStr];
-  const tagPosts = allePosts.filter(p => p.datum === datStr);
+  const tagPosts = allePosts.filter(p => (p.datum||'').slice(0,10) === datStr);
 
   let html = `<div class="tag-view-wrap">
     <div class="tag-view-header">
