@@ -1,0 +1,20 @@
+# Zeilenenden: Text normalisieren, Binärdateien unangetastet lassen
+* text=auto
+
+# Binärformate niemals konvertieren (CRLF-Umwandlung zerstört Byte-Offsets)
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.zip   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+*.eot   binary
+*.mp4   binary
+*.xlsx  binary
+*.docx  binary
