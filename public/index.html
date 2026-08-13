@@ -2835,8 +2835,22 @@ function kurseZeigeDetail(nr) {
 
   const desc = k.beschreibung || k.text || k.beschr || k.info || k.kurztext || '';
   const descEl = document.getElementById('kurse-detail-desc');
-  descEl.textContent = desc || 'Keine Beschreibung vorhanden.';
-  descEl.style.color = desc ? '#333' : '#aaa';
+  if (desc) {
+    descEl.textContent = desc;
+    descEl.style.color = '#333';
+    // Aus dem Kursprogramm nachgetragen? Herkunft sichtbar machen.
+    if (k.beschreibungQuelle) {
+      const hinweis = k.beschreibungQuelle === 'kursprogramm-semester'
+        ? 'aus dem Kursprogramm, Beschreibung eines anderen Semesters desselben Kurses'
+        : 'aus dem hochgeladenen Kursprogramm';
+      descEl.textContent += '\n\n(' + hinweis + ')';
+    }
+  } else {
+    descEl.textContent = 'Für diesen Kurs liegt weder in der Kursliste noch im '
+      + 'hochgeladenen Kursprogramm ein Beschreibungstext vor. Die Kursdaten oben '
+      + 'stammen aus dem Verwaltungssystem.';
+    descEl.style.color = '#aaa';
+  }
 
   window._kurseSelectedKurs = k;
 

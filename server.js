@@ -137,25 +137,71 @@ function parseKursprogramm(buffer, ext) {
   })).filter(k => k.beschreibung && k.titel && !istKarteileiche(k));
 
   // Dieselbe Beschreibung steht oft mehrfach drin (gleicher Kurs in mehreren
-  // Semestervarianten). Im Prompt genuegt sie einmal.
-  const gesehen = new Set();
-  return kurse.filter(k => {
+  // Semestervarianten). Im Prompt genuegt sie einmal — die Kursnummern der
+  // Dubletten muessen aber erhalten bleiben, sonst findet das Nachschlagen in
+  // der Kursliste sie spaeter nicht mehr.
+  const nachSchluessel = new Map();
+  for (const k of kurse) {
     const schluessel = k.titel.toLowerCase() + '|' + k.beschreibung.slice(0, 200).toLowerCase();
-    if (gesehen.has(schluessel)) return false;
-    gesehen.add(schluessel);
-    return true;
-  });
+    const vorhanden = nachSchluessel.get(schluessel);
+    if (vorhanden) { if (k.nr) vorhanden.nummern.push(k.nr); }
+    else nachSchluessel.set(schluessel, Object.assign({}, k, { nummern: k.nr ? [k.nr] : [] }));
+  }
+  return [...nachSchluessel.values()];
 }
 
 // Der Kontext wird bei jeder Generierung gebraucht — einmal lesen, dann halten.
 // Beim Upload wird der Cache verworfen.
+// Kursnummer vereinheitlichen: im Export haengt oft Freitext dran
+// ("Sp3.303-F gesperrt", "Sp4.1xxx.01 - Vorkurs").
+function normKursNr(nr) { return String(nr || '').split(/\s+/)[0].toUpperCase().trim(); }
+// Ohne Semesterkuerzel am Ende: Sp3.316-W -> SP3.316, Sp5.06-238-F -> SP5.06-238.
+// Derselbe Kurs hat je Semester eine eigene Nummer, aber denselben Beschreibungstext.
+function basisKursNr(nr) { return normKursNr(nr).replace(/-[A-Z]{1,2}$/, ''); }
+
 let kontextCache = null;
 function ladeKontext() {
   if (!kontextCache) {
     const k = loadJSON(KONTEXT_FILE, null);
-    kontextCache = (k && Array.isArray(k.kurse)) ? k : { kurse: [] };
+    const kurse = (k && Array.isArray(k.kurse)) ? k.kurse : [];
+    // Zwei Register: exakte Nummer zuerst, Basisnummer als Rueckfall
+    const exakt = new Map(), basis = new Map();
+    for (const kurs of kurse) {
+      if (!kurs.beschreibung) continue;
+      // Alle Nummern eintragen, die auf diesen Text zeigen — auch die der
+      // zusammengefassten Semestervarianten.
+      for (const nr of (kurs.nummern && kurs.nummern.length ? kurs.nummern : [kurs.nr])) {
+        const a = normKursNr(nr), b = basisKursNr(nr);
+        if (a && !exakt.has(a)) exakt.set(a, kurs);
+        if (b && !basis.has(b)) basis.set(b, kurs);
+      }
+    }
+    kontextCache = Object.assign({}, k, { kurse, exakt, basis });
   }
   return kontextCache;
+}
+
+// kurse.json stammt aus einem aelteren Import; rund 37 Prozent der Eintraege
+// haben keine Beschreibung. Das Kursprogramm hat sie — hier zusammenfuehren,
+// damit in der Kursliste kein Kurs mehr ohne Text dasteht.
+function ergaenzeBeschreibungen(kurse) {
+  const { exakt, basis } = ladeKontext();
+  if (!exakt || !exakt.size) return kurse;
+  let ausExakt = 0, ausBasis = 0;
+  const out = kurse.map(k => {
+    if (String(k.beschreibung || '').trim()) return k;
+    const nr = normKursNr(k.nr);
+    let treffer = exakt.get(nr), quelle = 'kursprogramm';
+    if (!treffer) { treffer = basis.get(basisKursNr(k.nr)); quelle = 'kursprogramm-semester'; }
+    if (!treffer) return k;
+    quelle === 'kursprogramm' ? ausExakt++ : ausBasis++;
+    return Object.assign({}, k, { beschreibung: treffer.beschreibung, beschreibungQuelle: quelle });
+  });
+  if (ausExakt || ausBasis) {
+    console.log('[kurse] Beschreibungen ergaenzt: ' + ausExakt + ' ueber die Kursnummer, '
+                + ausBasis + ' ueber die Basisnummer eines anderen Semesters');
+  }
+  return out;
 }
 
 // Alle Textbausteine der Anfrage einsammeln, um daraus Suchbegriffe zu ziehen.
@@ -590,7 +636,7 @@ const server = http.createServer(async (req, res) => {
       const kurse = (sess.user.role === "admin" || sess.user.role === "redakteur" || sess.user.pb === "alle")
         ? alleKurse
         : alleKurse.filter(k => k.pb === sess.user.pb);
-      return res.end(JSON.stringify(kurse));
+      return res.end(JSON.stringify(ergaenzeBeschreibungen(kurse)));
     } catch { return jsonRes(res, 500, { error:"kurse.json nicht lesbar" }); }
   }
 
