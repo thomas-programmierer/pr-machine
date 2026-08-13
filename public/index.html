@@ -1037,11 +1037,13 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
         </div>
         <!-- L7 Safe-Zone SVG -->
-        <svg id="safe-zone-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <!-- kein-export: Hilfselemente der Bearbeitung. Sie liegen im
+             #canvas-frame und wurden sonst von html2canvas mitgerendert. -->
+        <svg id="safe-zone-svg" class="kein-export" xmlns="http://www.w3.org/2000/svg"></svg>
         <!-- L8 Overlay Badge -->
-        <div class="layer-badge" id="layer-badge">72% Blau</div>
+        <div class="layer-badge kein-export" id="layer-badge">72% Blau</div>
         <!-- Coordinate Readout -->
-        <div class="coord-readout" id="coord-readout" style="display:none">x: 0  y: 0</div>
+        <div class="coord-readout kein-export" id="coord-readout" style="display:none">x: 0  y: 0</div>
 
       </div>
     </div>
@@ -3372,6 +3374,10 @@ async function exportPNG(){
     const canvas=await html2canvas(frame,{
       scale:res.w/f.w, useCORS:true, allowTaint:true,
       backgroundColor:null, logging:false, width:f.w, height:f.h,
+      // Bearbeitungshilfen nicht mitrendern (Layer-Etikett, Koordinaten,
+      // Safe Zones). Wirkt auf der Kopie, die html2canvas anlegt — die
+      // Ansicht flackert dadurch nicht.
+      ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
     });
     frame.style.transform=origT;
     tb.classList.add('selected');
@@ -3493,6 +3499,7 @@ async function exportUndFreigabe() {
     const canvas = await html2canvas(frame, {
       scale: res.w / f.w, useCORS: true, allowTaint: true,
       backgroundColor: null, logging: false, width: f.w, height: f.h,
+      ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
     });
     pngDataUrl = canvas.toDataURL('image/jpeg', 0.82);
     // Download
