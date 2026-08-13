@@ -11,6 +11,17 @@ data/
 *.server-backup
 posts.archive.*.json
 
+# Zur Laufzeit vom Server geschrieben — NICHT tracken.
+# Getrackt wuerden sie bei jedem Deploy von "git reset --hard" ueberschrieben
+# (siehe .github/workflows/deploy.yml) und der Serverstand ginge verloren.
+kursprogramm_kontext.json
+redaktionsplan_meta.json
+
+# Altlasten aus der Zeit vor dem data/-Verzeichnis — der Server nutzt data/
+posts.json
+performance.json
+einreichungen.json
+
 # Server-Backups und temporäre Dateien
 server.js.backup_*
 *.backup_*
