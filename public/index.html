@@ -1965,6 +1965,9 @@ async function submitModal() {
 
 // ── Einreichungen-Inbox: aus API laden ──────────────────────────────────────
 let einreichungenCache = [];
+// Die tatsächlich gerenderte (gefilterte) Liste — pickInbox indiziert hierauf,
+// nicht auf einreichungenCache, sonst zeigen die Klick-Indizes daneben.
+let inboxVisible = [];
 
 async function loadEinreichungen() {
   const listEl = document.getElementById('red-inbox-list');
@@ -1982,6 +1985,7 @@ async function loadEinreichungen() {
 }
 
 function renderInbox(einr) {
+  inboxVisible = einr;
   const listEl = document.getElementById('red-inbox-list');
   if (!listEl) return;
   if (!einr.length) {
@@ -2012,7 +2016,8 @@ function renderInbox(einr) {
 function pickInbox(el, idx) {
   document.querySelectorAll('.inbox-item').forEach(i => i.classList.remove('sel'));
   el.classList.add('sel');
-  const d = einreichungenCache[idx];
+  const d = inboxVisible[idx];
+  if (!d) return;
   document.getElementById('i-anlass').value = d.anlass  || '';
   document.getElementById('i-kurs').value   = (d.kursNr ? d.kursNr + ' — ' : '') + (d.kurs || '');
   document.getElementById('i-idee').value   = d.idee    || '';
