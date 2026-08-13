@@ -10,6 +10,7 @@ const http   = require("http");
 const https  = require("https");
 const fs     = require("fs");
 const path   = require("path");
+const crypto = require("crypto");
 
 const PORT     = process.env.PORT || 3000;
 const API_KEY  = process.env.ANTHROPIC_API_KEY || "";
@@ -995,17 +996,34 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ── STATISCHE DATEIEN ─────────────────────────────────────────────────────
+  // Ohne Cache-Vorgabe raten Browser die Haltedauer selbst, und Firefox ist
+  // dabei deutlich grosszuegiger als Chrome: Nach einem Deploy sahen Nutzer
+  // dort weiter die alte Oberflaeche. "no-cache" erlaubt das Zwischenspeichern,
+  // erzwingt aber die Rueckfrage; der ETag macht sie billig — unveraendert
+  // antwortet der Server mit 304 statt die Datei erneut zu schicken.
+  const sendeStatisch = (inhalt, dateipfad) => {
+    const etag = '"' + crypto.createHash('sha1').update(inhalt).digest('base64').slice(0, 27) + '"';
+    const kopf = {
+      "Content-Type": MIME[path.extname(dateipfad)] || "application/octet-stream",
+      "Cache-Control": "no-cache, must-revalidate",
+      "ETag": etag
+    };
+    if (req.headers['if-none-match'] === etag) { res.writeHead(304, kopf); return res.end(); }
+    res.writeHead(200, kopf);
+    res.end(inhalt);
+  };
+
   let fp = path.join(__dirname, "public", url === "/" || !url.includes(".") ? "index.html" : url);
   fs.readFile(fp, (err, c) => {
     if (err) {
-      fs.readFile(path.join(__dirname, "public", "index.html"), (e2, c2) => {
+      const fallback = path.join(__dirname, "public", "index.html");
+      fs.readFile(fallback, (e2, c2) => {
         if (e2) { res.writeHead(404); return res.end("404"); }
-        res.writeHead(200, { "Content-Type":"text/html; charset=utf-8" }); res.end(c2);
+        sendeStatisch(c2, fallback);
       });
       return;
     }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(fp)] || "application/octet-stream" });
-    res.end(c);
+    sendeStatisch(c, fp);
   });
 });
 
