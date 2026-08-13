@@ -1014,10 +1014,11 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <!-- L2 Farbe -->
         <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
         <!-- L3 vhs-Bildmarke — exakte Vektoren aus dem DVV-Styleguide.
-             kein-export: wird nach dem html2canvas-Durchlauf direkt auf die
-             Export-Leinwand gezeichnet, damit der Browser die SVG in voller
-             Zielaufloesung rastert statt die Bildschirmgroesse hochzuskalieren. -->
-        <div id="canvas-logo" class="kein-export">
+             Bewusst OHNE kein-export: html2canvas soll die Marke rendern,
+             damit sie im Export auf jeden Fall vorhanden ist. Die scharfe
+             Fassung wird anschliessend darueber gezeichnet (zeichneBildmarke).
+             Faellt das aus, bleibt die html2canvas-Version stehen. -->
+        <div id="canvas-logo">
           <img src="/img/vhs-bildmarke.svg" width="36" height="36" alt="vhs">
         </div>
         <!-- L4 Text-Block (draggable) -->
@@ -3368,25 +3369,36 @@ function removeFoto(){
 // html2canvas sie mitnehmen, entstuende sie in Bildschirmgroesse und wuerde
 // anschliessend hochskaliert; bei 1080 px Breite sieht man das deutlich.
 async function zeichneBildmarke(canvas, frame, skala){
-  const logo = document.getElementById('canvas-logo');
-  if(!logo) return;
-  if(getComputedStyle(logo).display === 'none') return;
-  const quelle = logo.querySelector('img');
-  if(!quelle) return;
-  const fr = frame.getBoundingClientRect();
-  const lr = logo.getBoundingClientRect();
-  if(!lr.width || !lr.height) return;
-  const bild = new Image();
-  await new Promise((fertig, fehler) => {
-    bild.onload = fertig;
-    bild.onerror = () => fehler(new Error('Bildmarke nicht ladbar'));
-    bild.src = quelle.getAttribute('src');
-  });
-  canvas.getContext('2d').drawImage(
-    bild,
-    (lr.left - fr.left) * skala, (lr.top - fr.top) * skala,
-    lr.width * skala, lr.height * skala
-  );
+  try{
+    const logo = document.getElementById('canvas-logo');
+    if(!logo || getComputedStyle(logo).display === 'none') return;
+    const quelle = logo.querySelector('img');
+    if(!quelle) return;
+    const fr = frame.getBoundingClientRect();
+    const lr = logo.getBoundingClientRect();
+    if(!lr.width || !lr.height || !fr.width){
+      console.warn('[bildmarke] keine Masse ermittelbar, html2canvas-Fassung bleibt');
+      return;
+    }
+    const bild = new Image();
+    await new Promise((fertig, fehler) => {
+      bild.onload = fertig;
+      bild.onerror = () => fehler(new Error('SVG nicht ladbar'));
+      bild.src = quelle.getAttribute('src');
+    });
+    canvas.getContext('2d').drawImage(
+      bild,
+      (lr.left - fr.left) * skala, (lr.top - fr.top) * skala,
+      lr.width * skala, lr.height * skala
+    );
+    console.log('[bildmarke] scharf nachgezeichnet bei',
+      Math.round((lr.left - fr.left) * skala), Math.round((lr.top - fr.top) * skala),
+      'Groesse', Math.round(lr.width * skala));
+  }catch(e){
+    // Nie den Export scheitern lassen: ohne Nachzeichnen bleibt die von
+    // html2canvas gerenderte Marke erhalten.
+    console.warn('[bildmarke] Nachzeichnen uebersprungen:', e.message);
+  }
 }
 
 async function exportPNG(){
