@@ -2383,9 +2383,16 @@ async function loadAdminStatus() {
     const d = await r.json();
     if (d.kursprogramm) {
       const dt = new Date(d.kursprogramm.uploaded).toLocaleDateString('de-DE');
-      document.getElementById('status-kursprogramm').textContent =
-        `✓ ${d.kursprogramm.filename} · ${dt} · ${Math.round(d.kursprogramm.chars/1000)}k Zeichen im KI-Kontext`;
-      document.getElementById('status-kursprogramm').style.color = '#AFC805';
+      const el = document.getElementById('status-kursprogramm');
+      if (d.kursprogramm.veraltet) {
+        // Upload aus der Zeit vor dem Parser — Inhalt unbrauchbar, nicht gruen faerben
+        el.textContent = `⚠ ${d.kursprogramm.filename} · ${dt} · altes Format, bitte neu hochladen`;
+        el.style.color = '#E8A33D';
+      } else {
+        el.textContent = `✓ ${d.kursprogramm.filename} · ${dt} · ${d.kursprogramm.kurse} Kurse `
+          + `(${Math.round(d.kursprogramm.zeichen/1000)}k Zeichen Beschreibungen)`;
+        el.style.color = '#AFC805';
+      }
     }
     if (d.redaktionsplan && d.redaktionsplan.lastFileUpload) {
       const dt = new Date(d.redaktionsplan.lastFileUpload.uploaded).toLocaleDateString('de-DE');

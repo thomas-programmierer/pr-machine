@@ -88,6 +88,176 @@ function loadJSON(file, def) {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return def; }
 }
 function saveJSON(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf8"); }
+
+// ── Kursprogramm: Datei → strukturierte Kursliste ─────────────────────────────
+// Eine .xlsx ist ein ZIP-Container; ihre Rohbytes als Text zu lesen ergibt Muell.
+// Deshalb hier derselbe Weg wie beim Kurslisten-Import weiter unten: XLSX.read().
+// Spalten werden tolerant erkannt, weil die Exporte mal "Speichern unter:" und
+// mal "Kursnummer" heissen.
+function parseKursprogramm(buffer, ext) {
+  const wb = (ext === '.csv')
+    ? XLSX.read(buffer.toString('utf8'), { type: 'string', raw: false })
+    : XLSX.read(buffer, { type: 'buffer', cellDates: true, raw: false });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+  if (!rows.length) return [];
+
+  const keys  = Object.keys(rows[0]);
+  const finde = (...muster) => keys.find(k => muster.some(m => new RegExp(m, 'i').test(k))) || null;
+  const cNr     = finde('speichern unter', 'kursnr', 'kursnummer', '^nr');
+  const cTitel  = finde('kurztitel', 'titel', 'kursname');
+  const cBeschr = finde('beschreib', 'inhalt');
+  const cBeginn = finde('beginn', 'start');
+  const cEnde   = finde('^ende');
+
+  const wert = (r, c) => String(c ? (r[c] ?? '') : '').trim();
+  // Datumsfelder kommen als Date-Objekt herein; deren toString wuerde als
+  // "Tue Jan 06 2026 00:00:00 GMT+0100 (...)" im Prompt landen.
+  const datum = (r, c) => {
+    const v = c ? r[c] : null;
+    if (v instanceof Date && !isNaN(v)) return v.toLocaleDateString('de-DE');
+    return String(v ?? '').trim();
+  };
+
+  // Der Export stammt aus einer aelteren Datenbank und enthaelt Karteileichen:
+  // Zeilen mit Spaltenversatz (Datum in der Nummernspalte), Platzhalter-Nummern
+  // und gesperrte Kurse. Die wuerden als vermeintliche Fakten in den Prompt
+  // wandern, deshalb hier raus.
+  const istKarteileiche = (k) =>
+    !/^Sp\d/i.test(k.nr) ||                       // keine echte Kursnummer
+    /\d{2}\.\d{2}\.\d{4}/.test(k.nr) ||           // Datum in der Nummernspalte
+    /x{2,}/i.test(k.nr) ||                        // Platzhalter wie Sp4.1xxx.01
+    /gesperrt|storniert|entf(ae|ä)llt|abgesagt/i.test(k.nr + ' ' + k.titel);
+
+  const kurse = rows.map(r => ({
+    nr:           wert(r, cNr),
+    titel:        wert(r, cTitel),
+    beschreibung: wert(r, cBeschr),
+    beginn:       datum(r, cBeginn),
+    ende:         datum(r, cEnde),
+  })).filter(k => k.beschreibung && k.titel && !istKarteileiche(k));
+
+  // Dieselbe Beschreibung steht oft mehrfach drin (gleicher Kurs in mehreren
+  // Semestervarianten). Im Prompt genuegt sie einmal.
+  const gesehen = new Set();
+  return kurse.filter(k => {
+    const schluessel = k.titel.toLowerCase() + '|' + k.beschreibung.slice(0, 200).toLowerCase();
+    if (gesehen.has(schluessel)) return false;
+    gesehen.add(schluessel);
+    return true;
+  });
+}
+
+// Der Kontext wird bei jeder Generierung gebraucht — einmal lesen, dann halten.
+// Beim Upload wird der Cache verworfen.
+let kontextCache = null;
+function ladeKontext() {
+  if (!kontextCache) {
+    const k = loadJSON(KONTEXT_FILE, null);
+    kontextCache = (k && Array.isArray(k.kurse)) ? k : { kurse: [] };
+  }
+  return kontextCache;
+}
+
+// Alle Textbausteine der Anfrage einsammeln, um daraus Suchbegriffe zu ziehen.
+function sammleAnfrageText(body) {
+  let t = typeof body.system === 'string' ? body.system : '';
+  for (const m of (body.messages || [])) {
+    if (typeof m.content === 'string') t += '\n' + m.content;
+    else if (Array.isArray(m.content)) {
+      for (const teil of m.content) if (teil && teil.type === 'text') t += '\n' + teil.text;
+    }
+  }
+  return t;
+}
+
+// Worte, die in Kurstiteln so haeufig sind, dass sie nichts unterscheiden:
+// "kurs" steckt in 1200 Titeln, "online" in 322.
+const STOPWORTE = new Set(['kurs','kurse','kurses','und','oder','mit','fuer','für','der','die',
+  'das','des','dem','den','ein','eine','einen','einer','vhs','spandau','online','praesenzkurs',
+  'präsenzkurs','flexikurs','ohne','alle','allen','auch','sich','mehr','neue','neuen','anmeldung',
+  'teil','termin','termine','uhr','statt','sowie','bitte','beim','sind','wird','werden','kann',
+  'koennen','können','jede','jeden','ganz','sehr','aber','noch','nach','vom','zum','zur','ihre',
+  'ihren','dass','wenn','dann','diese','diesen','dieser','damit','durch','ueber','über']);
+
+function worteVon(s) {
+  return (String(s).toLowerCase().match(/[a-zäöüß]{4,}/g) || []).filter(w => !STOPWORTE.has(w));
+}
+
+// Passende Kurse zum Anlass finden. Die Kursnummer schlaegt Titeltreffer
+// deutlich, weil sie eindeutig ist.
+// Titelvergleich per Teilstring in BEIDE Richtungen — deutsche Komposita sonst
+// nicht zu fassen: "sketching" soll "Portraetsketches" finden, "Yogatag" soll
+// "Hatha-Yoga" finden. Reiner Wortvergleich verfehlt beide.
+function sucheKurse(text, kurse, maxTreffer = 12, maxZeichen = 12000) {
+  const klein  = text.toLowerCase();
+  const anfrage = [...new Set(worteVon(klein))];
+  if (!anfrage.length) return [];
+
+  const bewertet = [];
+  for (const k of kurse) {
+    let score = 0;
+    // Kursnummer: nur das erste Token, im Export haengt oft " - Vorkurs" dran
+    const nr = (k.nr.split(/\s+/)[0] || '').toLowerCase();
+    if (nr.length >= 5 && klein.includes(nr)) score += 100;
+
+    // Titelworte einmal pro Kurs zerlegen und am Objekt merken
+    if (!k._worte) k._worte = worteVon(k.titel);
+    for (const q of anfrage) {
+      // Stamm auf 6 Zeichen: faengt Beugung und Fremdwort-Endungen ab, die
+      // reines Enthaltensein verfehlt ("sketching" -> "sketch" steckt in
+      // "Portraetsketches", waehrend keins der beiden das andere enthaelt).
+      // Nur mittellange Woerter stammen: lange Komposita teilen sich zu leicht
+      // einen 6-Zeichen-Anfang ("zusammenhangloser" faende "Zusammenarbeit").
+      const stamm = (q.length >= 6 && q.length <= 12) ? q.slice(0, 6) : null;
+      if (k._worte.some(t => t === q || t.includes(q) || q.includes(t)
+                             || (stamm && t.includes(stamm)))) {
+        // Lange Worte sind spezifisch und zaehlen allein: "sketching" ist ein
+        // Beleg, "text" nicht — das steckt auch in "Textilwerkstatt".
+        score += (q.length >= 7) ? 6 : 3;
+      }
+    }
+    if (score > 0) bewertet.push({ k, score });
+  }
+
+  // Ein einzelnes Allerweltswort reicht nicht: Irrelevante Kurse im Prompt
+  // erzeugen genau die Verwechslungen, die der Kontext verhindern soll.
+  const relevant = bewertet.filter(b => b.score >= 6);
+  relevant.sort((a, b) => b.score - a.score);
+
+  const treffer = [];
+  const gesehen = new Set();
+  let zeichen = 0;
+  for (const { k } of relevant) {
+    const schluessel = k.nr + '|' + k.titel;     // 301 Nummern kommen mehrfach vor
+    if (gesehen.has(schluessel)) continue;
+    const laenge = k.beschreibung.length + k.titel.length + 40;
+    if (treffer.length >= maxTreffer || zeichen + laenge > maxZeichen) break;
+    gesehen.add(schluessel);
+    treffer.push(k);
+    zeichen += laenge;
+  }
+  return treffer;
+}
+
+// Einzelne Beschreibungen laufen bis 3150 Zeichen (Median 557). Eine solche
+// wuerde ein Viertel des Budgets belegen. Deshalb deckeln — aber am Satzende,
+// damit kein halber Satz als Fakt im Prompt steht.
+function kuerzeAufSatz(text, max) {
+  if (text.length <= max) return text;
+  const stueck = text.slice(0, max);
+  const schnitt = Math.max(stueck.lastIndexOf('. '), stueck.lastIndexOf('! '),
+                           stueck.lastIndexOf('? '));
+  return (schnitt > max * 0.5 ? stueck.slice(0, schnitt + 1) : stueck.trimEnd()) + ' […]';
+}
+
+function formatiereKurse(treffer) {
+  return treffer.map(k => {
+    const kopf = [k.nr, k.titel].filter(Boolean).join(' — ');
+    const zeit = [k.beginn, k.ende].filter(Boolean).join(' bis ');
+    return kopf + (zeit ? ' (' + zeit + ')' : '') + '\n' + kuerzeAufSatz(k.beschreibung, 1400);
+  }).join('\n\n');
+}
+
 function loadUsers() {
   const data = loadJSON(USERS_FILE, { users:[] }).users;
   if (data.length === 0) {
@@ -117,11 +287,22 @@ async function readBodyRaw(req) {
 
 // ── Anthropic Proxy ───────────────────────────────────────────────────────────
 function callAnthropic(body, res) {
-  const kontext = loadJSON(KONTEXT_FILE, { text: "" });
-  if (kontext.text && body.system) {
-    body.system = body.system + "\n\n--- KURSPROGRAMM-KONTEXT ---\n" + kontext.text.slice(0, 8000);
-  } else if (kontext.text) {
-    body.system = "--- KURSPROGRAMM-KONTEXT ---\n" + kontext.text.slice(0, 8000);
+  // Nicht das ganze Programm mitschicken (rund 4.300 Kurse), sondern die zum
+  // Anlass passenden — dafuer mit vollstaendiger Beschreibung statt mitten im
+  // Satz abgeschnitten.
+  const kontext = ladeKontext();
+  if (kontext.kurse.length) {
+    const treffer = sucheKurse(sammleAnfrageText(body), kontext.kurse);
+    if (treffer.length) {
+      const block = "--- KURSPROGRAMM — passende Kurse, woertlich aus dem Programm ---\n"
+                  + "Nutze ausschliesslich diese Angaben fuer Kursnummern, Titel und Inhalte.\n\n"
+                  + formatiereKurse(treffer);
+      body.system = body.system ? body.system + "\n\n" + block : block;
+      console.log('[kursprogramm] ' + treffer.length + ' Kurse eingespeist: '
+                  + treffer.map(k => k.nr || k.titel).join(', '));
+    } else {
+      console.log('[kursprogramm] kein passender Kurs zur Anfrage gefunden');
+    }
   }
   const payload = JSON.stringify(body);
   const opts = {
@@ -554,17 +735,24 @@ const server = http.createServer(async (req, res) => {
     fs.writeFileSync(dest, filePart.data);
 
     if (uploadType === "kursprogramm") {
-      let textContent = "";
-      if (ext === ".csv") {
-        textContent = filePart.data.toString("utf8");
-      } else {
-        textContent = filePart.data.toString("utf8", 0, Math.min(filePart.data.length, 50000));
+      let kurse;
+      try {
+        kurse = parseKursprogramm(filePart.data, ext);
+      } catch (e) {
+        return jsonRes(res, 400, { error: "Datei konnte nicht gelesen werden: " + e.message });
       }
-      const kontext = {
+      if (!kurse.length) {
+        return jsonRes(res, 400, { error: "Keine Kurse mit Beschreibung gefunden. Erwartet werden "
+          + "Spalten wie 'Speichern unter:', 'Kurztitel:' und 'Beschreibung:'." });
+      }
+      // Vollstaendig speichern — keine Zeichenkappung. Die Auswahl passiert
+      // spaeter pro Generierung, nicht schon beim Hochladen.
+      saveJSON(KONTEXT_FILE, {
         filename: filePart.filename, uploaded: new Date().toISOString(),
-        uploadedBy: sess.user.name, text: textContent.slice(0, 50000)
-      };
-      saveJSON(KONTEXT_FILE, kontext);
+        uploadedBy: sess.user.name, kurse
+      });
+      kontextCache = null;
+      console.log('[kursprogramm] ' + kurse.length + ' Kurse aus ' + filePart.filename + ' uebernommen');
     }
 
     if (uploadType === "redaktionsplan") {
@@ -590,7 +778,14 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, {
       kursprogramm: kontext ? {
         filename: kontext.filename, uploaded: kontext.uploaded,
-        uploadedBy: kontext.uploadedBy, chars: kontext.text ? kontext.text.length : 0
+        uploadedBy: kontext.uploadedBy,
+        // Kurse statt Zeichen: die alte Zeichenzahl war bei .xlsx die Groesse
+        // des Rohbytes-Muells und sagte nichts darueber aus, ob echte Daten
+        // ankamen. veraltet=true meint einen Upload im alten Format.
+        kurse:    Array.isArray(kontext.kurse) ? kontext.kurse.length : 0,
+        zeichen:  Array.isArray(kontext.kurse)
+                    ? kontext.kurse.reduce((s, k) => s + k.beschreibung.length, 0) : 0,
+        veraltet: !Array.isArray(kontext.kurse)
       } : null,
       redaktionsplan: redplan ? {
         lastFileUpload: redplan.lastFileUpload || null,
