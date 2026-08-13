@@ -240,6 +240,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 
     <!-- ── EINREICHUNGEN SECTION (Liste + Admin-Löschen) ── -->
     <div id="einreichungen-section" style="display:none">
+      <!-- Filter-Tabs -->
+      <div class="mode-toggle" style="margin-bottom:14px">
+        <button class="mode-btn active" id="einr-tab-neu"        onclick="setEinrFilter('neu')">📬 Neu</button>
+        <button class="mode-btn"        id="einr-tab-angenommen" onclick="setEinrFilter('angenommen')">✅ Angenommen</button>
+        <button class="mode-btn"        id="einr-tab-abgelehnt"  onclick="setEinrFilter('abgelehnt')">✕ Abgelehnt</button>
+        <button class="mode-btn"        id="einr-tab-alle"       onclick="setEinrFilter('alle')">Alle</button>
+      </div>
       <div class="cards-grid" id="einr-grid">
         <div class="empty"><div class="empty-icon">⏳</div><div class="empty-title">Wird geladen …</div></div>
       </div>
@@ -292,6 +299,7 @@ let currentFilter = 'alle';
 let modalPostId  = null;
 let komPostId    = null;
 let alleEinreichungen = [];
+let einrFilter   = 'neu';
 let currentMode  = 'posts';
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
@@ -428,7 +436,7 @@ function setFilter(f) {
 function renderCards() {
   const grid     = document.getElementById('cards-grid');
   const gefiltert = currentFilter === 'alle'
-    ? allePosts
+    ? allePosts.filter(p => p.status !== 'abgelehnt')
     : allePosts.filter(p => p.status === currentFilter);
 
   const STATUS = {
@@ -645,6 +653,14 @@ function switchMode(m) {
 }
 
 // ── EINREICHUNGEN ─────────────────────────────────────────────────────────────
+function setEinrFilter(f) {
+  einrFilter = f;
+  ['neu','angenommen','abgelehnt','alle'].forEach(k => {
+    document.getElementById('einr-tab-' + k)?.classList.toggle('active', k === f);
+  });
+  renderEinreichungen();
+}
+
 async function ladeEinreichungen() {
   try {
     const r = await fetch('/api/einreichungen', { credentials:'include' });
@@ -657,15 +673,19 @@ async function ladeEinreichungen() {
 
 function renderEinreichungen() {
   const grid = document.getElementById('einr-grid');
-  if (!alleEinreichungen.length) {
+  const sichtbar = einrFilter === 'alle'
+    ? alleEinreichungen
+    : alleEinreichungen.filter(e => (e.status || 'neu') === einrFilter);
+  if (!sichtbar.length) {
+    const labels = { neu:'Keine neuen Einreichungen', angenommen:'Keine angenommenen Einreichungen', abgelehnt:'Keine abgelehnten Einreichungen', alle:'Keine Einreichungen vorhanden' };
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
       <div class="empty-icon">📭</div>
-      <div class="empty-title">Keine Einreichungen vorhanden</div>
+      <div class="empty-title">${labels[einrFilter] || 'Keine Einreichungen'}</div>
     </div>`;
     return;
   }
   const istAdmin = currentUser?.role === 'admin';
-  grid.innerHTML = alleEinreichungen.map(e => {
+  grid.innerHTML = sichtbar.map(e => {
     const datum = e.eingereicht
       ? new Date(e.eingereicht).toLocaleDateString('de-DE', { day:'2-digit', month:'short', year:'numeric' })
       : '';

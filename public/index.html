@@ -878,9 +878,9 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="section-label">Pipeline-Übersicht <span id="dir-aktualisiert" style="font-size:10px;font-weight:400;color:var(--blau60)"></span></div>
           <div class="stat-grid" id="dir-stats">
             <div class="stat-card" style="cursor:pointer" onclick="window.open('/freigabe','_blank')"><div class="stat-icon">⏳</div><div class="stat-n" id="dir-n-warten">—</div><div class="stat-label">Wartet auf Ihre Freigabe ↗</div></div>
-            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-n" id="dir-n-frei">—</div><div class="stat-label">Freigegeben</div></div>
-            <div class="stat-card"><div class="stat-icon">📬</div><div class="stat-n" id="dir-n-einr">—</div><div class="stat-label">Offene Einreichungen</div></div>
-            <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-n" id="dir-n-gesamt">—</div><div class="stat-label">Posts gesamt</div></div>
+            <div class="stat-card" style="cursor:pointer" onclick="window.open('/voransicht','_blank')"><div class="stat-icon">✅</div><div class="stat-n" id="dir-n-frei">—</div><div class="stat-label">Freigegeben ↗</div></div>
+            <div class="stat-card" style="cursor:pointer" onclick="showScreen('pbl')"><div class="stat-icon">📬</div><div class="stat-n" id="dir-n-einr">—</div><div class="stat-label">Offene Einreichungen</div></div>
+            <div class="stat-card" style="cursor:pointer" onclick="window.open('/kalender','_blank')"><div class="stat-icon">📝</div><div class="stat-n" id="dir-n-gesamt">—</div><div class="stat-label">Posts gesamt ↗</div></div>
           </div>
         </div>
         <!-- Freigegebene Posts -->
