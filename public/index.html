@@ -2840,10 +2840,17 @@ function kurseZeigeDetail(nr) {
 
   window._kurseSelectedKurs = k;
 
-  // Mobile: runterscrollen
-  if (window.innerWidth <= 900) {
-    setTimeout(() => document.getElementById('kurse-detail-panel').scrollIntoView({behavior:'smooth', block:'start'}), 50);
-  }
+  // Panel ins Bild holen, falls es ausserhalb liegt. Frueher passierte das nur
+  // unter 900px Breite und verliess sich sonst auf position:sticky — das
+  // verhaelt sich bei Grid-Items je nach Browser unterschiedlich (in Firefox
+  // blieb das Panel oben stehen, der Klick wirkte dadurch folgenlos).
+  const panel = document.getElementById('kurse-detail-panel');
+  if (panel) setTimeout(() => {
+    const r = panel.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > window.innerHeight) {
+      panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  }, 50);
 }
 
 function kurseKopieren(nr, titel) {
