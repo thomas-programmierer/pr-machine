@@ -584,7 +584,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     </div>
     <div class="nav-sep"></div>
     <div class="nav-tab" id="tab-pbl"         onclick="showScreen('pbl')">
-      📬 Kursvorschläge <span class="nbadge" id="nb-pbl">5</span>
+      📬 Kursvorschläge <span class="nbadge" id="nb-pbl"></span>
     </div>
     <div class="nav-sep"></div>
     <div class="nav-tab" id="tab-kurse"       onclick="showScreen('kurse'); kurseInit()">
@@ -592,7 +592,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-redakteur"   onclick="showScreen('redakteur')">
-      ✏️ Redaktion
+      ✏️ Redaktion <span class="nbadge" id="nb-redakteur"></span>
     </div>
     <div class="nav-tab studio" id="tab-editor" onclick="showScreen('editor')">
       🎨 Grafik-Studio
@@ -610,7 +610,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     </div>
     <div class="nav-sep major"></div>
     <div class="nav-tab" id="tab-admin"       onclick="showScreen('admin')">
-      ⚙️ Administration <span class="nbadge" id="nb-admin">6</span>
+      ⚙️ Administration
     </div>
   </div>
 
@@ -1510,6 +1510,11 @@ function initApp() {
 
   ladeKursliste(); // Kursliste im Hintergrund vorladen
 
+  // Einreichungen einmalig laden, damit die Nav-Badges von Anfang an stimmen.
+  // Ohne das liefe der Loader nur beim Oeffnen des Redaktions-Screens — den eine
+  // PBL nie aufruft, obwohl ihr Badge davon abhaengt.
+  if (['admin','redakteur','pbl'].includes(currentUser.role)) loadEinreichungen();
+
   // Header
   const av = document.getElementById('hdr-avatar');
   av.textContent = ROLE_INITIALS(currentUser);
@@ -1960,7 +1965,7 @@ async function submitModal() {
     <div id="einr-status-${currentAnlassId}" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;background:#EAF3DE;color:#3B6D11">Eingereicht</div>
   </div>`;
   showToast('📬 Vorschlag eingereicht!');
-  document.getElementById('nb-pbl').textContent = Object.keys(submitted).length;
+  loadEinreichungen();   // Badge aus den echten Daten nachziehen
 }
 
 // ── Einreichungen-Inbox: aus API laden ──────────────────────────────────────
@@ -1970,17 +1975,22 @@ let einreichungenCache = [];
 let inboxVisible = [];
 
 async function loadEinreichungen() {
-  const listEl = document.getElementById('red-inbox-list');
-  if (!listEl) return;
   try {
     const r = await fetch('/api/einreichungen', { credentials:'include' });
     if (!r.ok) return;
     einreichungenCache = await r.json();
-    renderInbox(einreichungenCache.filter(e => e.status !== 'abgelehnt'));
-    // Badge auf Redakteur-Tab
+    // Inbox nur rendern, wenn der Redaktions-Screen im DOM ist — die Badges
+    // sollen auch fuer Rollen ohne Inbox (PBL) aktualisiert werden.
+    if (document.getElementById('red-inbox-list')) {
+      renderInbox(einreichungenCache.filter(e => e.status !== 'abgelehnt'));
+    }
+    // Badges: offene Einreichungen. Die API liefert rollenabhaengig — Admin und
+    // Redakteur sehen alle, eine PBL nur ihre eigenen (server.js).
     const offene = einreichungenCache.filter(e => e.status === 'neu').length;
-    const nb = document.getElementById('nb-redakteur');
-    if (nb) nb.textContent = offene > 0 ? offene : '';
+    ['nb-redakteur','nb-pbl'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = offene > 0 ? offene : '';
+    });
   } catch(e) { console.error('Inbox laden:', e); }
 }
 
