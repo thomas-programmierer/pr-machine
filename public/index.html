@@ -1560,8 +1560,8 @@ function initApp() {
   if (screenParam && ['pbl','redakteur','admin','direktion','kurse'].includes(screenParam)) {
     document.getElementById('tab-' + screenParam)?.classList.remove('hidden');
     showScreen(screenParam);
-    if (screenParam === 'admin') { loadAdminUsers(); loadAdminStatus(); }
-    if (screenParam === 'pbl')   initPBL();
+    // 'admin' und 'pbl' initialisiert showScreen() selbst — hier nur noch das,
+    // was dort fehlt: kurseInit() haengt sonst am onclick des Reiters.
     if (screenParam === 'kurse') kurseInit();
   } else if (!params.get('einreichung')) {
     // Admin & Direktion → Dashboard; alle anderen → Kalender
@@ -1613,7 +1613,10 @@ function showScreen(name) {
   document.getElementById('tab-' + name)?.classList.add('active');
   if (name === 'admin')     { loadAdminUsers(); loadAdminStatus(); ladePublishQueue(); }
   if (name === 'redakteur') { loadEinreichungen(); }
-  if (name === 'pbl')       { loadPBLEinreichungsStatus(); }
+  // initPBL() fehlte hier: ohne den Aufruf laufen renderKarten(),
+  // ladeKurseDemnaechst() und ladePBLFreigaben() nie, und der Screen bleibt
+  // leer — ausser man kam ueber ?screen=pbl, wo initPBL() extra stand.
+  if (name === 'pbl')       { initPBL(); loadPBLEinreichungsStatus(); }
   if (name === 'direktion') { loadDirektion(); }
 }
 
