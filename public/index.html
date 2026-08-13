@@ -1655,7 +1655,7 @@ async function loadDirektion() {
     }
 
     // Einreichungen
-    const einrSorted = [...einr].sort((a,b) => (b.eingereicht||'').localeCompare(a.eingereicht||'')).slice(0, 6);
+    const einrSorted = [...einr].filter(e => e.status !== 'abgelehnt').sort((a,b) => (b.eingereicht||'').localeCompare(a.eingereicht||'')).slice(0, 6);
     const einrList = document.getElementById('dir-einr-list');
     if (!einrSorted.length) {
       einrList.innerHTML = '<div style="font-size:12px;color:var(--blau60);text-align:center;padding:16px">Noch keine Einreichungen.</div>';
@@ -1973,7 +1973,7 @@ async function loadEinreichungen() {
     const r = await fetch('/api/einreichungen', { credentials:'include' });
     if (!r.ok) return;
     einreichungenCache = await r.json();
-    renderInbox(einreichungenCache);
+    renderInbox(einreichungenCache.filter(e => e.status !== 'abgelehnt'));
     // Badge auf Redakteur-Tab
     const offene = einreichungenCache.filter(e => e.status === 'neu').length;
     const nb = document.getElementById('nb-redakteur');
