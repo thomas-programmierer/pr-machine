@@ -105,6 +105,51 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 
 /* LOGO fixed */
 #canvas-logo{position:absolute;top:12px;right:12px;pointer-events:none;z-index:9}
+#canvas-logo img{display:block}
+
+/* ── KI-KENNZEICHNUNG nach EU AI Act Art. 50 Abs. 4 ── */
+#ki-block{position:absolute;z-index:9;pointer-events:none;display:none;
+  flex-direction:column;gap:2px}
+#ki-symbol{display:block}
+#ki-hinweis{font-family:Arial,sans-serif;font-weight:400;line-height:1.3;
+  white-space:nowrap;letter-spacing:.1px}
+
+.ki-chips{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ki-chip{padding:7px 6px;border-radius:6px;font-size:9px;font-weight:700;
+  text-align:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.62);
+  font-family:inherit;transition:border-color .15s,color .15s;line-height:1.3}
+.ki-chip:hover{border-color:rgba(250,185,15,.5);color:rgba(255,255,255,.85)}
+.ki-chip.on{border-color:var(--gelb);color:#fff;background:rgba(250,185,15,.12)}
+.ki-mini{font-size:8px;font-weight:400;color:rgba(255,255,255,.4);display:block;margin-top:2px}
+.ki-chip.on .ki-mini{color:rgba(255,255,255,.62)}
+.ki-seg{display:flex;gap:4px;flex-wrap:wrap}
+.ki-seg > div{flex:1;min-width:52px;padding:5px 4px;border-radius:5px;font-size:9px;
+  font-weight:700;text-align:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);font-family:inherit}
+.ki-seg > div.on{border-color:var(--gelb);color:#fff;background:rgba(250,185,15,.12)}
+.ki-note{font-size:8px;line-height:1.6;color:rgba(255,255,255,.35);margin-top:7px}
+.ki-warn{color:#EB640F}
+.ki-status{font-size:9px;font-weight:700;padding:5px 8px;border-radius:5px;
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);margin-top:8px;line-height:1.5}
+
+#ki-modal-bg{position:fixed;inset:0;background:rgba(0,10,25,.78);z-index:400;
+  display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+#ki-modal-bg.open{display:flex}
+#ki-modal{background:#0E1E33;border:1px solid rgba(250,185,15,.3);border-radius:14px;
+  max-width:520px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#ki-modal h3{font-size:15px;font-weight:800;color:#fff;margin:0 0 4px}
+#ki-modal .kim-sub{font-size:10px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:14px}
+.kim-opt{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;
+  border:1.5px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;
+  margin-bottom:7px;transition:border-color .15s,background .15s;background:rgba(255,255,255,.03)}
+.kim-opt:hover{border-color:var(--gelb);background:rgba(250,185,15,.08)}
+.kim-opt > img{flex:0 0 92px;height:15px;width:92px;object-fit:contain;
+  object-position:left center;margin-top:2px}
+.kim-keine{flex:0 0 92px;width:92px;height:15px;margin-top:2px;border-radius:3px;
+  border:1.5px dashed rgba(255,255,255,.25)}
+.kim-opt .kim-t{font-size:11px;font-weight:700;color:#fff}
+.kim-opt .kim-d{font-size:9px;color:rgba(255,255,255,.5);line-height:1.55;margin-top:2px}
 #layer-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(250,185,15,.9);color:var(--blau);pointer-events:none;z-index:11;font-family:'DM Sans',sans-serif}
 
 /* FOOTER fixed-bottom */
@@ -141,8 +186,13 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 <body>
 
 <div class="topbar">
+  <!-- Logo 1:1 aus der Originaldatei des Marketingportals
+       (Tw_TypB_vhs_SM-Header_langAusgeschrieben.svg, Zuschnitt 47 100 385 78,
+       freigestellt). Kein Nachbau, keine Ersatzmarke. Die Hoehe steuert,
+       die Breite folgt aus dem Original. -->
   <div class="tb-logo">
-    <svg viewBox="0 0 36 22"><circle cx="8" cy="11" r="6" fill="#00285A" opacity=".8"/><circle cx="18" cy="6" r="7" fill="#FAB90F"/><circle cx="7" cy="17" r="4.5" fill="#EB640F"/><circle cx="28" cy="13" r="5.5" fill="#64B9E6"/><circle cx="18" cy="17" r="3.5" fill="#E1000F"/><circle cx="28" cy="5" r="3" fill="#69829B"/></svg>
+    <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
+         style="height:26px;width:auto;display:block">
   </div>
   <span class="tb-title">Foto-Editor</span>
   <span class="tb-tag" id="format-tag">Story · 9:16</span>
@@ -174,7 +224,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
       <div class="tpl-grid">
         <div>
           <div class="tpl-card on" id="tpl-0" style="background:#00285A" onclick="loadTemplate(0)">
-            <div style="position:absolute;top:4px;right:4px"><svg width="14" height="9" viewBox="0 0 36 22"><circle cx="8" cy="11" r="5" fill="#00285A" opacity=".7"/><circle cx="18" cy="6" r="6" fill="#FAB90F"/><circle cx="7" cy="17" r="4" fill="#EB640F"/><circle cx="28" cy="13" r="5" fill="#64B9E6"/><circle cx="18" cy="17" r="3" fill="#E1000F"/></svg></div>
+            <div style="position:absolute;top:4px;right:4px"><img src="/img/vhs-logo-negativ.svg" alt="" style="height:6px;width:auto;display:block;opacity:.9"></div>
             <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
             <div class="tpl-active-badge">Aktiv</div>
           </div>
@@ -268,9 +318,12 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div class="cl-foto" id="cl-foto"></div>
         <!-- L2 Farbe -->
         <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
-        <!-- L3 DVV Logo -->
-        <div id="canvas-logo">
-          <svg width="40" height="25" viewBox="0 0 40 25"><circle cx="8" cy="12" r="7" fill="#00285A" opacity=".85"/><circle cx="19" cy="7" r="8" fill="#FAB90F"/><circle cx="7" cy="19" r="5.5" fill="#EB640F"/><circle cx="31" cy="14" r="6.5" fill="#64B9E6"/><circle cx="19" cy="19" r="4.5" fill="#E1000F"/><circle cx="31" cy="6" r="3.5" fill="#69829B"/></svg>
+        <!-- L3 vhs-Logo, 1:1 aus der Originaldatei. kein-export: html2canvas
+             bildet dieses SVG nicht korrekt ab; es wird nachtraeglich als
+             Vektor in voller Exportaufloesung gezeichnet (zeichneVektor). -->
+        <div id="canvas-logo" class="kein-export">
+          <img id="canvas-logo-img" src="/img/vhs-logo-negativ.svg"
+               alt="vhs Volkshochschule Spandau" style="display:block">
         </div>
         <!-- L4 Text-Block (draggable) -->
         <div id="text-block" class="selected">
@@ -291,12 +344,19 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           </div>
           <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
         </div>
+        <!-- L6b KI-Kennzeichnung nach EU AI Act Art. 50 -->
+        <div id="ki-block" aria-hidden="true">
+          <img id="ki-symbol" class="kein-export" src="" alt="">
+          <div id="ki-hinweis" style="display:none"></div>
+        </div>
         <!-- L7 Safe-Zone SVG -->
-        <svg id="safe-zone-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <!-- kein-export: Bearbeitungshilfen. Sie liegen im #canvas-frame und
+             wurden bisher von html2canvas mit ins PNG gerendert. -->
+        <svg id="safe-zone-svg" class="kein-export" xmlns="http://www.w3.org/2000/svg"></svg>
         <!-- L8 Overlay Badge -->
-        <div class="layer-badge" id="layer-badge">72% Blau</div>
+        <div class="layer-badge kein-export" id="layer-badge">72% Blau</div>
         <!-- Coordinate Readout -->
-        <div class="coord-readout" id="coord-readout" style="display:none">x: 0  y: 0</div>
+        <div class="coord-readout kein-export" id="coord-readout" style="display:none">x: 0  y: 0</div>
 
       </div>
     </div>
@@ -371,6 +431,59 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="badge-sw" id="linesw-3" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')"></div>
           <div class="badge-sw" id="linesw-4" style="background:#fff" onclick="setLineColor(4,'#fff')"></div>
           <div class="badge-sw" id="linesw-5" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')"></div>
+        </div>
+      </div>
+
+      <div class="p-section" id="ki-panel" style="background:rgba(100,185,230,.05);border-color:rgba(100,185,230,.18)">
+        <div class="p-label" style="color:var(--hellblau)">KI-Kennzeichnung (EU AI Act)</div>
+
+        <div class="ki-chips">
+          <div class="ki-chip on" id="ki-chip-" onclick="kiSetTyp('')">Keine<span class="ki-mini">ohne KI / Ausnahme</span></div>
+          <div class="ki-chip" id="ki-chip-ai" onclick="kiSetTyp('ai')">AI<span class="ki-mini">redaktionell gepr&uuml;ft</span></div>
+          <div class="ki-chip" id="ki-chip-ai-generated" onclick="kiSetTyp('ai-generated')">AI GENERATED<span class="ki-mini">vollst&auml;ndig von KI</span></div>
+          <div class="ki-chip" id="ki-chip-ai-modified" onclick="kiSetTyp('ai-modified')">AI MODIFIED<span class="ki-mini">mit KI ver&auml;ndert</span></div>
+        </div>
+
+        <div id="ki-optionen" style="display:none;margin-top:11px">
+          <div class="sl-row" style="margin-bottom:3px">
+            <span class="sl-lbl">Symbolh&ouml;he</span>
+            <div class="sl-track"><input type="range" min="3" max="8" value="6" step="0.1" id="sl-ki-groesse" oninput="kiSetGroesse(this.value)"></div>
+            <span class="sl-val sv-blue" id="sv-ki-groesse">6,0&nbsp;%</span>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:3px">
+            <button class="ki-preset" data-wert="4.5" onclick="kiSetGroesse(4.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:inherit">dezent 4,5&nbsp;%</button>
+            <button class="ki-preset" data-wert="6" onclick="kiSetGroesse(6,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(250,185,15,.35);background:rgba(250,185,15,.1);color:rgba(255,255,255,.8);cursor:pointer;font-family:inherit">Standard 6&nbsp;%</button>
+            <button class="ki-preset" data-wert="7.5" onclick="kiSetGroesse(7.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:inherit">deutlich 7,5&nbsp;%</button>
+          </div>
+          <div class="ki-note" id="ki-groesse-info" style="margin-top:4px"></div>
+
+          <div class="p-label" style="margin-top:12px">Position</div>
+          <div class="ki-seg">
+            <div class="on" id="ki-pos-fl" onclick="kiSetPos('fl')">Fu&szlig;zeile</div>
+            <div id="ki-pos-story" onclick="kiSetPos('story')">Story-sicher</div>
+            <div id="ki-pos-ol" onclick="kiSetPos('ol')">oben links</div>
+            <div id="ki-pos-ur" onclick="kiSetPos('ur')">unten rechts</div>
+          </div>
+
+          <div class="p-label" style="margin-top:12px">Farbvariante</div>
+          <div class="ki-seg">
+            <div class="on" id="ki-var-auto" onclick="kiSetVariante('auto')">automatisch</div>
+            <div id="ki-var-white" onclick="kiSetVariante('white')">wei&szlig;</div>
+            <div id="ki-var-black" onclick="kiSetVariante('black')">schwarz</div>
+          </div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:7px">
+            <input type="checkbox" id="ki-transparent" onchange="kiSetTransparent(this.checked)">Fl&auml;che 50&nbsp;% transparent (EU-Variante)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:5px">
+            <input type="checkbox" id="ki-hinweis-vis" onchange="kiSetHinweis(this.checked)">Hinweissatz unter dem Symbol
+          </label>
+        </div>
+
+        <div class="ki-status" id="ki-status">Noch nicht entschieden &mdash; wird vor dem Export abgefragt.</div>
+        <div class="ki-note">
+          Pflicht nach Art.&nbsp;50 Abs.&nbsp;4 EU AI Act seit 2.&nbsp;August 2026.
+          Das Symbol wird ins Bild gerendert und bleibt beim Teilen und Herunterladen sichtbar.
+          Nur die Originaldateien der EU-Kommission, unver&auml;ndert in den Proportionen.
         </div>
       </div>
 
@@ -507,6 +620,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
       <div class="p-section">
         <div class="p-label">Auflösung</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)" id="exp-ki-info"></div>
       </div>
     </div>
 
@@ -536,6 +650,329 @@ const FORMATS=[
 ];
 const EXPORT_RES=[{w:1080,h:1920},{w:1080,h:1080},{w:1920,h:1080}];
 
+// ═══════════════════════════════════════════════════════════════
+// LOGO UND KI-KENNZEICHNUNG — gemeinsame Groessenlogik
+// ═══════════════════════════════════════════════════════════════
+// Beide Marken werden ueber ihre HOEHE gesteuert, bezogen auf die KURZE
+// Bildkante. Nur dieser Bezug ergibt in allen drei Formaten dieselbe
+// absolute Groesse im Export, denn die kurze Kante ist dort immer 1080 px:
+//   Story  270 x 480  ->  1080 x 1920      Feed 280 x 280 -> 1080 x 1080
+//   Quer   320 x 180  ->  1920 x 1080
+function kiKurzeKante(){
+  const f=FORMATS[currentFormatIdx]||FORMATS[0];
+  return Math.min(f.w,f.h);
+}
+
+// vhs-Logo: Originaldatei, Zuschnitt 47 100 385 78 -> Verhaeltnis 4,9359 : 1.
+// Die Breite wird daraus berechnet, nie gesetzt — sonst waere die Marke
+// verzerrt. 6,5 % der kurzen Kante entsprechen 70 px Hoehe im Export.
+const LOGO_RATIO   = 4.9359;
+const LOGO_ANTEIL  = 6.5;
+
+function renderLogo(){
+  const img=document.getElementById('canvas-logo-img');
+  if(!img) return;
+  const H=kiKurzeKante()*LOGO_ANTEIL/100;
+  img.style.height=H.toFixed(2)+'px';
+  img.style.width=(H*LOGO_RATIO).toFixed(2)+'px';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KI-KENNZEICHNUNG — EU AI Act Art. 50 Abs. 4, verbindlich seit 02.08.2026
+// ═══════════════════════════════════════════════════════════════
+// 6 % ist der Standard: die Versalhoehe der Symbolschrift entspricht dann
+// der Fusszeile "vhs Spandau". Das Symbol liest sich als Teil der
+// Kleingedruckt-Ebene, nicht als zweites Logo.
+let KI = {
+  typ:'',              // '' | 'ai' | 'ai-generated' | 'ai-modified'
+  groesse:6,           // Prozent der kurzen Bildkante
+  pos:'fl',            // 'fl' Fusszeile | 'story' | 'ol' | 'ur'
+  variante:'auto',     // 'auto' | 'white' | 'black'
+  transparent:false,
+  hinweis:false,
+  entschieden:false
+};
+
+// Seitenverhaeltnisse der zugeschnittenen EU-Originaldateien (Breite : Hoehe).
+const KI_RATIO = { 'ai':1.0, 'ai-generated':5.196, 'ai-modified':4.619 };
+const KI_LABEL = { 'ai':'AI', 'ai-generated':'AI GENERATED', 'ai-modified':'AI MODIFIED' };
+const KI_ALT = {
+  'ai':'Symbol AI: Bei der Erstellung dieses Inhalts war kuenstliche Intelligenz beteiligt.',
+  'ai-generated':'Symbol AI GENERATED: Dieser Inhalt wurde vollstaendig von kuenstlicher Intelligenz erzeugt.',
+  'ai-modified':'Symbol AI MODIFIED: Dieser Inhalt wurde mit kuenstlicher Intelligenz veraendert.'
+};
+const KI_HINWEIS = {
+  'ai':'KI-unterstuetzt erstellt, redaktionell geprueft.',
+  'ai-generated':'Vollstaendig von KI erzeugt.',
+  'ai-modified':'Mit KI veraendert.'
+};
+
+// Helle oder dunkle Fassung? Geschaetzt wird die Helligkeit an der Stelle,
+// an der das Symbol sitzt: Farbflaeche mit ihrer Deckkraft, darunter das Foto.
+function kiAutoVariante(){
+  const hex=(activeColor||'#00285A').replace('#','');
+  const r=parseInt(hex.substr(0,2),16)/255,
+        g=parseInt(hex.substr(2,2),16)/255,
+        b=parseInt(hex.substr(4,2),16)/255;
+  const lumFarbe=0.2126*r+0.7152*g+0.0722*b;
+  const op=(parseFloat(document.getElementById('sl-opacity')?.value)||100)/100;
+  const bright=(parseFloat(document.getElementById('sl-bright')?.value)||100)/100;
+  const lumFoto=fotoDataUrl ? Math.min(1,0.5*bright) : lumFarbe;
+  return (lumFarbe*op + lumFoto*(1-op))>0.55 ? 'black' : 'white';
+}
+
+function kiDateiname(){
+  const v = KI.variante==='auto' ? kiAutoVariante() : KI.variante;
+  return { variante:v,
+           pfad:'/img/ki/'+KI.typ+'_'+v+(KI.transparent?'-50transparent':'')+'.svg' };
+}
+
+function renderKI(){
+  const blk=document.getElementById('ki-block');
+  if(!blk) return;
+  const img=document.getElementById('ki-symbol');
+  const hin=document.getElementById('ki-hinweis');
+  const opt=document.getElementById('ki-optionen');
+  if(opt) opt.style.display = KI.typ ? 'block' : 'none';
+
+  if(!KI.typ){
+    blk.style.display='none';
+    blk.setAttribute('aria-hidden','true');
+    img.removeAttribute('src');
+    kiStatus();
+    return;
+  }
+
+  const f=FORMATS[currentFormatIdx]||FORMATS[0];
+  const H=kiKurzeKante()*KI.groesse/100;
+  const d=kiDateiname();
+  if(img.getAttribute('src')!==d.pfad) img.setAttribute('src',d.pfad);
+  img.style.height=H.toFixed(2)+'px';
+  img.style.width=(H*KI_RATIO[KI.typ]).toFixed(2)+'px';
+  img.alt=KI_ALT[KI.typ];
+  blk.setAttribute('aria-label',KI_ALT[KI.typ]);
+
+  if(KI.hinweis){
+    hin.style.display='block';
+    hin.textContent=KI_HINWEIS[KI.typ];
+    hin.style.fontSize=Math.max(5.5,H*0.42).toFixed(1)+'px';
+    hin.style.color = d.variante==='black' ? 'rgba(0,0,0,.75)' : 'rgba(255,255,255,.75)';
+  } else {
+    hin.style.display='none';
+  }
+
+  blk.style.top=blk.style.bottom=blk.style.left=blk.style.right='auto';
+  blk.style.alignItems='flex-start';
+  if(KI.pos==='ol'){
+    blk.style.top='12px'; blk.style.left='12px';
+  } else if(KI.pos==='ur'){
+    blk.style.right='14px'; blk.style.bottom='36px'; blk.style.alignItems='flex-end';
+  } else if(KI.pos==='story'){
+    blk.style.left='14px';
+    blk.style.bottom=Math.max(Math.round(f.h*0.21),36)+'px';
+  } else {
+    blk.style.left='14px'; blk.style.bottom='10px';
+  }
+  blk.style.display='flex';
+  blk.setAttribute('aria-hidden','false');
+  kiStatus();
+}
+
+function kiStatus(){
+  const st=document.getElementById('ki-status');
+  if(st){
+    if(!KI.entschieden){
+      st.innerHTML='Noch nicht entschieden &mdash; wird vor dem Export abgefragt.';
+      st.style.color='rgba(255,255,255,.6)';
+    } else if(!KI.typ){
+      st.innerHTML='Entschieden: <b>keine Kennzeichnung</b>';
+      st.style.color='rgba(255,255,255,.6)';
+    } else {
+      st.innerHTML='Gekennzeichnet: <b>'+KI_LABEL[KI.typ]+'</b>';
+      st.style.color='#AFC805';
+    }
+  }
+  const info=document.getElementById('ki-groesse-info');
+  if(info && KI.typ){
+    const res=EXPORT_RES[currentFormatIdx]||EXPORT_RES[0];
+    const f=FORMATS[currentFormatIdx]||FORMATS[0];
+    const skala=res.w/f.w;
+    const H=kiKurzeKante()*KI.groesse/100, B=H*KI_RATIO[KI.typ];
+    info.innerHTML=
+      'Entwurf '+H.toFixed(1)+'&times;'+B.toFixed(1)+'&nbsp;px &middot; Export '+
+      Math.round(H*skala)+'&times;'+Math.round(B*skala)+'&nbsp;px &middot; '+
+      Math.round(B/f.w*100)+'&nbsp;% der Bildbreite'+
+      (KI.groesse<4.5
+        ? '<br><span class="ki-warn">Unter 4,5&nbsp;% wird die Schrift auf dem Handy grenzwertig klein.</span>'
+        : (KI.groesse>7
+            ? '<br><span class="ki-warn">&Uuml;ber 7&nbsp;% zieht das Symbol den Blick vom Motiv ab.</span>'
+            : '<br>Versalh&ouml;he entspricht etwa der Fu&szlig;zeile &mdash; unauff&auml;llig, aber lesbar.'));
+  }
+  const ex=document.getElementById('exp-ki-info');
+  if(ex){
+    ex.innerHTML = !KI.entschieden
+      ? '<span style="color:#EB640F">Kennzeichnung offen</span> &mdash; wird beim Export abgefragt'
+      : (KI.typ ? 'Kennzeichnung: <b style="color:#AFC805">'+KI_LABEL[KI.typ]+'</b>'
+                : 'Kennzeichnung: keine (bewusst entschieden)');
+  }
+}
+
+function kiSetTyp(typ){
+  KI.typ=typ; KI.entschieden=true;
+  ['','ai','ai-generated','ai-modified'].forEach(t=>{
+    const el=document.getElementById('ki-chip-'+t);
+    if(el) el.classList.toggle('on',t===typ);
+  });
+  renderKI();
+}
+
+function kiSetGroesse(v,ausPreset){
+  KI.groesse=Math.round(parseFloat(v)*10)/10;
+  const sl=document.getElementById('sl-ki-groesse');
+  if(sl && ausPreset) sl.value=KI.groesse;
+  const out=document.getElementById('sv-ki-groesse');
+  if(out) out.innerHTML=KI.groesse.toFixed(1).replace('.',',')+'&nbsp;%';
+  kiSyncPresets();
+  renderKI();
+}
+
+function kiSyncPresets(){
+  document.querySelectorAll('#ki-panel .ki-preset').forEach(b=>{
+    const an=Math.abs(parseFloat(b.getAttribute('data-wert'))-KI.groesse)<0.05;
+    b.style.borderColor = an ? 'var(--gelb)' : 'rgba(255,255,255,.14)';
+    b.style.background  = an ? 'rgba(250,185,15,.12)' : 'rgba(255,255,255,.05)';
+    b.style.color       = an ? '#fff' : 'rgba(255,255,255,.6)';
+  });
+}
+
+function kiSetPos(p){
+  KI.pos=p;
+  ['fl','story','ol','ur'].forEach(x=>{
+    const el=document.getElementById('ki-pos-'+x);
+    if(el) el.classList.toggle('on',x===p);
+  });
+  renderKI();
+}
+
+function kiSetVariante(v){
+  KI.variante=v;
+  ['auto','white','black'].forEach(x=>{
+    const el=document.getElementById('ki-var-'+x);
+    if(el) el.classList.toggle('on',x===v);
+  });
+  renderKI();
+}
+
+function kiSetTransparent(b){ KI.transparent=!!b; renderKI(); }
+function kiSetHinweis(b){ KI.hinweis=!!b; renderKI(); }
+
+function kiSyncPanel(){
+  ['','ai','ai-generated','ai-modified'].forEach(t=>{
+    const el=document.getElementById('ki-chip-'+t);
+    if(el) el.classList.toggle('on',t===KI.typ);
+  });
+  ['fl','story','ol','ur'].forEach(x=>{
+    const el=document.getElementById('ki-pos-'+x);
+    if(el) el.classList.toggle('on',x===KI.pos);
+  });
+  ['auto','white','black'].forEach(x=>{
+    const el=document.getElementById('ki-var-'+x);
+    if(el) el.classList.toggle('on',x===KI.variante);
+  });
+  const sl=document.getElementById('sl-ki-groesse'); if(sl) sl.value=KI.groesse;
+  const out=document.getElementById('sv-ki-groesse');
+  if(out) out.innerHTML=KI.groesse.toFixed(1).replace('.',',')+'&nbsp;%';
+  const tr=document.getElementById('ki-transparent'); if(tr) tr.checked=KI.transparent;
+  const hv=document.getElementById('ki-hinweis-vis'); if(hv) hv.checked=KI.hinweis;
+  kiSyncPresets();
+  renderLogo();
+  renderKI();
+}
+
+// ── Pflichtabfrage vor Export und Freigabe ────────────────────────────────
+let kiModalResolve=null;
+
+function kiAbfrage(){
+  if(KI.entschieden) return Promise.resolve(true);
+  const bg=document.getElementById('ki-modal-bg');
+  if(!bg){ KI.entschieden=true; return Promise.resolve(true); }
+  bg.classList.add('open');
+  return new Promise(r=>{ kiModalResolve=r; });
+}
+
+function kiModalWahl(typ){
+  document.getElementById('ki-modal-bg').classList.remove('open');
+  kiSetTyp(typ);
+  showToast(typ ? 'Kennzeichnung gesetzt: '+KI_LABEL[typ] : 'Ohne Kennzeichnung vermerkt');
+  if(kiModalResolve){ const r=kiModalResolve; kiModalResolve=null; r(true); }
+}
+
+function kiModalAbbruch(){
+  document.getElementById('ki-modal-bg').classList.remove('open');
+  if(kiModalResolve){ const r=kiModalResolve; kiModalResolve=null; r(false); }
+}
+
+function kiFuerPost(){ return KI.entschieden ? (KI.typ || 'keine') : ''; }
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT — Vektoren scharf nachzeichnen
+// ═══════════════════════════════════════════════════════════════
+// html2canvas bildet die beiden SVG-Ebenen nicht korrekt ab und rastert sie
+// in Bildschirmgroesse. Sie werden deshalb uebersprungen (kein-export) und
+// hier in Exportaufloesung nachgezeichnet.
+async function zeichneVektor(canvas, frame, skala, id, name){
+  try{
+    const el = document.getElementById(id);
+    if(!el || getComputedStyle(el).display === 'none') return true;
+    const quelle = el.tagName === 'IMG' ? el : el.querySelector('img');
+    if(!quelle || !quelle.getAttribute('src')) return true;
+    const fr = frame.getBoundingClientRect();
+    const lr = quelle.getBoundingClientRect();
+    if(!lr.width || !lr.height || !fr.width){
+      console.warn('['+name+'] keine Masse ermittelbar');
+      return false;
+    }
+    const bild = new Image();
+    await new Promise((fertig, fehler) => {
+      bild.onload = fertig;
+      bild.onerror = () => fehler(new Error('SVG nicht ladbar'));
+      bild.src = quelle.getAttribute('src');
+    });
+    canvas.getContext('2d').drawImage(
+      bild,
+      (lr.left - fr.left) * skala, (lr.top - fr.top) * skala,
+      lr.width * skala, lr.height * skala
+    );
+    console.log('['+name+'] scharf nachgezeichnet bei',
+      Math.round((lr.left - fr.left) * skala), Math.round((lr.top - fr.top) * skala),
+      'Groesse', Math.round(lr.width * skala));
+    return true;
+  }catch(e){
+    console.warn('['+name+'] Nachzeichnen fehlgeschlagen:', e.message);
+    return false;
+  }
+}
+
+// Die Leinwand, die html2canvas zurueckgibt, nimmt keine weiteren Zeichnungen
+// mehr an — fillRect und drawImage darauf bleiben wirkungslos. Deshalb wird
+// das Ergebnis zuerst auf eine eigene Leinwand kopiert.
+async function baueExportLeinwand(frame, res, f){
+  const roh = await html2canvas(frame, {
+    scale: res.w/f.w, useCORS:true, allowTaint:true,
+    backgroundColor:null, logging:false, width:f.w, height:f.h,
+    ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
+  });
+  const leinwand = document.createElement('canvas');
+  leinwand.width  = roh.width;
+  leinwand.height = roh.height;
+  leinwand.getContext('2d').drawImage(roh, 0, 0);
+  const marke  = await zeichneVektor(leinwand, frame, res.w/f.w, 'canvas-logo-img', 'vhs-logo');
+  const symbol = await zeichneVektor(leinwand, frame, res.w/f.w, 'ki-symbol', 'ki-symbol');
+  if(!(marke && symbol)) throw new Error('vhs-Logo oder KI-Symbol konnten nicht gezeichnet werden');
+  return leinwand;
+}
+
+
 // Safe-Zone-Definitionen (als Anteil 0..1 der Canvas-Größe)
 // Basierend auf Meta/Instagram Story Guidelines
 const SAFE_ZONES=[
@@ -563,26 +1000,30 @@ const TEMPLATES=[
   {bg:'#00285A',opacity:72,bright:75,sat:70,contrast:105,
    headline:'Ich wollte immer die Welt sehen. Wenn mich jemand fragte, was ich mal werden möchte, antwortete ich: Kapitänin auf einem Schiff.',
    hlsize:15,sub:'',subsize:11,tbWidth:88,
-   author:'',role:'',
+   author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
    footer:'vhs Spandau',badge:'',badgeVis:false,
    lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:140},
   {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
    author:'',role:'',footer:'vhs Spandau',badge:'',badgeVis:false,
    lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:160},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Baskisch vom Sofa \u2013 mit Dir als Coach.',hlsize:19,
    sub:'Starte ab September 2026 als Online-Kursleitung an der VHS Spandau.',subsize:12,tbWidth:88,
    author:'',role:'',footer:'vhs Fremdsprachen',badge:'Wir suchen Dich!',badgeVis:true,
    lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:120},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
    sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
    author:'',role:'',footer:'vhs Politik | Gesellschaft | Umwelt',badge:'',badgeVis:false,
    lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:130},
 ];
 
@@ -686,6 +1127,7 @@ window.addEventListener('load', async () => {
 
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
   loadTemplate(0);
+  kiSyncPanel();   // Logo und KI-Kennzeichnung angleichen
   initDrag();
 
   // URL-Payload anwenden (direkter Aufruf / aus Voransicht)
@@ -907,10 +1349,21 @@ function loadTemplate(idx){
   document.getElementById('pos-x').value=tbX;
   document.getElementById('pos-y').value=tbY;
 
+  // KI-Voreinstellung des Templates uebernehmen. Eine bereits getroffene
+  // Entscheidung bleibt bestehen — sie gehoert zum Inhalt, nicht zum Layout.
+  if(t.ki){
+    KI.groesse=t.ki.groesse; KI.pos=t.ki.pos; KI.variante=t.ki.variante;
+    KI.transparent=t.ki.transparent; KI.hinweis=t.ki.hinweis;
+    if(!KI.entschieden) KI.typ=t.ki.typ;
+  }
+  kiSyncPanel();
+
   if(idx===1) removeFoto();
-  // Wenn Redaktions-Payload vorhanden: überschreibt Template-Defaults
+  // Payload sofort anwenden statt per setTimeout — die verzoegerte Fassung
+  // liess den Template-Text kurz aufblitzen und konnte bei schnellen
+  // Klicks das falsche Template gewinnen lassen.
   if (redaktionPayload) {
-    setTimeout(applyRedaktionPayload, 30);
+    applyRedaktionPayload();
   } else {
     updateText();
   }
@@ -926,6 +1379,7 @@ function setOverlayColorDirect(idx,hex,name){
   document.querySelectorAll('.dvv-sw').forEach((s,i)=>s.classList.toggle('on',i===idx));
   document.getElementById('cl-color').style.background=hex;
   updateBadgeLabel();
+  renderKI();
 }
 function setOverlayColor(idx,hex,name){setOverlayColorDirect(idx,hex,name);}
 
@@ -937,6 +1391,7 @@ function updateOpacity(v){
   document.getElementById('cl-color').style.opacity=v/100;
   document.getElementById('sv-opacity').textContent=v+'%';
   updateBadgeLabel();
+  renderKI();
 }
 function updateBadgeLabel(){
   const v=Math.round(document.getElementById('sl-opacity').value);
@@ -951,6 +1406,7 @@ function updatePhotoFilter(){
   document.getElementById('sv-sat').textContent=s+'%';
   document.getElementById('sv-contrast').textContent=c+'%';
   document.getElementById('cl-foto').style.filter=`brightness(${b}%) saturate(${s}%) contrast(${c}%)`;
+  renderKI();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1069,6 +1525,8 @@ function setFormat(idx,w,h,label,dim){
   document.getElementById('exp-info').innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
   updateText();
   if(safeZonesVisible) setTimeout(drawSafeZones,50);
+  renderLogo();
+  renderKI();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1130,6 +1588,9 @@ function removeFoto(){
 // EXPORT PNG
 // ═══════════════════════════════════════════════════════════════
 async function exportPNG(){
+  // Kennzeichnungsfrage vor den Export, nicht danach — hinterher fasst
+  // niemand das Layout nochmal an.
+  if(!await kiAbfrage()) return;
   showToast('🖼 Wird erstellt …');
   const svgEl=document.getElementById('safe-zone-svg');
   const wasVisible=safeZonesVisible;
@@ -1143,10 +1604,7 @@ async function exportPNG(){
   const res=EXPORT_RES[currentFormatIdx]||{w:1080,h:1920};
   const f=FORMATS[currentFormatIdx];
   try{
-    const canvas=await html2canvas(frame,{
-      scale:res.w/f.w, useCORS:true, allowTaint:true,
-      backgroundColor:null, logging:false, width:f.w, height:f.h,
-    });
+    const canvas=await baueExportLeinwand(frame, res, f);
     frame.style.transform=origT;
     tb.classList.add('selected');
     if(wasVisible){ svgEl.style.display='block'; }
@@ -1159,11 +1617,13 @@ async function exportPNG(){
     frame.style.transform=origT;
     tb.classList.add('selected');
     if(wasVisible){ svgEl.style.display='block'; }
-    showToast('❌ Export fehlgeschlagen');
+    console.error('[export]', err);
+    showToast('❌ Export fehlgeschlagen — ' + (err.message||''));
   }
 }
 
 async function exportUndFreigabe() {
+  if(!await kiAbfrage()) return;
   const btn = document.getElementById('btn-freigabe-submit');
   const statusEl = document.getElementById('freigabe-cta-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ PNG wird erstellt …'; }
@@ -1181,10 +1641,7 @@ async function exportUndFreigabe() {
 
   let pngDataUrl = null;
   try {
-    const canvas = await html2canvas(frame, {
-      scale: res.w / f.w, useCORS: true, allowTaint: true,
-      backgroundColor: null, logging: false, width: f.w, height: f.h,
-    });
+    const canvas = await baueExportLeinwand(frame, res, f);
     pngDataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = 'vhs-spandau-' + Date.now() + '.png';
@@ -1192,7 +1649,8 @@ async function exportUndFreigabe() {
   } catch(err) {
     frame.style.transform = origT; tb.classList.add('selected');
     if (wasVisible) svgEl.style.display = 'block';
-    showToast('❌ PNG-Export fehlgeschlagen');
+    console.error('[export]', err);
+    showToast('❌ PNG-Export fehlgeschlagen — ' + (err.message||''));
     if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
     return;
   } finally {
@@ -1217,6 +1675,7 @@ async function exportUndFreigabe() {
     autor:   payload.autor   || '',
     autorId: payload.autorId || '',
     eingereicht: true,
+    kiKennzeichnung: kiFuerPost(),
   };
 
   try {
@@ -1244,12 +1703,14 @@ async function exportUndFreigabe() {
 async function saveToRedaktionsplan(){
   const datum=document.getElementById('exp-datum').value;
   if(!datum){showToast('⚠️ Bitte Datum wählen');return;}
+  if(!await kiAbfrage()) return;
   const post={
     id:'ed'+Date.now(), datum,uhrzeit:'17:00',
     kanal:document.getElementById('exp-kanal').value,
     anlass:document.getElementById('exp-anlass').value.trim()||'Visueller Post',
     text:document.getElementById('tf-headline').value||'',
     tags:'#vhsspandau #spandau',status:'geplant',freigabe:'',paid:'nein',url:'',ziel:'Reichweite',
+    kiKennzeichnung: kiFuerPost(),
   };
   try{
     const r=await fetch('/api/posts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});
@@ -1260,7 +1721,14 @@ async function saveToRedaktionsplan(){
 // ═══════════════════════════════════════════════════════════════
 // RESET
 // ═══════════════════════════════════════════════════════════════
-function resetEditor(){removeFoto();loadTemplate(0);showToast('↺ Editor zurückgesetzt');}
+function resetEditor(){
+  removeFoto();
+  // Neues Motiv, neue Entscheidung: die Kennzeichnung gehoert zum Inhalt
+  KI.typ=''; KI.entschieden=false;
+  loadTemplate(0);
+  kiSyncPanel();
+  showToast('↺ Editor zurückgesetzt');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // UTILS
@@ -1326,5 +1794,50 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
+<!-- ══ PFLICHTABFRAGE KI-KENNZEICHNUNG ══ -->
+<div id="ki-modal-bg">
+  <div id="ki-modal">
+    <h3>Wie soll dieses Motiv gekennzeichnet werden?</h3>
+    <div class="kim-sub">
+      Art.&nbsp;50 Abs.&nbsp;4 EU AI Act. Die Entscheidung wird am Post vermerkt und
+      geht mit in die Freigabe. Sie l&auml;sst sich danach jederzeit &auml;ndern.
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai')">
+      <img src="/img/ki/ai_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI &mdash; Grundsymbol</div>
+        <div class="kim-d">KI war beteiligt, ein Mensch hat redigiert und tr&auml;gt die Verantwortung.
+          Rechtlich meist nicht verpflichtend, aber ein klares Transparenzsignal.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai-generated')">
+      <img src="/img/ki/ai-generated_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI GENERATED</div>
+        <div class="kim-d">Vollst&auml;ndig von KI erzeugt, au&szlig;er dem Prompt gab es keine
+          redaktionelle Kontrolle.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai-modified')">
+      <img src="/img/ki/ai-modified_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI MODIFIED</div>
+        <div class="kim-d">Vorhandener, von Menschen erstellter Inhalt wurde mit KI ver&auml;ndert.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('')">
+      <div class="kim-keine"></div>
+      <div>
+        <div class="kim-t">Keine Kennzeichnung</div>
+        <div class="kim-d">Keine KI beteiligt, oder eine Ausnahme greift: Kunst, Satire, Fiktion;
+          redaktionell gepr&uuml;fter Text mit benannter Verantwortung; reine Rechtschreib- und
+          Stilkorrektur.</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <span onclick="kiModalAbbruch()" style="font-size:9px;color:rgba(255,255,255,.35);cursor:pointer;text-decoration:underline">Abbrechen</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
