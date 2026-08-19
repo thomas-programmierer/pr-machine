@@ -477,6 +477,63 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 
 /* LOGO fixed */
 #canvas-logo{position:absolute;top:12px;right:12px;pointer-events:none;z-index:9}
+
+/* ── KI-KENNZEICHNUNG nach EU AI Act Art. 50 Abs. 4 ──
+   Liegt ueber der Fusszeile (z-index 8) und unter den Hilfslinien (10).
+   Bewusst OHNE kein-export: html2canvas rendert das Symbol mit, die scharfe
+   Vektorfassung wird danach darueber gezeichnet (siehe zeichneVektor). */
+#ki-block{position:absolute;z-index:9;pointer-events:none;display:none;
+  flex-direction:column;gap:2px}
+#ki-symbol{display:block}
+#ki-hinweis{font-family:Arial,sans-serif;font-weight:400;line-height:1.3;
+  white-space:nowrap;letter-spacing:.1px}
+
+/* Panel-Sektion */
+.ki-chips{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.ki-chip{padding:7px 6px;border-radius:6px;font-size:9px;font-weight:700;
+  text-align:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.62);
+  font-family:'DM Sans',sans-serif;transition:border-color .15s,color .15s;
+  line-height:1.3}
+.ki-chip:hover{border-color:rgba(250,185,15,.5);color:rgba(255,255,255,.85)}
+.ki-chip.on{border-color:var(--gelb);color:#fff;background:rgba(250,185,15,.12)}
+.ki-mini{font-size:8px;font-weight:400;color:rgba(255,255,255,.4);
+  display:block;margin-top:2px}
+.ki-chip.on .ki-mini{color:rgba(255,255,255,.62)}
+.ki-seg{display:flex;gap:4px;flex-wrap:wrap}
+.ki-seg > div{flex:1;min-width:52px;padding:5px 4px;border-radius:5px;font-size:9px;
+  font-weight:700;text-align:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);
+  font-family:'DM Sans',sans-serif}
+.ki-seg > div.on{border-color:var(--gelb);color:#fff;background:rgba(250,185,15,.12)}
+.ki-note{font-size:8px;line-height:1.6;color:rgba(255,255,255,.35);margin-top:7px}
+.ki-warn{color:#EB640F}
+.ki-status{font-size:9px;font-weight:700;padding:5px 8px;border-radius:5px;
+  background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);margin-top:8px;
+  line-height:1.5}
+
+/* Pflichtabfrage-Modal */
+#ki-modal-bg{position:fixed;inset:0;background:rgba(0,10,25,.78);z-index:400;
+  display:none;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(3px)}
+#ki-modal-bg.open{display:flex}
+#ki-modal{background:#0E1E33;border:1px solid rgba(250,185,15,.3);border-radius:14px;
+  max-width:520px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#ki-modal h3{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;
+  color:#fff;margin:0 0 4px}
+#ki-modal .kim-sub{font-size:10px;color:rgba(255,255,255,.45);line-height:1.6;
+  margin-bottom:14px}
+.kim-opt{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;
+  border:1.5px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer;
+  margin-bottom:7px;transition:border-color .15s,background .15s;
+  background:rgba(255,255,255,.03)}
+.kim-opt:hover{border-color:var(--gelb);background:rgba(250,185,15,.08)}
+.kim-opt > img{flex:0 0 92px;height:15px;width:92px;object-fit:contain;
+  object-position:left center;margin-top:2px}
+.kim-opt .kim-t{font-size:11px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif}
+.kim-opt .kim-d{font-size:9px;color:rgba(255,255,255,.5);line-height:1.55;margin-top:2px}
+.kim-keine{flex:0 0 92px;width:92px;height:15px;margin-top:2px;border-radius:3px;
+  border:1.5px dashed rgba(255,255,255,.25)}
 #layer-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(250,185,15,.9);color:var(--blau);pointer-events:none;z-index:11;font-family:'DM Sans',sans-serif}
 
 /* FOOTER fixed-bottom */
@@ -1014,12 +1071,17 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <!-- L2 Farbe -->
         <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
         <!-- L3 vhs-Bildmarke — exakte Vektoren aus dem DVV-Styleguide.
-             Bewusst OHNE kein-export: html2canvas soll die Marke rendern,
-             damit sie im Export auf jeden Fall vorhanden ist. Die scharfe
-             Fassung wird anschliessend darueber gezeichnet (zeichneBildmarke).
-             Faellt das aus, bleibt die html2canvas-Version stehen. -->
-        <div id="canvas-logo">
-          <img src="/img/vhs-bildmarke.svg" width="36" height="36" alt="vhs">
+             kein-export: html2canvas bildet dieses SVG nicht korrekt ab (es
+             erscheint stark vergroessert und beschnitten). Die Marke wird
+             deshalb ausschliesslich nachtraeglich als Vektor gezeichnet —
+             siehe zeichneVektor. Schlaegt das fehl, bricht der Export ab,
+             statt ein falsches Logo auszuliefern.
+             Proportion aus der Originaldatei: viewBox 101.659 x 100.514. -->
+        <div id="canvas-logo" class="kein-export">
+          <!-- Proportion aus der Originaldatei: viewBox 101.659 x 100.514.
+               Feste 36x36 haetten die Marke um gut 1 % gestaucht. Die Hoehe
+               ist die Steuergroesse, die Breite folgt aus dem Original. -->
+          <img src="/img/vhs-bildmarke.svg" height="36" style="height:36px;width:auto;display:block" alt="vhs">
         </div>
         <!-- L4 Text-Block (draggable) -->
         <div id="text-block" class="selected">
@@ -1039,6 +1101,11 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
             <div id="tb-footer" style="font-family:Arial,sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
           </div>
           <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
+        </div>
+        <!-- L6b KI-Kennzeichnung nach EU AI Act Art. 50 -->
+        <div id="ki-block" aria-hidden="true">
+          <img id="ki-symbol" class="kein-export" src="" alt="">
+          <div id="ki-hinweis" style="display:none"></div>
         </div>
         <!-- L7 Safe-Zone SVG -->
         <!-- kein-export: Hilfselemente der Bearbeitung. Sie liegen im
@@ -1133,6 +1200,61 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="badge-sw" id="linesw-3" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')"></div>
           <div class="badge-sw" id="linesw-4" style="background:#fff" onclick="setLineColor(4,'#fff')"></div>
           <div class="badge-sw" id="linesw-5" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')"></div>
+        </div>
+      </div>
+
+      <div class="p-section" id="ki-panel" style="background:rgba(100,185,230,.05);border-color:rgba(100,185,230,.18)">
+        <div class="p-label" style="color:var(--hellblau)">KI-Kennzeichnung (EU AI Act)</div>
+
+        <div class="ki-chips">
+          <div class="ki-chip on" id="ki-chip-" onclick="kiSetTyp('')">Keine<span class="ki-mini">ohne KI / Ausnahme</span></div>
+          <div class="ki-chip" id="ki-chip-ai" onclick="kiSetTyp('ai')">AI<span class="ki-mini">redaktionell gepr&uuml;ft</span></div>
+          <div class="ki-chip" id="ki-chip-ai-generated" onclick="kiSetTyp('ai-generated')">AI GENERATED<span class="ki-mini">vollst&auml;ndig von KI</span></div>
+          <div class="ki-chip" id="ki-chip-ai-modified" onclick="kiSetTyp('ai-modified')">AI MODIFIED<span class="ki-mini">mit KI ver&auml;ndert</span></div>
+        </div>
+
+        <div id="ki-optionen" style="display:none;margin-top:11px">
+
+          <div class="sl-row" style="margin-bottom:3px">
+            <span class="sl-lbl">Symbolh&ouml;he</span>
+            <div class="sl-track"><input type="range" min="3" max="8" value="6" step="0.1" id="sl-ki-groesse" oninput="kiSetGroesse(this.value)"></div>
+            <span class="sl-val sv-blue" id="sv-ki-groesse">6,0&nbsp;%</span>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:3px">
+            <button class="ki-preset" data-wert="4.5" onclick="kiSetGroesse(4.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:'DM Sans',sans-serif">dezent 4,5&nbsp;%</button>
+            <button class="ki-preset" data-wert="6" onclick="kiSetGroesse(6,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(250,185,15,.35);background:rgba(250,185,15,.1);color:rgba(255,255,255,.8);cursor:pointer;font-family:'DM Sans',sans-serif">Standard 6&nbsp;%</button>
+            <button class="ki-preset" data-wert="7.5" onclick="kiSetGroesse(7.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:'DM Sans',sans-serif">deutlich 7,5&nbsp;%</button>
+          </div>
+          <div class="ki-note" id="ki-groesse-info" style="margin-top:4px"></div>
+
+          <div class="p-label" style="margin-top:12px">Position</div>
+          <div class="ki-seg">
+            <div class="on" id="ki-pos-fl" onclick="kiSetPos('fl')">Fu&szlig;zeile</div>
+            <div id="ki-pos-story" onclick="kiSetPos('story')">Story-sicher</div>
+            <div id="ki-pos-ol" onclick="kiSetPos('ol')">oben links</div>
+            <div id="ki-pos-ur" onclick="kiSetPos('ur')">unten rechts</div>
+          </div>
+
+          <div class="p-label" style="margin-top:12px">Farbvariante</div>
+          <div class="ki-seg">
+            <div class="on" id="ki-var-auto" onclick="kiSetVariante('auto')">automatisch</div>
+            <div id="ki-var-white" onclick="kiSetVariante('white')">wei&szlig;</div>
+            <div id="ki-var-black" onclick="kiSetVariante('black')">schwarz</div>
+          </div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:7px">
+            <input type="checkbox" id="ki-transparent" onchange="kiSetTransparent(this.checked)">Fl&auml;che 50&nbsp;% transparent (EU-Variante)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:5px">
+            <input type="checkbox" id="ki-hinweis-vis" onchange="kiSetHinweis(this.checked)">Hinweissatz unter dem Symbol
+          </label>
+
+        </div>
+
+        <div class="ki-status" id="ki-status">Noch nicht entschieden &mdash; wird vor dem Export abgefragt.</div>
+        <div class="ki-note">
+          Pflicht nach Art.&nbsp;50 Abs.&nbsp;4 EU AI Act seit 2.&nbsp;August 2026.
+          Das Symbol wird ins Bild gerendert und bleibt beim Teilen und Herunterladen sichtbar.
+          Nur die Originaldateien der EU-Kommission, unver&auml;ndert in den Proportionen.
         </div>
       </div>
 
@@ -1261,6 +1383,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
       <div class="p-section">
         <div class="p-label">Auflösung</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)" id="exp-ki-info"></div>
       </div>
     </div>
 
@@ -2625,6 +2748,294 @@ const FORMATS=[
 ];
 const EXPORT_RES=[{w:1080,h:1920},{w:1080,h:1080},{w:1920,h:1080}];
 
+// ═══════════════════════════════════════════════════════════════
+// KI-KENNZEICHNUNG — EU AI Act Art. 50 Abs. 4, verbindlich seit 02.08.2026
+// ═══════════════════════════════════════════════════════════════
+// Groessensteuerung: Die Symbolhoehe wird als Prozentsatz der KURZEN
+// Bildkante gerechnet, nicht der Breite oder Hoehe. Das ist der einzige
+// Bezug, der ueber alle drei Formate hinweg dieselbe absolute Groesse im
+// Export ergibt — die kurze Kante ist im Export immer 1080 px:
+//   Story  270 x 480  ->  1080 x 1920   kurze Kante 270 -> 1080
+//   Feed   280 x 280  ->  1080 x 1080   kurze Kante 280 -> 1080
+//   Quer   320 x 180  ->  1920 x 1080   kurze Kante 180 -> 1080
+// 6 % ist der Standard: die Versalhoehe der Symbolschrift entspricht dann
+// exakt der Fusszeile ("vhs Spandau"). Das Symbol liest sich als Teil der
+// Kleingedruckt-Ebene des Layouts, nicht als zweites Logo.
+// Unter 4,5 % werden die Wortmarken auf dem Handy grenzwertig klein.
+let KI = {
+  typ:'',              // '' | 'ai' | 'ai-generated' | 'ai-modified'
+  groesse:6,           // Prozent der kurzen Bildkante
+  pos:'fl',            // 'fl' Fusszeile | 'story' | 'ol' oben links | 'ur' unten rechts
+  variante:'auto',     // 'auto' | 'white' | 'black'
+  transparent:false,   // EU-Variante mit 50 % transparenter Flaeche
+  hinweis:false,       // erklaerender Satz unter dem Symbol
+  entschieden:false    // Pflichtabfrage vor Export bereits beantwortet?
+};
+
+// Seitenverhaeltnisse der zugeschnittenen Originaldateien (Breite : Hoehe).
+// Die Hoehe ist die Steuergroesse — sonst waere die quadratische AI-Marke
+// optisch nur ein Fuenftel so gross wie die Wortmarken.
+const KI_RATIO = { 'ai':1.0, 'ai-generated':5.196, 'ai-modified':4.619 };
+
+const KI_LABEL = {
+  'ai':'AI', 'ai-generated':'AI GENERATED', 'ai-modified':'AI MODIFIED'
+};
+
+const KI_ALT = {
+  'ai':'Symbol AI: Bei der Erstellung dieses Inhalts war kuenstliche Intelligenz beteiligt.',
+  'ai-generated':'Symbol AI GENERATED: Dieser Inhalt wurde vollstaendig von kuenstlicher Intelligenz erzeugt.',
+  'ai-modified':'Symbol AI MODIFIED: Dieser Inhalt wurde mit kuenstlicher Intelligenz veraendert.'
+};
+
+const KI_HINWEIS = {
+  'ai':'KI-unterstuetzt erstellt, redaktionell geprueft.',
+  'ai-generated':'Vollstaendig von KI erzeugt.',
+  'ai-modified':'Mit KI veraendert.'
+};
+
+// Kurze Kante des aktuellen Arbeitsformats
+function kiKurzeKante(){
+  const f=FORMATS[currentFormatIdx]||FORMATS[0];
+  return Math.min(f.w,f.h);
+}
+
+// Helle oder dunkle Fassung? Geschaetzt wird die Helligkeit an der Stelle,
+// an der das Symbol sitzt: Farbflaeche mit ihrer Deckkraft, darunter das Foto
+// (als mittleres Grau angenommen, korrigiert um den Helligkeitsregler).
+function kiAutoVariante(){
+  const hex=(activeColor||'#00285A').replace('#','');
+  const r=parseInt(hex.substr(0,2),16)/255,
+        g=parseInt(hex.substr(2,2),16)/255,
+        b=parseInt(hex.substr(4,2),16)/255;
+  const lumFarbe=0.2126*r+0.7152*g+0.0722*b;
+  const op=(parseFloat(document.getElementById('sl-opacity')?.value)||100)/100;
+  const bright=(parseFloat(document.getElementById('sl-bright')?.value)||100)/100;
+  const lumFoto=fotoDataUrl ? Math.min(1,0.5*bright) : lumFarbe;
+  const misch=lumFarbe*op + lumFoto*(1-op);
+  return misch>0.55 ? 'black' : 'white';
+}
+
+function kiDateiname(){
+  const v = KI.variante==='auto' ? kiAutoVariante() : KI.variante;
+  return { variante:v,
+           pfad:'/img/ki/'+KI.typ+'_'+v+(KI.transparent?'-50transparent':'')+'.svg' };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KI — RENDERING AUF DER LEINWAND
+// ═══════════════════════════════════════════════════════════════
+function renderKI(){
+  const blk=document.getElementById('ki-block');
+  if(!blk) return;
+  const img=document.getElementById('ki-symbol');
+  const hin=document.getElementById('ki-hinweis');
+  const opt=document.getElementById('ki-optionen');
+
+  if(opt) opt.style.display = KI.typ ? 'block' : 'none';
+
+  if(!KI.typ){
+    blk.style.display='none';
+    blk.setAttribute('aria-hidden','true');
+    img.removeAttribute('src');
+    kiStatus();
+    return;
+  }
+
+  const f=FORMATS[currentFormatIdx]||FORMATS[0];
+  const H=kiKurzeKante()*KI.groesse/100;
+  const d=kiDateiname();
+
+  if(img.getAttribute('src')!==d.pfad) img.setAttribute('src',d.pfad);
+  img.style.height=H.toFixed(2)+'px';
+  img.style.width=(H*KI_RATIO[KI.typ]).toFixed(2)+'px';
+  img.alt=KI_ALT[KI.typ];
+  blk.setAttribute('aria-label',KI_ALT[KI.typ]);
+
+  if(KI.hinweis){
+    hin.style.display='block';
+    hin.textContent=KI_HINWEIS[KI.typ];
+    hin.style.fontSize=Math.max(5.5,H*0.42).toFixed(1)+'px';
+    hin.style.color = d.variante==='black' ? 'rgba(0,0,0,.75)' : 'rgba(255,255,255,.75)';
+  } else {
+    hin.style.display='none';
+  }
+
+  // Position — alle vier Anker zuruecksetzen, dann den gewaehlten setzen
+  blk.style.top=blk.style.bottom=blk.style.left=blk.style.right='auto';
+  blk.style.alignItems='flex-start';
+  if(KI.pos==='ol'){
+    blk.style.top='12px'; blk.style.left='12px';
+  } else if(KI.pos==='ur'){
+    blk.style.right='14px'; blk.style.bottom='36px'; blk.style.alignItems='flex-end';
+  } else if(KI.pos==='story'){
+    // oberhalb der Instagram-Interaktionszone (untere 20 %)
+    blk.style.left='14px';
+    blk.style.bottom=Math.max(Math.round(f.h*0.21),36)+'px';
+  } else {
+    // Fusszeile links — gegenueber der Akzentlinie, auf deren Unterkante
+    blk.style.left='14px'; blk.style.bottom='10px';
+  }
+  blk.style.display='flex';
+  blk.setAttribute('aria-hidden','false');
+  kiStatus();
+}
+
+// Statuszeile im Panel + Groessen-Readout in Entwurfs- und Exportpixeln
+function kiStatus(){
+  const st=document.getElementById('ki-status');
+  if(st){
+    if(!KI.entschieden){
+      st.innerHTML='Noch nicht entschieden &mdash; wird vor dem Export abgefragt.';
+      st.style.color='rgba(255,255,255,.6)';
+    } else if(!KI.typ){
+      st.innerHTML='Entschieden: <b>keine Kennzeichnung</b>';
+      st.style.color='rgba(255,255,255,.6)';
+    } else {
+      st.innerHTML='Gekennzeichnet: <b>'+KI_LABEL[KI.typ]+'</b>';
+      st.style.color='#AFC805';
+    }
+  }
+  const info=document.getElementById('ki-groesse-info');
+  if(info && KI.typ){
+    const res=EXPORT_RES[currentFormatIdx]||EXPORT_RES[0];
+    const f=FORMATS[currentFormatIdx]||FORMATS[0];
+    const skala=res.w/f.w;
+    const H=kiKurzeKante()*KI.groesse/100;
+    const B=H*KI_RATIO[KI.typ];
+    const zuKlein=KI.groesse<4.5;
+    info.innerHTML=
+      'Entwurf '+H.toFixed(1)+'&times;'+B.toFixed(1)+'&nbsp;px &middot; '+
+      'Export '+Math.round(H*skala)+'&times;'+Math.round(B*skala)+'&nbsp;px &middot; '+
+      Math.round(B/f.w*100)+'&nbsp;% der Bildbreite'+
+      (zuKlein
+        ? '<br><span class="ki-warn">Unter 4,5&nbsp;% wird die Schrift auf dem Handy grenzwertig klein.</span>'
+        : (KI.groesse>7
+            ? '<br><span class="ki-warn">&Uuml;ber 7&nbsp;% zieht das Symbol den Blick vom Motiv ab.</span>'
+            : '<br>Versalh&ouml;he entspricht etwa der Fu&szlig;zeile &mdash; unauff&auml;llig, aber lesbar.'));
+  }
+  const ex=document.getElementById('exp-ki-info');
+  if(ex){
+    ex.innerHTML = !KI.entschieden
+      ? '<span style="color:#EB640F">Kennzeichnung offen</span> &mdash; wird beim Export abgefragt'
+      : (KI.typ ? 'Kennzeichnung: <b style="color:#AFC805">'+KI_LABEL[KI.typ]+'</b>'
+                : 'Kennzeichnung: keine (bewusst entschieden)');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KI — BEDIENUNG
+// ═══════════════════════════════════════════════════════════════
+function kiSetTyp(typ){
+  KI.typ=typ; KI.entschieden=true;
+  ['','ai','ai-generated','ai-modified'].forEach(t=>{
+    const el=document.getElementById('ki-chip-'+t);
+    if(el) el.classList.toggle('on',t===typ);
+  });
+  renderKI();
+}
+
+function kiSetGroesse(v,ausPreset){
+  KI.groesse=Math.round(parseFloat(v)*10)/10;
+  const sl=document.getElementById('sl-ki-groesse');
+  if(sl && ausPreset) sl.value=KI.groesse;
+  const out=document.getElementById('sv-ki-groesse');
+  if(out) out.innerHTML=KI.groesse.toFixed(1).replace('.',',')+'&nbsp;%';
+  kiSyncPresets();
+  renderKI();
+}
+
+// Die drei Schnellwahl-Knoepfe zeigen nur dann aktiv, wenn der Regler
+// tatsaechlich auf ihrem Wert steht.
+function kiSyncPresets(){
+  document.querySelectorAll('#ki-panel .ki-preset').forEach(b=>{
+    const wert=parseFloat(b.getAttribute('data-wert'));
+    const an=Math.abs(wert-KI.groesse)<0.05;
+    b.style.borderColor = an ? 'var(--gelb)' : 'rgba(255,255,255,.14)';
+    b.style.background  = an ? 'rgba(250,185,15,.12)' : 'rgba(255,255,255,.05)';
+    b.style.color       = an ? '#fff' : 'rgba(255,255,255,.6)';
+  });
+}
+
+function kiSetPos(p){
+  KI.pos=p;
+  ['fl','story','ol','ur'].forEach(x=>{
+    const el=document.getElementById('ki-pos-'+x);
+    if(el) el.classList.toggle('on',x===p);
+  });
+  renderKI();
+}
+
+function kiSetVariante(v){
+  KI.variante=v;
+  ['auto','white','black'].forEach(x=>{
+    const el=document.getElementById('ki-var-'+x);
+    if(el) el.classList.toggle('on',x===v);
+  });
+  renderKI();
+}
+
+function kiSetTransparent(b){ KI.transparent=!!b; renderKI(); }
+function kiSetHinweis(b){ KI.hinweis=!!b; renderKI(); }
+
+// Panel-Bedienelemente an den State angleichen (nach loadTemplate)
+function kiSyncPanel(){
+  ['','ai','ai-generated','ai-modified'].forEach(t=>{
+    const el=document.getElementById('ki-chip-'+t);
+    if(el) el.classList.toggle('on',t===KI.typ);
+  });
+  ['fl','story','ol','ur'].forEach(x=>{
+    const el=document.getElementById('ki-pos-'+x);
+    if(el) el.classList.toggle('on',x===KI.pos);
+  });
+  ['auto','white','black'].forEach(x=>{
+    const el=document.getElementById('ki-var-'+x);
+    if(el) el.classList.toggle('on',x===KI.variante);
+  });
+  const sl=document.getElementById('sl-ki-groesse');
+  if(sl) sl.value=KI.groesse;
+  const out=document.getElementById('sv-ki-groesse');
+  if(out) out.innerHTML=KI.groesse.toFixed(1).replace('.',',')+'&nbsp;%';
+  const tr=document.getElementById('ki-transparent');
+  if(tr) tr.checked=KI.transparent;
+  const hv=document.getElementById('ki-hinweis-vis');
+  if(hv) hv.checked=KI.hinweis;
+  kiSyncPresets();
+  renderKI();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KI — PFLICHTABFRAGE VOR EXPORT UND FREIGABE
+// ═══════════════════════════════════════════════════════════════
+let kiModalResolve=null;
+
+// Liefert true, wenn weitergemacht werden darf; false bei Abbruch.
+function kiAbfrage(){
+  if(KI.entschieden) return Promise.resolve(true);
+  const bg=document.getElementById('ki-modal-bg');
+  if(!bg){ KI.entschieden=true; return Promise.resolve(true); }
+  bg.classList.add('open');
+  return new Promise(r=>{ kiModalResolve=r; });
+}
+
+function kiModalWahl(typ){
+  document.getElementById('ki-modal-bg').classList.remove('open');
+  kiSetTyp(typ);
+  showToast(typ ? 'Kennzeichnung gesetzt: '+KI_LABEL[typ] : 'Ohne Kennzeichnung vermerkt');
+  if(kiModalResolve){ const r=kiModalResolve; kiModalResolve=null; r(true); }
+}
+
+function kiModalAbbruch(){
+  document.getElementById('ki-modal-bg').classList.remove('open');
+  if(kiModalResolve){ const r=kiModalResolve; kiModalResolve=null; r(false); }
+}
+
+// Wert fuer den Post-Datensatz
+function kiFuerPost(){
+  if(!KI.entschieden) return '';
+  return KI.typ ? KI.typ : 'keine';
+}
+
+
 // Safe-Zone-Definitionen (als Anteil 0..1 der Canvas-Größe)
 // Basierend auf Meta/Instagram Story Guidelines
 const SAFE_ZONES=[
@@ -2655,23 +3066,27 @@ const TEMPLATES=[
    author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
    footer:'vhs Spandau',badge:'',badgeVis:false,
    lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:140},
   {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
    author:'',role:'',footer:'vhs Spandau',badge:'',badgeVis:false,
    lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:160},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Baskisch vom Sofa \u2013 mit Dir als Coach.',hlsize:19,
    sub:'Starte ab September 2026 als Online-Kursleitung an der VHS Spandau.',subsize:12,tbWidth:88,
    author:'',role:'',footer:'vhs Fremdsprachen',badge:'Wir suchen Dich!',badgeVis:true,
    lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:120},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
    sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
    author:'',role:'',footer:'vhs Politik | Gesellschaft | Umwelt',badge:'',badgeVis:false,
    lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:130},
 ];
 
@@ -2942,6 +3357,7 @@ function initStudio() {
   }
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
   loadTemplate(0);  // lädt Template und ruft danach applyRedaktionPayload wenn Payload da
+  kiSyncPanel();    // KI-Kennzeichnung: Panel und Leinwand angleichen
 }
 
 
@@ -3140,6 +3556,15 @@ function loadTemplate(idx){
   document.getElementById('pos-x').value=tbX;
   document.getElementById('pos-y').value=tbY;
 
+  // KI-Voreinstellung des Templates uebernehmen. Eine bereits getroffene
+  // Entscheidung bleibt bestehen — sie gehoert zum Inhalt, nicht zum Layout.
+  if(t.ki){
+    KI.groesse=t.ki.groesse; KI.pos=t.ki.pos; KI.variante=t.ki.variante;
+    KI.transparent=t.ki.transparent; KI.hinweis=t.ki.hinweis;
+    if(!KI.entschieden) KI.typ=t.ki.typ;
+  }
+  kiSyncPanel();
+
   if(idx===1) removeFoto();
   updateText();
   // Wenn Redaktions-Payload vorhanden: sofort überschreiben (kein setTimeout)
@@ -3158,6 +3583,7 @@ function setOverlayColorDirect(idx,hex,name){
   document.querySelectorAll('.dvv-sw').forEach((s,i)=>s.classList.toggle('on',i===idx));
   document.getElementById('cl-color').style.background=hex;
   updateBadgeLabel();
+  renderKI();
 }
 function setOverlayColor(idx,hex,name){setOverlayColorDirect(idx,hex,name);}
 
@@ -3169,6 +3595,7 @@ function updateOpacity(v){
   document.getElementById('cl-color').style.opacity=v/100;
   document.getElementById('sv-opacity').textContent=v+'%';
   updateBadgeLabel();
+  renderKI();
 }
 function updateBadgeLabel(){
   const v=Math.round(document.getElementById('sl-opacity').value);
@@ -3183,6 +3610,7 @@ function updatePhotoFilter(){
   document.getElementById('sv-sat').textContent=s+'%';
   document.getElementById('sv-contrast').textContent=c+'%';
   document.getElementById('cl-foto').style.filter=`brightness(${b}%) saturate(${s}%) contrast(${c}%)`;
+  renderKI();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3297,10 +3725,15 @@ function setFormat(idx,w,h,label,dim){
   document.querySelectorAll('.fmt-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
   const frame=document.getElementById('canvas-frame');
   frame.style.width=w+'px'; frame.style.height=h+'px';
-  document.getElementById('format-tag').textContent=label;
-  document.getElementById('exp-info').innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
+  // Nebenbefund: #format-tag existiert im Markup nicht (mehr). Ohne Absicherung
+  // brach setFormat hier ab — Formatwechsel blieb wirkungslos.
+  const tag=document.getElementById('format-tag');
+  if(tag) tag.textContent=label;
+  const info=document.getElementById('exp-info');
+  if(info) info.innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
   updateText();
   if(safeZonesVisible) setTimeout(drawSafeZones,50);
+  renderKI();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3368,17 +3801,17 @@ function removeFoto(){
 // Leinwand gebraucht wird — also in voller Exportaufloesung. Wuerde
 // html2canvas sie mitnehmen, entstuende sie in Bildschirmgroesse und wuerde
 // anschliessend hochskaliert; bei 1080 px Breite sieht man das deutlich.
-async function zeichneBildmarke(canvas, frame, skala){
+async function zeichneVektor(canvas, frame, skala, wrapperId, name){
   try{
-    const logo = document.getElementById('canvas-logo');
+    const logo = document.getElementById(wrapperId);
     if(!logo || getComputedStyle(logo).display === 'none') return;
-    const quelle = logo.querySelector('img');
-    if(!quelle) return;
+    const quelle = logo.tagName === 'IMG' ? logo : logo.querySelector('img');
+    if(!quelle || !quelle.getAttribute('src')) return true;
     const fr = frame.getBoundingClientRect();
-    const lr = logo.getBoundingClientRect();
+    const lr = quelle.getBoundingClientRect();
     if(!lr.width || !lr.height || !fr.width){
-      console.warn('[bildmarke] keine Masse ermittelbar, html2canvas-Fassung bleibt');
-      return;
+      console.warn('['+name+'] keine Masse ermittelbar');
+      return false;
     }
     const bild = new Image();
     await new Promise((fertig, fehler) => {
@@ -3391,17 +3824,52 @@ async function zeichneBildmarke(canvas, frame, skala){
       (lr.left - fr.left) * skala, (lr.top - fr.top) * skala,
       lr.width * skala, lr.height * skala
     );
-    console.log('[bildmarke] scharf nachgezeichnet bei',
+    console.log('['+name+'] scharf nachgezeichnet bei',
       Math.round((lr.left - fr.left) * skala), Math.round((lr.top - fr.top) * skala),
       'Groesse', Math.round(lr.width * skala));
+    return true;
   }catch(e){
-    // Nie den Export scheitern lassen: ohne Nachzeichnen bleibt die von
-    // html2canvas gerenderte Marke erhalten.
-    console.warn('[bildmarke] Nachzeichnen uebersprungen:', e.message);
+    console.warn('['+name+'] Nachzeichnen fehlgeschlagen:', e.message);
+    return false;
   }
 }
 
+// Alle Vektorelemente der Leinwand in Exportaufloesung nachzeichnen:
+// die vhs-Bildmarke und, falls gesetzt, das EU-Symbol der KI-Kennzeichnung.
+// Reihenfolge = Stapelreihenfolge auf der Leinwand.
+async function zeichneBildmarke(canvas, frame, skala){
+  const marke  = await zeichneVektor(canvas, frame, skala, 'canvas-logo', 'bildmarke');
+  const symbol = await zeichneVektor(canvas, frame, skala, 'ki-symbol', 'ki-symbol');
+  return marke && symbol;
+}
+
+// Die Leinwand, die html2canvas zurueckgibt, nimmt keine weiteren Zeichnungen
+// mehr an — fillRect und drawImage darauf bleiben wirkungslos. Genau daran ist
+// das Nachzeichnen der Bildmarke bisher stillschweigend gescheitert: der Aufruf
+// meldete Erfolg, im Bild landete aber die (fehlerhafte) html2canvas-Fassung
+// des SVG. Deshalb wird das Ergebnis zuerst auf eine eigene Leinwand kopiert;
+// erst dort werden die Vektoren gezeichnet.
+async function baueExportLeinwand(frame, res, f){
+  const roh = await html2canvas(frame, {
+    scale: res.w/f.w, useCORS:true, allowTaint:true,
+    backgroundColor:null, logging:false, width:f.w, height:f.h,
+    // Bearbeitungshilfen (Layer-Etikett, Koordinaten, Safe Zones) und die
+    // beiden SVG-Ebenen nicht mitrendern — Letztere kommen als Vektor dazu.
+    ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
+  });
+  const leinwand = document.createElement('canvas');
+  leinwand.width  = roh.width;
+  leinwand.height = roh.height;
+  leinwand.getContext('2d').drawImage(roh, 0, 0);
+  const ok = await zeichneBildmarke(leinwand, frame, res.w/f.w);
+  if(!ok) throw new Error('Bildmarke oder KI-Symbol konnten nicht gezeichnet werden');
+  return leinwand;
+}
+
 async function exportPNG(){
+  // Kennzeichnungsfrage vor den Export, nicht danach — hinterher fasst
+  // niemand das Layout nochmal an.
+  if(!await kiAbfrage()) return;
   showToast('🖼 Wird erstellt …');
   const svgEl=document.getElementById('safe-zone-svg');
   const wasVisible=safeZonesVisible;
@@ -3415,15 +3883,7 @@ async function exportPNG(){
   const res=EXPORT_RES[currentFormatIdx]||{w:1080,h:1920};
   const f=FORMATS[currentFormatIdx];
   try{
-    const canvas=await html2canvas(frame,{
-      scale:res.w/f.w, useCORS:true, allowTaint:true,
-      backgroundColor:null, logging:false, width:f.w, height:f.h,
-      // Bearbeitungshilfen nicht mitrendern (Layer-Etikett, Koordinaten,
-      // Safe Zones). Wirkt auf der Kopie, die html2canvas anlegt — die
-      // Ansicht flackert dadurch nicht.
-      ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
-    });
-    await zeichneBildmarke(canvas, frame, res.w/f.w);
+    const canvas=await baueExportLeinwand(frame, res, f);
     frame.style.transform=origT;
     tb.classList.add('selected');
     if(wasVisible){ svgEl.style.display='block'; }
@@ -3436,7 +3896,8 @@ async function exportPNG(){
     frame.style.transform=origT;
     tb.classList.add('selected');
     if(wasVisible){ svgEl.style.display='block'; }
-    showToast('❌ Export fehlgeschlagen');
+    console.error('[export]', err);
+    showToast('❌ Export fehlgeschlagen — ' + (err.message||''));
   }
 }
 
@@ -3446,12 +3907,14 @@ async function exportPNG(){
 async function saveToRedaktionsplan(){
   const datum=document.getElementById('exp-datum').value;
   if(!datum){showToast('⚠️ Bitte Datum wählen');return;}
+  if(!await kiAbfrage()) return;
   const post={
     id:'ed'+Date.now(), datum,uhrzeit:'17:00',
     kanal:document.getElementById('exp-kanal').value,
     anlass:document.getElementById('exp-anlass').value.trim()||'Visueller Post',
     text:document.getElementById('tf-headline').value||'',
     tags:'#vhsspandau #spandau',status:'geplant',freigabe:'',paid:'nein',url:'',ziel:'Reichweite',
+    kiKennzeichnung: kiFuerPost(),
   };
   try{
     const r=await fetch('/api/posts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});
@@ -3462,7 +3925,14 @@ async function saveToRedaktionsplan(){
 // ═══════════════════════════════════════════════════════════════
 // RESET
 // ═══════════════════════════════════════════════════════════════
-function resetEditor(){removeFoto();loadTemplate(0);showToast('↺ Editor zurückgesetzt');}
+function resetEditor(){
+  removeFoto();
+  // Neues Motiv, neue Entscheidung: die Kennzeichnung gehoert zum Inhalt
+  KI.typ=''; KI.entschieden=false;
+  loadTemplate(0);
+  kiSyncPanel();
+  showToast('↺ Editor zurückgesetzt');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // UTILS
@@ -3523,6 +3993,7 @@ function injectFreigabeCTA(anlass) {
 }
 
 async function exportUndFreigabe() {
+  if(!await kiAbfrage()) return;
   const btn = document.getElementById('btn-freigabe-submit');
   const statusEl = document.getElementById('freigabe-cta-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Wird erstellt …'; }
@@ -3541,12 +4012,7 @@ async function exportUndFreigabe() {
 
   let pngDataUrl = null;
   try {
-    const canvas = await html2canvas(frame, {
-      scale: res.w / f.w, useCORS: true, allowTaint: true,
-      backgroundColor: null, logging: false, width: f.w, height: f.h,
-      ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
-    });
-    await zeichneBildmarke(canvas, frame, res.w / f.w);
+    const canvas = await baueExportLeinwand(frame, res, f);
     pngDataUrl = canvas.toDataURL('image/jpeg', 0.82);
     // Download
     const link = document.createElement('a');
@@ -3554,7 +4020,8 @@ async function exportUndFreigabe() {
     link.href = pngDataUrl;
     link.click();
   } catch(err) {
-    showToast('❌ PNG-Export fehlgeschlagen');
+    console.error('[export]', err);
+    showToast('❌ PNG-Export fehlgeschlagen — ' + (err.message||''));
     if (btn) { btn.disabled = false; btn.textContent = '⬇ PNG exportieren & zur Freigabe'; }
     return;
   } finally {
@@ -3582,6 +4049,7 @@ async function exportUndFreigabe() {
     autor:   currentUser?.name || '',
     autorId: currentUser?.id   || '',
     eingereicht: true,
+    kiKennzeichnung: kiFuerPost(),
   };
 
   try {
@@ -3612,6 +4080,50 @@ function showToast(msg){
 
 
 </script>
+<!-- ══ PFLICHTABFRAGE KI-KENNZEICHNUNG ══ -->
+<div id="ki-modal-bg">
+  <div id="ki-modal">
+    <h3>Wie soll dieses Motiv gekennzeichnet werden?</h3>
+    <div class="kim-sub">
+      Art.&nbsp;50 Abs.&nbsp;4 EU AI Act. Die Entscheidung wird am Post vermerkt und
+      geht mit in die Freigabe. Sie l&auml;sst sich danach jederzeit &auml;ndern.
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai')">
+      <img src="/img/ki/ai_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI &mdash; Grundsymbol</div>
+        <div class="kim-d">KI war beteiligt, ein Mensch hat redigiert und tr&auml;gt die Verantwortung.
+          Rechtlich meist nicht verpflichtend, aber ein klares Transparenzsignal.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai-generated')">
+      <img src="/img/ki/ai-generated_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI GENERATED</div>
+        <div class="kim-d">Vollst&auml;ndig von KI erzeugt, au&szlig;er dem Prompt gab es keine
+          redaktionelle Kontrolle.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('ai-modified')">
+      <img src="/img/ki/ai-modified_white.svg" alt="">
+      <div>
+        <div class="kim-t">AI MODIFIED</div>
+        <div class="kim-d">Vorhandener, von Menschen erstellter Inhalt wurde mit KI ver&auml;ndert.</div>
+      </div>
+    </div>
+    <div class="kim-opt" onclick="kiModalWahl('')">
+      <div class="kim-keine"></div>
+      <div>
+        <div class="kim-t">Keine Kennzeichnung</div>
+        <div class="kim-d">Keine KI beteiligt, oder eine Ausnahme greift: Kunst, Satire, Fiktion;
+          redaktionell gepr&uuml;fter Text mit benannter Verantwortung; reine Rechtschreib- und
+          Stilkorrektur.</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <span onclick="kiModalAbbruch()" style="font-size:9px;color:rgba(255,255,255,.35);cursor:pointer;text-decoration:underline">Abbrechen</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
-                     

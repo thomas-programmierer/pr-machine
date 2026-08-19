@@ -1095,8 +1095,9 @@ function renderMonat(monat, jahr, allePosts) {
             ${icon} ${label}
           </div>`;
         });
-        // "Vorschlag"-Button nur auf Tagen mit Hook oder Zulieferung
-        if (hook || (ZULIEFERUNGEN[datStr]||[]).length) {
+        // "Vorschlag"-Chip: fuer Admin und PBL an jedem Tag, fuer die
+        // Redaktion weiterhin nur auf Tagen mit Hook oder Zulieferung.
+        if (['pbl','admin'].includes(currentUser.role) || hook || (ZULIEFERUNGEN[datStr]||[]).length) {
           html += `<div class="post-chip" style="background:var(--blau10);color:var(--blau60);border-left:3px solid var(--blau20);cursor:pointer"
             onclick="event.stopPropagation();openPblModal('${datStr}')">
             + Vorschlag
@@ -1271,10 +1272,16 @@ function renderTag(datum, allePosts) {
       ${feiertagInfo ? `<div style="font-size:11px;background:rgba(250,185,15,.2);color:var(--gelb);padding:3px 10px;border-radius:10px;font-weight:600">${feiertagInfo.typ==='feiertag'?'🔔':'🏖️'} ${esc(feiertagInfo.label)}</div>` : ''}
       <div style="margin-left:auto;display:flex;gap:6px">
         ${tagPosts.length > 0 ? `<span style="font-size:12px;color:rgba(255,255,255,.7)">${tagPosts.length} Post${tagPosts.length>1?'s':''}</span>` : ''}
-        ${currentUser && currentUser.role === 'pbl'
-          ? `<button onclick="openPblModal('${datStr}')" style="background:var(--gruen);color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📬 Vorschlag einreichen</button>`
-          : `<button onclick="openPostModal(null,'${datStr}')" style="background:var(--gelb);color:var(--blau);border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋ Post planen</button>`
-        }
+        ${(() => {
+          const r = currentUser && currentUser.role;
+          const btnVorschlag = `<button onclick="openPblModal('${datStr}')" style="background:var(--gruen);color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📬 Vorschlag einreichen</button>`;
+          const btnPost      = `<button onclick="openPostModal(null,'${datStr}')" style="background:var(--gelb);color:var(--blau);border:none;border-radius:7px;padding:6px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">＋ Post planen</button>`;
+          // PBL reicht nur ein. Admin kann beides: direkt planen oder — wie die
+          // PBL — einen Vorschlag in die Redaktion geben. Redakteur plant direkt.
+          if (r === 'pbl')   return btnVorschlag;
+          if (r === 'admin') return btnVorschlag + btnPost;
+          return btnPost;
+        })()}
       </div>
     </div>`;
 

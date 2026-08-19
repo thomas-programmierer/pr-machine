@@ -166,7 +166,8 @@ function rowToPost(r) {
     autor:          r.autor,
     autorId:        r.autor_id,
     bild:           r.bild || null,
-    pb:             r.pb || null
+    pb:             r.pb || null,
+    kiKennzeichnung: r.ki_kennzeichnung || ''
   };
 }
 
@@ -179,15 +180,17 @@ async function addPost(p) {
   var res = await pool.query(
     `INSERT INTO posts
        (datum, uhrzeit, kanal, anlass, text, tags, status, ziel,
-        freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id, bild, pb)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+        freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id, bild, pb,
+        ki_kennzeichnung)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
      RETURNING *`,
     [ p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
       p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
       p.freigabe || null, p.freigegebenVon || p.freigegeben_von || null,
       p.paid || 'nein', p.url || null,
       p.erstellt || new Date().toISOString(), p.autor || null, p.autorId || p.autor_id || null,
-      p.bild || null, p.pb || null ]
+      p.bild || null, p.pb || null,
+      p.kiKennzeichnung || p.ki_kennzeichnung || '' ]
   );
   return rowToPost(res.rows[0]);
 }
@@ -197,13 +200,17 @@ async function updatePost(id, p) {
     `UPDATE posts SET
        datum=$2, uhrzeit=$3, kanal=$4, anlass=$5, text=$6, tags=$7,
        status=$8, ziel=$9, freigabe=$10, freigegeben_von=$11,
-       paid=$12, url=$13, autor=$14, autor_id=$15
+       paid=$12, url=$13, autor=$14, autor_id=$15,
+       ki_kennzeichnung=COALESCE($16, ki_kennzeichnung)
      WHERE id=$1
      RETURNING *`,
     [ id, p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
       p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
       p.freigabe || null, p.freigegebenVon || p.freigegeben_von || null,
-      p.paid || 'nein', p.url || null, p.autor || null, p.autorId || p.autor_id || null ]
+      p.paid || 'nein', p.url || null, p.autor || null, p.autorId || p.autor_id || null,
+      // undefined laesst den Bestand stehen, '' setzt bewusst zurueck
+      (p.kiKennzeichnung !== undefined ? p.kiKennzeichnung
+        : (p.ki_kennzeichnung !== undefined ? p.ki_kennzeichnung : null)) ]
   );
   return res.rows[0] ? rowToPost(res.rows[0]) : null;
 }
@@ -277,6 +284,11 @@ async function ensureTables() {
   `);
   await pool.query(`
     ALTER TABLE posts ADD COLUMN IF NOT EXISTS pb TEXT
+  `);
+  // Kennzeichnung nach EU AI Act Art. 50 Abs. 4:
+  // '' = noch nicht entschieden | 'keine' | 'ai' | 'ai-generated' | 'ai-modified'
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS ki_kennzeichnung TEXT
   `);
 }
 

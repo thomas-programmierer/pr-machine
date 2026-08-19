@@ -159,6 +159,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 
 /* LOGIN REDIRECT */
 #login-required{display:none;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:40px;text-align:center;color:var(--blau60)}
+.ki-chip{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;
+  border-radius:9px;letter-spacing:.2px;line-height:1.5}
+.ki-chip-gesetzt{background:rgba(175,200,5,.18);color:#6B7A00;border:1px solid rgba(175,200,5,.5)}
+.ki-chip-keine{background:rgba(105,130,155,.15);color:#69829B;border:1px solid rgba(105,130,155,.35)}
+.ki-chip-offen{background:rgba(235,100,15,.12);color:#EB640F;border:1px solid rgba(235,100,15,.45)}
 </style>
 </head>
 <body>
@@ -394,6 +399,7 @@ function renderDirektionBoard() {
             ${p.format ? `<span class="dir-tag">${esc(p.format)}</span>` : ''}
             ${datum    ? `<span class="dir-tag">${datum}</span>` : ''}
           </div>
+          <div style="margin-top:5px">${kiChip(p)}</div>
         </div>
       </div>
       ${p.headline||p.text ? `<div class="dir-card-snippet" onclick="openDetail('${p.id}')">${esc(p.headline||p.text||'')}</div>` : ''}
@@ -469,6 +475,7 @@ function renderCards() {
         <div class="pc-meta">
           <div class="pc-anlass">${esc(p.anlass||'Unbenannter Post')}</div>
           <div class="pc-sub"><span>${esc(p.kanal||'')}</span><span>${esc(p.format||'')}</span><span>${datum}</span></div>
+          <div style="margin-top:4px">${kiChip(p)}</div>
         </div>
         <span class="pc-pill ${s.pill}">${s.label}</span>
       </div>
@@ -599,6 +606,29 @@ async function setStatus(id, status, extra = {}) {
   else { updateCounts(); renderCards(); }
 }
 
+// ── KI-KENNZEICHNUNG (EU AI Act Art. 50 Abs. 4) ──────────────────────────────
+// Die im Grafik-Studio getroffene Entscheidung wird am Post mitgefuehrt, damit
+// die Freigabe sie sieht, ohne das Bild vergroessern zu muessen.
+const KI_LABEL = { 'ai':'AI', 'ai-generated':'AI GENERATED', 'ai-modified':'AI MODIFIED' };
+
+function kiWert(p) { return p.kiKennzeichnung || p.ki_kennzeichnung || ''; }
+
+// Kleiner Chip fuer die Kartenansicht
+function kiChip(p) {
+  const w = kiWert(p);
+  if (!w) return '<span class="ki-chip ki-chip-offen" title="Vor der Freigabe klaeren">KI-Kennzeichnung offen</span>';
+  if (w === 'keine') return '<span class="ki-chip ki-chip-keine">ohne KI-Kennzeichnung</span>';
+  return '<span class="ki-chip ki-chip-gesetzt">' + esc(KI_LABEL[w] || w) + '</span>';
+}
+
+// Klartextzeile fuer das Detailfenster
+function kiZeile(p) {
+  const w = kiWert(p);
+  if (!w) return '<span style="color:#EB640F">noch nicht entschieden</span>';
+  if (w === 'keine') return 'keine — ohne KI erstellt oder Ausnahme nach Art. 50';
+  return '<b>' + esc(KI_LABEL[w] || w) + '</b> — Symbol ist ins Bild eingebettet';
+}
+
 // ── DETAIL MODAL ─────────────────────────────────────────────────────────────
 function openDetail(id) {
   const p = allePosts.find(x => x.id === id);
@@ -620,6 +650,7 @@ function openDetail(id) {
         <div><span style="color:var(--blau60)">Eingereicht:</span> ${datum}</div>
         ${p.kurs ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Kurs:</span> ${esc(p.kurs)}</div>` : ''}
         ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
+        <div style="grid-column:1/-1"><span style="color:var(--blau60)">KI-Kennzeichnung:</span> ${kiZeile(p)}</div>
       </div>
     </div>
     ${p.text ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.text)}</div></div>` : ''}

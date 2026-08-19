@@ -39,3 +39,11 @@ setup_thema_clone.sh
 tmp_thema/
 tmp_users_thema.json
 Session-Zusammenfassung-*.pdf
+
+# Arbeitsordner aus der Umstellung auf die KI-Kennzeichnung (19.08.2026)
+_backup_vor_ki/
+_to_delete/
+_ki_tmp/
+_ki-update.zip
+_neu_index.html
+.fuse_hidden*
