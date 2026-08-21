@@ -140,6 +140,32 @@ function getSession(token) {
   return s;
 }
 
+// ── Zugang zu den Seiten ──────────────────────────────────────────────────────
+// Bisher wurde jede Seite an jeden ausgeliefert und erst im Browser geprueft.
+// Wer nicht angemeldet war, sah kurz die volle Oberflaeche und flog dann
+// heraus. Jetzt entscheidet der Server, bevor etwas das Haus verlaesst.
+// Wert = erlaubte Rollen, null = jede angemeldete Rolle.
+const SEITEN_ZUGANG = {
+  "editor.html":      null,
+  "kalender.html":    null,
+  "kurse.html":       null,
+  "kursliste.html":   null,
+  "performance.html": null,
+  "freigabe.html":    null,
+  "voransicht.html":  null,
+  "admin.html":       ["admin"]
+};
+
+// Liefert das Umleitungsziel, oder null wenn die Seite ausgeliefert werden darf.
+function seitenWeiterleitung(datei, sess, url) {
+  const zugang = SEITEN_ZUGANG[datei];
+  if (zugang === undefined) return null;              // nicht geschuetzt
+  const ziel = encodeURIComponent(url);
+  if (!sess) return `/?weiter=${ziel}`;
+  if (zugang && !zugang.includes(sess.user.role)) return `/?fehler=rolle&weiter=${ziel}`;
+  return null;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function jsonRes(res, status, data, extra={}) {
   res.writeHead(status, { "Content-Type":"application/json", "Access-Control-Allow-Origin":"*", ...extra });
@@ -917,6 +943,8 @@ const server = http.createServer(async (req, res) => {
                   "/kurse":"kurse.html", "/admin":"admin.html",
                   "/voransicht":"voransicht.html" };
   if (req.method === "GET" && PAGES[url]) {
+    const umleitung = seitenWeiterleitung(PAGES[url], sess, url);
+    if (umleitung) { res.writeHead(302, { Location: umleitung }); return res.end(); }
     return fs.readFile(path.join(__dirname, "public", PAGES[url]), (e,c) => {
       if (e) { res.writeHead(404); return res.end("404"); }
       res.writeHead(200, {"Content-Type":"text/html; charset=utf-8"});
@@ -1073,6 +1101,12 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, kopf);
     res.end(inhalt);
   };
+
+  // Auch die direkte Schreibweise mit .html geht durch den Waechter — sonst
+  // waere /editor geschuetzt und /editor.html offen.
+  const direkteDatei = url.replace(/^\//, "");
+  const umleitungStatisch = seitenWeiterleitung(direkteDatei, sess, url);
+  if (umleitungStatisch) { res.writeHead(302, { Location: umleitungStatisch }); return res.end(); }
 
   let fp = path.join(__dirname, "public", url === "/" || !url.includes(".") ? "index.html" : url);
   fs.readFile(fp, (err, c) => {

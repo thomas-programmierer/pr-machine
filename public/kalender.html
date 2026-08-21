@@ -294,8 +294,9 @@ input:checked+.slider:before{transform:translateX(15px)}
   <div class="logo">
     <div class="logo-mark"><!-- Logo 1:1 aus der Originaldatei des Marketingportals. Hier stand bis zum
        19.08.2026 ein typografischer Nachbau aus Arial-Text und Kreisen. -->
-    <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-         style="height:28px;width:auto;display:block"></div>
+    <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+    <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+         style="height:21.4px;width:auto;display:block"></div>
   </div>
 </div>
 
@@ -306,7 +307,7 @@ input:checked+.slider:before{transform:translateX(15px)}
 (async function() {
   try {
     const r = await fetch('/api/me', { credentials:'include' });
-    if (!r.ok) return;
+    if (!r.ok) { sitzungBeendet(); return; }
     const { user } = await r.json();
     const role = user.role;
     const PAGES = [
@@ -881,7 +882,7 @@ const STATUS_LABEL = {geplant:'Geplant',freigabe:'Freigabe ausstehend',veroeffen
 window.addEventListener('load', async () => {
   try {
     const r = await fetch('/api/me', { credentials:'include' });
-    if (!r.ok) { window.location.href = '/'; return; }
+    if (!r.ok) { sitzungBeendet(); return; }
     const d = await r.json();
     currentUser = d.user;
     const hdrUser = document.getElementById('hdr-user'); if (hdrUser) hdrUser.textContent = currentUser.name + ' · ' + ROLE_LABELS[currentUser.role]||currentUser.role;
@@ -1640,6 +1641,37 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+</script>
+<!-- Einheitliche Behandlung einer beendeten Sitzung. Frueher reagierte jede
+     Seite anders: editor leitete sofort um, freigabe und voransicht zeigten
+     einen Hinweis, kalender, kurse und performance blieben stumm leer stehen.
+     Jetzt ueberall dasselbe: sichtbarer Hinweis, dann zurueck zur Anmeldung —
+     mit Rueckweg auf diese Seite. -->
+<script>
+function hinweisBanner(text, farbe){
+  let el = document.getElementById('sitzung-hinweis');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sitzung-hinweis';
+    el.setAttribute('role','alert');
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 18px;'
+      + "font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;"
+      + 'text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)';
+    document.body.appendChild(el);
+  }
+  el.style.background = farbe || '#EB640F';
+  el.textContent = text;
+  return el;
+}
+let sitzungLaeuftAb = false;
+function sitzungBeendet(){
+  if (sitzungLaeuftAb) return;          // nicht mehrfach ausloesen
+  sitzungLaeuftAb = true;
+  hinweisBanner('Die Sitzung ist abgelaufen. Weiter zur Anmeldung \u2026');
+  setTimeout(function(){
+    location.href = '/?weiter=' + encodeURIComponent(location.pathname + location.search);
+  }, 2200);
+}
 </script>
 </body>
 </html>

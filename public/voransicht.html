@@ -104,8 +104,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 <div class="topbar">
   <!-- Logo 1:1 aus der Originaldatei des Marketingportals. Hier stand bis zum
        19.08.2026 ein typografischer Nachbau aus Arial-Text und Kreisen. -->
-    <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-         style="height:24px;width:auto;display:block">
+    <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+    <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+         style="height:18.4px;width:auto;display:block">
   <div class="tb-tag">⑤ Voransicht & Freigabe</div>
   <div class="tb-right">
     <span class="user-info" id="hdr-user"></span>
@@ -192,11 +193,8 @@ async function init() {
   } catch { redirectLogin(); }
 }
 
-function redirectLogin() {
-  document.getElementById('login-required').style.display = 'flex';
-  setTimeout(() => { window.location.href = '/'; }, 2000);
-}
-
+// Delegiert an die gemeinsame Behandlung, damit alle Seiten gleich reagieren.
+function redirectLogin() { sitzungBeendet(); }
 async function doLogout() {
   await fetch('/api/logout', { method:'POST', credentials:'include' });
   window.location.href = '/';
@@ -411,6 +409,37 @@ function showToast(msg) {
 
 setInterval(ladePosts, 30000);
 window.addEventListener('load', init);
+</script>
+<!-- Einheitliche Behandlung einer beendeten Sitzung. Frueher reagierte jede
+     Seite anders: editor leitete sofort um, freigabe und voransicht zeigten
+     einen Hinweis, kalender, kurse und performance blieben stumm leer stehen.
+     Jetzt ueberall dasselbe: sichtbarer Hinweis, dann zurueck zur Anmeldung —
+     mit Rueckweg auf diese Seite. -->
+<script>
+function hinweisBanner(text, farbe){
+  let el = document.getElementById('sitzung-hinweis');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sitzung-hinweis';
+    el.setAttribute('role','alert');
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 18px;'
+      + "font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;"
+      + 'text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)';
+    document.body.appendChild(el);
+  }
+  el.style.background = farbe || '#EB640F';
+  el.textContent = text;
+  return el;
+}
+let sitzungLaeuftAb = false;
+function sitzungBeendet(){
+  if (sitzungLaeuftAb) return;          // nicht mehrfach ausloesen
+  sitzungLaeuftAb = true;
+  hinweisBanner('Die Sitzung ist abgelaufen. Weiter zur Anmeldung \u2026');
+  setTimeout(function(){
+    location.href = '/?weiter=' + encodeURIComponent(location.pathname + location.search);
+  }, 2200);
+}
 </script>
 </body>
 </html>

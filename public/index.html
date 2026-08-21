@@ -579,8 +579,9 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div class="login-logo">
       <div class="login-mark"><!-- Logo 1:1 aus der Originaldatei des Marketingportals. Hier stand bis zum
            19.08.2026 ein typografischer Nachbau aus Arial-Text und Kreisen. -->
-      <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-           style="height:32px;width:auto;display:block"></div>
+      <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+      <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+           style="height:24.5px;width:auto;display:block"></div>
     </div>
     <div class="login-heading">Willkommen</div>
     <div class="login-desc">Bitte melde dich mit deinen Zugangsdaten an.</div>
@@ -604,8 +605,9 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div class="logo">
       <div class="logo-mark"><!-- Logo 1:1 aus der Originaldatei des Marketingportals. Hier stand bis zum
            19.08.2026 ein typografischer Nachbau aus Arial-Text und Kreisen. -->
-      <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-           style="height:28px;width:auto;display:block"></div>
+      <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+      <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+           style="height:21.4px;width:auto;display:block"></div>
     </div>
     <div class="header-right">
       <div class="user-badge">
@@ -1116,6 +1118,8 @@ async function doLogin() {
     const d = await r.json();
     if (!r.ok) { errEl.style.display='block'; return; }
     currentUser = d.user;
+    const ziel = weiterZiel();
+    if (ziel) { location.href = ziel; return; }   // zurueck, wo der Waechter unterbrach
     initApp();
   } catch(e) {
     errEl.style.display = 'block';
@@ -1175,11 +1179,45 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
 });
 
+// ── Rueckweg nach der Anmeldung ──────────────────────────────────────────────
+// Der Waechter im Server haengt beim Umleiten ?weiter=<pfad> an. Nach der
+// Anmeldung geht es dorthin zurueck, statt den Nutzer auf der Startseite
+// abzusetzen. Nur seiteneigene Pfade werden akzeptiert, damit der Parameter
+// nicht zum Weiterleitungsziel nach aussen missbraucht werden kann.
+function weiterZiel() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('fehler')) return '';              // bei Rollenfehler nicht zurueck: das schliefe
+  const w = p.get('weiter') || '';
+  if (!w.startsWith('/') || w.startsWith('//')) return '';
+  if (!/^\/[A-Za-z0-9_\-./?=&%]*$/.test(w)) return '';
+  if (w.includes('..')) return '';             // kein Ausbruch aus dem Pfad
+  return w;
+}
+
+// Der Waechter meldet mit ?fehler=rolle, dass die Rolle nicht reicht.
+function rollenHinweisZeigen() {
+  if (new URLSearchParams(location.search).get('fehler') !== 'rolle') return;
+  const el = document.createElement('div');
+  el.setAttribute('role','alert');
+  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 18px;'
+    + "font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;"
+    + 'background:#EB640F;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)';
+  el.textContent = 'Diese Seite ist für Ihre Rolle nicht freigegeben.';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 6000);
+}
+
 // Session beim Laden prüfen
 window.addEventListener('load', async () => {
+  rollenHinweisZeigen();
   try {
     const r = await fetch('/api/me', { credentials:'include' });
-    if (r.ok) { const d = await r.json(); currentUser = d.user; initApp(); }
+    if (r.ok) {
+      const d = await r.json(); currentUser = d.user;
+      const ziel = weiterZiel();
+      if (ziel) { location.href = ziel; return; }
+      initApp();
+    }
   } catch {}
 });
 
