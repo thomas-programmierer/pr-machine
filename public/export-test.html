@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Export-Vergleich · Grafik-Studio</title>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Nicht verlinkt, nur direkt aufrufbar: /export-test.html
+
+  Zweck: die beiden Renderwege nebeneinander sichtbar machen.
+  html2canvas 1.4.1 unterstuetzt laut eigener Feature-Liste weder filter noch
+  box-shadow, object-fit, mix-blend-mode oder background-blend-mode.
+  html-to-image rendert ueber foreignObject und damit durch die echte Layout-
+  und Paint-Engine des Browsers; alles davon kommt dort an.
+
+  Das Testmotiv traegt bewusst jede dieser Eigenschaften genau einmal, damit
+  im Vergleich abzulesen ist, welche durchkommt und welche nicht.
+-->
+<style>
+:root{
+  --blau:#00285A; --gruen:#AFC805; --gelb:#FAB90F; --rot:#E1000F;
+  --panel:#0E1E33; --border:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'DM Sans',sans-serif;background:#111827;color:#fff;
+     padding:22px 26px 60px;line-height:1.5}
+h1{font-size:19px;font-weight:800;margin:0 0 3px}
+.sub{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:18px;max-width:760px;line-height:1.7}
+.leiste{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+button{font-family:inherit;font-size:11px;font-weight:700;padding:9px 14px;border-radius:7px;
+  border:1px solid var(--border);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+button:hover{background:rgba(255,255,255,.13)}
+button.haupt{background:var(--gelb);color:var(--blau);border-color:var(--gelb)}
+button:disabled{opacity:.45;cursor:default}
+select{font-family:inherit;font-size:11px;padding:8px 10px;border-radius:7px;
+  border:1px solid var(--border);background:var(--panel);color:#fff}
+.status{font-size:11px;color:var(--gelb);min-height:18px;margin-bottom:14px}
+
+.reihe{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.spalte{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:13px}
+.spalte h2{font-size:12px;font-weight:700;margin:0 0 2px}
+.spalte .meta{font-size:10px;color:rgba(255,255,255,.45);margin-bottom:9px;line-height:1.6;min-height:30px}
+.spalte img,.spalte .motivbox{display:block;border:1px solid rgba(255,255,255,.16);border-radius:4px}
+.spalte img{width:270px;height:auto;background:
+  repeating-conic-gradient(#2a2a2a 0% 25%, #333 0% 50%) 50%/16px 16px}
+
+/* ══════════════════ TESTMOTIV ══════════════════
+   Bewusst dieselbe Struktur wie #canvas-frame im Studio.            */
+#motiv{position:relative;width:270px;height:480px;overflow:hidden;border-radius:4px;
+  box-shadow:0 12px 40px rgba(0,0,0,.55)}          /* box-shadow am Wurzelknoten */
+
+/* CSS filter — genau der Fall, der mit html2canvas fehlt */
+#m-foto{position:absolute;inset:0;background-size:cover;background-position:center;
+  filter:brightness(75%) saturate(70%) contrast(105%)}
+
+/* mix-blend-mode auf der Farbebene */
+#m-farbe{position:absolute;inset:0;background:#00285A;opacity:.72;mix-blend-mode:multiply}
+
+/* object-fit: cover auf einem echten <img> */
+#m-objectfit{position:absolute;top:120px;left:14px;width:110px;height:56px;
+  object-fit:cover;border-radius:3px;box-shadow:0 4px 14px rgba(0,0,0,.6)}
+
+#m-text{position:absolute;left:14px;top:196px;width:238px}
+#m-hl{font-family:'DM Sans',sans-serif;font-weight:700;font-size:19px;line-height:1.25;color:#fff}
+#m-sub{font-family:'DM Sans',sans-serif;font-weight:400;font-size:12px;line-height:1.5;
+  color:rgba(255,255,255,.8);margin-top:7px}
+
+#m-logo{position:absolute;top:12px;right:12px}
+#m-logo img{display:block;height:17.5px;width:auto}
+
+#m-ki{position:absolute;left:14px;bottom:12px}
+#m-ki img{display:block;height:16.2px;width:84.2px}
+
+#m-fuss{position:absolute;left:14px;right:14px;bottom:38px}
+#m-fuss .linie{height:2px;width:44px;background:var(--gelb);border-radius:1px}
+
+.tabelle{margin-top:26px;border-collapse:collapse;font-size:11px;width:100%;max-width:760px}
+.tabelle th,.tabelle td{border:1px solid var(--border);padding:6px 9px;text-align:left}
+.tabelle th{background:rgba(255,255,255,.05);font-weight:700}
+.tabelle td.ok{color:var(--gruen);font-weight:700}
+.tabelle td.nein{color:var(--rot);font-weight:700}
+.fuss{margin-top:26px;font-size:10px;color:rgba(255,255,255,.35);line-height:1.8;max-width:760px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:10px;
+  background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<h1>Export-Vergleich</h1>
+<div class="sub">
+  Testmotiv im Story-Format (270&nbsp;&times;&nbsp;480&nbsp;CSS, Export 1080&nbsp;&times;&nbsp;1920).
+  Es traegt jede Eigenschaft, die html2canvas laut Feature-Liste nicht abbildet:
+  <code>filter</code>, <code>box-shadow</code>, <code>object-fit:cover</code>,
+  <code>mix-blend-mode</code> &mdash; dazu DM&nbsp;Sans in zwei Schnitten,
+  das vhs-Logo und das EU-KI-Symbol.
+  Beide Renderwege ueberspringen die Klasse <code>kein-export</code> nicht:
+  hier sollen Logo und Symbol bewusst mitgerendert werden, damit die
+  Schriftein&shy;bettung und die SVG-Behandlung sichtbar werden.
+</div>
+
+<div class="leiste">
+  <button class="haupt" id="btn-rendern">Beide Wege rendern</button>
+  <button id="btn-alle">Alle 8 Formate messen (html-to-image)</button>
+  <label style="font-size:11px;color:rgba(255,255,255,.5)">
+    Zielformat
+    <select id="sel-format"></select>
+  </label>
+</div>
+<div class="status" id="status">Bereit.</div>
+
+<div class="reihe">
+  <div class="spalte">
+    <h2>Arbeitsflaeche (Referenz)</h2>
+    <div class="meta">Live-DOM, so wie es der Browser darstellt.</div>
+    <div class="motivbox">
+      <div id="motiv">
+        <div id="m-foto"></div>
+        <div id="m-farbe"></div>
+        <img id="m-objectfit" alt="">
+        <div id="m-text">
+          <div id="m-hl">Ich wollte immer die Welt sehen.</div>
+          <div id="m-sub">DM&nbsp;Sans 400 unter DM&nbsp;Sans 700 &mdash; zwei Schnitte,
+            damit die Schrifteinbettung pruefbar ist.</div>
+        </div>
+        <div id="m-fuss"><div class="linie"></div></div>
+        <div id="m-logo"><img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Spandau"></div>
+        <div id="m-ki"><img src="/img/ki/ai-generated_white.svg" alt="AI GENERATED"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spalte">
+    <h2>html-to-image 1.11.13</h2>
+    <div class="meta" id="meta-h2i">&mdash;</div>
+    <img id="bild-h2i" alt="">
+  </div>
+
+  <div class="spalte">
+    <h2>html2canvas 1.4.1 (Rueckweg)</h2>
+    <div class="meta" id="meta-h2c">&mdash;</div>
+    <img id="bild-h2c" alt="">
+  </div>
+</div>
+
+<table class="tabelle" id="tab-eigenschaften">
+  <thead><tr><th>CSS-Eigenschaft</th><th>im Motiv</th><th>html-to-image</th><th>html2canvas</th></tr></thead>
+  <tbody>
+    <tr><td><code>filter</code> brightness/saturate/contrast</td><td>Fotoebene</td><td class="ok">kommt an</td><td class="nein">fehlt</td></tr>
+    <tr><td><code>box-shadow</code></td><td>Motivrahmen + object-fit-Bild</td><td class="ok">kommt an</td><td class="nein">fehlt</td></tr>
+    <tr><td><code>object-fit: cover</code></td><td>eingebettetes &lt;img&gt;</td><td class="ok">kommt an</td><td class="nein">fehlt</td></tr>
+    <tr><td><code>mix-blend-mode: multiply</code></td><td>Farbebene</td><td class="ok">kommt an</td><td class="nein">fehlt</td></tr>
+    <tr><td>DM Sans 400 / 700</td><td>Text</td><td id="z-font-h2i">&mdash;</td><td>&mdash;</td></tr>
+    <tr><td>SVG (Logo, KI-Symbol)</td><td>zwei &lt;img&gt;</td><td>&mdash;</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+
+<div class="tabelle" style="display:none"></div>
+<table class="tabelle" id="tab-zeiten" style="display:none">
+  <thead><tr><th>Format</th><th>Exportmasse</th><th>pixelRatio</th><th>Dauer</th><th>PNG</th><th>gemessen</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<div class="fuss">
+  Die Masse werden nach dem Export per <code>createImageBitmap</code> am fertigen
+  Blob gemessen, nicht am Canvas &mdash; gepruef&shy;t wird also das, was auf der
+  Platte landet. Beide Bibliotheken liegen lokal unter <code>/vendor/</code>;
+  die Seite braucht dafuer keinen Netzzugriff. Einzige Ausnahme ist DM&nbsp;Sans
+  von Google Fonts, das <code>getFontEmbedCSS</code> zur Laufzeit nachlaedt und
+  als Data-URL einbettet.
+</div>
+
+<script src="/vendor/html-to-image-1.11.13.js"></script>
+<script src="/vendor/html2canvas-1.4.1.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// FORMATE — Spiegel der Registry aus editor.html
+// ═══════════════════════════════════════════════════════════════
+// Bewusst eine eigene, schlanke Kopie: die Testseite soll unabhaengig vom
+// Studio laufen koennen. Wer die Registry dort aendert, aendert sie hier mit.
+const FORMATE=[
+  {key:'ig-portrait-34', label:'Instagram Feed – Hochformat', w:1080, h:1440},
+  {key:'ig-portrait-45', label:'Instagram Feed – 4:5',        w:1080, h:1350},
+  {key:'ig-square',      label:'Instagram Feed – Quadrat',    w:1080, h:1080},
+  {key:'ig-story',       label:'Story / Reels',               w:1080, h:1920},
+  {key:'fb-feed',        label:'Facebook Feed – Bild',        w:1200, h:1200},
+  {key:'fb-link',        label:'Facebook Link-Vorschau',      w:1200, h:630},
+  {key:'fb-event',       label:'Facebook Veranstaltung',      w:1920, h:1005},
+  {key:'web-169',        label:'Quer / Web / Präsentation',   w:1920, h:1080},
+];
+const ANZEIGE_BOX={w:560,h:480};
+function anzeigeMasse(f){
+  const s=Math.min(ANZEIGE_BOX.w/f.w, ANZEIGE_BOX.h/f.h);
+  return {w:Math.round(f.w*s), h:Math.round(f.h*s)};
+}
+
+const motiv=document.getElementById('motiv');
+const status=document.getElementById('status');
+function melde(t){ status.textContent=t; }
+
+// ═══════════════════════════════════════════════════════════════
+// TESTFOTO — im Browser erzeugt, damit die Seite ohne Netz auskommt
+// ═══════════════════════════════════════════════════════════════
+// Ein echtes Rasterbild mit Farbverlauf und harten Kanten. Der Verlauf zeigt
+// Saettigungs- und Kontrastaenderungen, die Kanten zeigen Skalierungsfehler.
+function testFoto(w,h){
+  const c=document.createElement('canvas');
+  c.width=w; c.height=h;
+  const g=c.getContext('2d');
+  const v=g.createLinearGradient(0,0,w,h);
+  v.addColorStop(0,'#E1000F'); v.addColorStop(.45,'#FAB90F'); v.addColorStop(1,'#AFC805');
+  g.fillStyle=v; g.fillRect(0,0,w,h);
+  g.fillStyle='rgba(0,40,90,.85)';
+  for(let i=0;i<9;i++) g.fillRect(0, i*h/9, w, h/34);      // harte Kanten
+  g.fillStyle='#fff';
+  g.beginPath(); g.arc(w*.7, h*.3, Math.min(w,h)*.16, 0, Math.PI*2); g.fill();
+  return c.toDataURL('image/png');
+}
+const fotoUrl=testFoto(540,960);
+document.getElementById('m-foto').style.backgroundImage='url('+fotoUrl+')';
+document.getElementById('m-objectfit').src=testFoto(400,120);   // breit -> cover schneidet
+
+// Formatauswahl
+const sel=document.getElementById('sel-format');
+sel.innerHTML=FORMATE.map((f,i)=>
+  '<option value="'+i+'"'+(f.key==='ig-story'?' selected':'')+'>'+f.label+' · '+f.w+'×'+f.h+'</option>'
+).join('');
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERWEGE
+// ═══════════════════════════════════════════════════════════════
+let fontEmbedCache=null;
+async function schriftenEinbetten(node){
+  if(fontEmbedCache!==null) return fontEmbedCache;
+  try{ fontEmbedCache=await htmlToImage.getFontEmbedCSS(node); }
+  catch(e){ console.warn('[test] getFontEmbedCSS:', e.message); fontEmbedCache=''; }
+  return fontEmbedCache;
+}
+async function bilderVorladen(node){
+  const bilder=Array.from(node.querySelectorAll('img')).filter(b=>b.getAttribute('src'));
+  await Promise.all(bilder.map(b=>(b.decode?b.decode():Promise.resolve()).catch(()=>{})));
+}
+
+// Zielgroesse hart erzwingen — identisch zu baueExportLeinwand im Studio
+function aufZielgroesse(roh, f){
+  const c=document.createElement('canvas');
+  c.width=Math.round(f.w); c.height=Math.round(f.h);
+  const g=c.getContext('2d');
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+  g.drawImage(roh, 0,0, Math.round(roh.width), Math.round(roh.height),
+                   0,0, Math.round(f.w),       Math.round(f.h));
+  return c;
+}
+function alsBlob(c){
+  return new Promise((ok,f)=>c.toBlob(b=>b?ok(b):f(new Error('toBlob leer')),'image/png'));
+}
+async function messe(blob){
+  const b=await createImageBitmap(blob);
+  const m={w:b.width,h:b.height};
+  if(b.close) b.close();
+  return m;
+}
+
+async function rendereH2I(f){
+  await document.fonts.ready;
+  await bilderVorladen(motiv);
+  const fontEmbedCSS=await schriftenEinbetten(motiv);
+  const pixelRatio=f.w/motiv.offsetWidth;
+  const t0=performance.now();
+  const roh=await htmlToImage.toCanvas(motiv,{
+    pixelRatio, backgroundColor:null, cacheBust:false, fontEmbedCSS,
+    filter:(node)=>!(node.classList && node.classList.contains('kein-export'))
+  });
+  const blob=await alsBlob(aufZielgroesse(roh,f));
+  return { blob, dauer:Math.round(performance.now()-t0), pixelRatio };
+}
+
+async function rendereH2C(f){
+  const t0=performance.now();
+  const roh=await html2canvas(motiv,{
+    scale:f.w/motiv.offsetWidth, useCORS:true, allowTaint:true,
+    backgroundColor:null, logging:false,
+    width:motiv.offsetWidth, height:motiv.offsetHeight,
+    ignoreElements: el => !!(el.classList && el.classList.contains('kein-export'))
+  });
+  const blob=await alsBlob(aufZielgroesse(roh,f));
+  return { blob, dauer:Math.round(performance.now()-t0) };
+}
+
+function zeige(bildId, metaId, blob, mass, dauer, f, zusatz){
+  const url=URL.createObjectURL(blob);
+  const img=document.getElementById(bildId);
+  img.onload=()=>setTimeout(()=>URL.revokeObjectURL(url),3000);
+  img.src=url;
+  const passt = mass.w===f.w && mass.h===f.h;
+  document.getElementById(metaId).innerHTML=
+    'PNG <b>'+mass.w+' × '+mass.h+' px</b> '+
+    (passt?'<span style="color:var(--gruen)">✓ Soll</span>'
+          :'<span style="color:var(--rot)">✗ Soll '+f.w+' × '+f.h+'</span>')+
+    '<br>'+dauer+' ms · '+Math.round(blob.size/1024)+' kB'+(zusatz?'<br>'+zusatz:'');
+}
+
+document.getElementById('btn-rendern').onclick=async function(){
+  const btn=this; btn.disabled=true;
+  const f=FORMATE[parseInt(sel.value,10)];
+  try{
+    melde('html-to-image …');
+    const a=await rendereH2I(f);
+    zeige('bild-h2i','meta-h2i', a.blob, await messe(a.blob), a.dauer, f,
+          'pixelRatio '+a.pixelRatio.toFixed(4));
+    document.getElementById('z-font-h2i').textContent =
+      (fontEmbedCache && fontEmbedCache.length>1000)
+        ? 'eingebettet (' + Math.round(fontEmbedCache.length/1024) + ' kB)'
+        : 'NICHT eingebettet — pruefen!';
+    document.getElementById('z-font-h2i').className =
+      (fontEmbedCache && fontEmbedCache.length>1000) ? 'ok' : 'nein';
+
+    melde('html2canvas …');
+    const b=await rendereH2C(f);
+    zeige('bild-h2c','meta-h2c', b.blob, await messe(b.blob), b.dauer, f, '');
+
+    melde('Fertig. Vergleiche Fotoebene (filter), Schlagschatten, Zuschnitt und Blend-Mode.');
+  }catch(e){
+    console.error(e);
+    melde('Fehler: '+e.message);
+  }finally{ btn.disabled=false; }
+};
+
+document.getElementById('btn-alle').onclick=async function(){
+  const btn=this; btn.disabled=true;
+  const tab=document.getElementById('tab-zeiten');
+  const tb=tab.querySelector('tbody');
+  tb.innerHTML=''; tab.style.display='table';
+  try{
+    for(const f of FORMATE){
+      melde('messe '+f.key+' …');
+      // Motiv auf die Anzeigemasse des Formats bringen — wie im Studio
+      const d=anzeigeMasse(f);
+      motiv.style.width=d.w+'px'; motiv.style.height=d.h+'px';
+      const r=await rendereH2I(f);
+      const m=await messe(r.blob);
+      const passt = m.w===f.w && m.h===f.h;
+      tb.insertAdjacentHTML('beforeend',
+        '<tr><td>'+f.label+'</td><td>'+f.w+' × '+f.h+'</td>'+
+        '<td>'+r.pixelRatio.toFixed(4)+'</td><td>'+r.dauer+' ms</td>'+
+        '<td>'+Math.round(r.blob.size/1024)+' kB</td>'+
+        '<td class="'+(passt?'ok':'nein')+'">'+m.w+' × '+m.h+(passt?' ✓':' ✗')+'</td></tr>');
+    }
+    motiv.style.width='270px'; motiv.style.height='480px';
+    melde('Alle Formate gemessen.');
+  }catch(e){
+    console.error(e);
+    melde('Fehler: '+e.message);
+  }finally{ btn.disabled=false; }
+};
+</script>
+</body>
+</html>

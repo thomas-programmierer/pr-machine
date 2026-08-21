@@ -75,6 +75,39 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 /* ── SAFE ZONE OVERLAY (SVG, pointer-events:none) ── */
 #safe-zone-svg{position:absolute;inset:0;pointer-events:none;z-index:10;display:none}
 
+/* ── SAFE-ZONE-LEGENDE ──
+   Liegt ausserhalb von #canvas-frame. Was dort steht, kann gar nicht erst
+   in den Export geraten — unabhaengig davon, welcher Renderer laeuft. */
+#safe-legend{position:absolute;left:12px;bottom:12px;z-index:25;display:none;
+  max-width:218px;background:rgba(0,0,0,.74);border:1px solid rgba(225,0,15,.35);
+  border-radius:8px;padding:9px 11px;font-size:9px;line-height:1.55;
+  color:rgba(255,255,255,.72);font-family:'DM Sans',sans-serif;pointer-events:none}
+#safe-legend .sl-titel{font-size:9px;font-weight:700;color:#fff;margin-bottom:2px}
+#safe-legend .sl-masse{font-size:8px;color:rgba(255,255,255,.4);margin-bottom:7px}
+#safe-legend .sl-zeile{display:flex;gap:6px;align-items:flex-start;margin-bottom:4px}
+#safe-legend .sl-punkt{flex:0 0 9px;width:9px;height:9px;border-radius:2px;margin-top:2px;
+  background:rgba(225,0,15,.12);border:1px solid rgba(225,0,15,.85)}
+#safe-legend .sl-punkt.voll{background:rgba(225,0,15,.3)}
+#safe-legend b{color:rgba(255,255,255,.92);font-weight:700}
+#safe-legend .sl-hinweis{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.12);
+  color:var(--gelb);font-size:8px;line-height:1.6}
+#safe-legend .sl-fest{margin-top:6px;color:#EB640F;font-size:8px;line-height:1.6}
+
+/* ── KOLLISIONSWARNUNG — warnt, blockiert nicht ── */
+#safe-status{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:25;
+  display:none;background:rgba(225,0,15,.16);border:1px solid rgba(225,0,15,.6);
+  border-radius:7px;padding:6px 11px;font-size:9px;font-weight:700;color:#fff;
+  font-family:'DM Sans',sans-serif;pointer-events:none;max-width:66%;line-height:1.5}
+#safe-status .ss-mild{font-weight:400;color:rgba(255,255,255,.62)}
+.kollision{outline:1.5px solid #E1000F !important;outline-offset:3px}
+
+/* ── EXPORTFEHLER — sichtbar, nicht nur als Toast ── */
+#export-fehler{position:absolute;left:50%;transform:translateX(-50%);top:56px;z-index:30;
+  display:none;background:#E1000F;color:#fff;border-radius:8px;padding:9px 13px;
+  font-size:10px;font-weight:700;line-height:1.55;max-width:78%;
+  font-family:'DM Sans',sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5)}
+#export-fehler .ef-zu{float:right;margin-left:12px;cursor:pointer;pointer-events:auto;opacity:.8}
+
 /* ── DRAGGABLE TEXT BLOCK ── */
 #text-block{
   position:absolute;
@@ -195,7 +228,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
          style="height:26px;width:auto;display:block">
   </div>
   <span class="tb-title">Foto-Editor</span>
-  <span class="tb-tag" id="format-tag">Story · 9:16</span>
+  <span class="tb-tag" id="format-tag">—</span>
   <div class="tb-right">
     <a href="/" class="tb-back">← Redaktion</a>
     <button class="tb-btn tb-sec" onclick="resetEditor()">↺ Reset</button>
@@ -278,20 +311,10 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
     <div class="p-section">
       <div class="p-label">Format</div>
-      <div class="format-btns">
-        <div class="fmt-btn on" id="fmt-0" onclick="setFormat(0,270,480,'Story / Reel','1080×1920')">
-          <div class="fmt-icon" style="width:12px;height:18px">9:16</div>
-          <span class="fmt-name">Story</span><span class="fmt-dim">1080×1920</span>
-        </div>
-        <div class="fmt-btn" id="fmt-1" onclick="setFormat(1,280,280,'Feed Quadrat','1080×1080')">
-          <div class="fmt-icon" style="width:18px;height:18px">1:1</div>
-          <span class="fmt-name">Feed</span><span class="fmt-dim">1080×1080</span>
-        </div>
-        <div class="fmt-btn" id="fmt-2" onclick="setFormat(2,320,180,'Querformat','1920×1080')">
-          <div class="fmt-icon" style="width:20px;height:11px">16:9</div>
-          <span class="fmt-name">Quer</span><span class="fmt-dim">1920×1080</span>
-        </div>
-      </div>
+      <!-- Wird aus FORMATS erzeugt (baueFormatButtons). Im Markup steht
+           bewusst keine Groessenangabe mehr — sonst gaebe es wieder zwei
+           Wahrheiten, die auseinanderlaufen koennen. -->
+      <div class="format-btns" id="format-btns"></div>
     </div>
 
   </div>
@@ -360,6 +383,10 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
       </div>
     </div>
+    <!-- Bearbeitungshilfen ausserhalb des Motivs: unerreichbar fuer den Export -->
+    <div id="safe-legend" class="kein-export"></div>
+    <div id="safe-status" class="kein-export"></div>
+    <div id="export-fehler" class="kein-export"></div>
   </div>
 
   <!-- ══ RECHTES PANEL ══ -->
@@ -513,7 +540,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <textarea class="txt-field" id="tf-headline" rows="3" oninput="updateText()" placeholder="Hauptschlagzeile …"></textarea>
         <div class="sl-row" style="margin-top:6px">
           <span class="sl-lbl">Größe</span>
-          <div class="sl-track"><input type="range" min="10" max="36" value="15" step="1" id="sl-hlsize" oninput="updateText()"></div>
+          <div class="sl-track"><input type="range" min="6" max="36" value="15" step="1" id="sl-hlsize" oninput="updateText()"></div>
           <span class="sl-val sv-blue" id="sv-hlsize">15px</span>
         </div>
       </div>
@@ -522,7 +549,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <textarea class="txt-field" id="tf-sub" rows="2" oninput="updateText()" placeholder="Ergänzender Text …"></textarea>
         <div class="sl-row" style="margin-top:6px">
           <span class="sl-lbl">Größe</span>
-          <div class="sl-track"><input type="range" min="8" max="22" value="11" step="1" id="sl-subsize" oninput="updateText()"></div>
+          <div class="sl-track"><input type="range" min="5" max="22" value="11" step="1" id="sl-subsize" oninput="updateText()"></div>
           <span class="sl-val sv-blue" id="sv-subsize">11px</span>
         </div>
       </div>
@@ -619,7 +646,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
       <div class="p-section">
         <div class="p-label">Auflösung</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">Format: Story 9:16<br>Export: 1080 × 1920 px<br>Farbprofil: sRGB</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">—</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)" id="exp-ki-info"></div>
       </div>
     </div>
@@ -629,7 +656,13 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
 <div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Renderer. html-to-image rendert ueber foreignObject und damit durch die
+     echte Layout-Engine des Browsers: CSS filter, box-shadow, object-fit und
+     Blend-Modes kommen dadurch im Export an. html2canvas bleibt als Rueckweg
+     geladen, wird aber nicht mehr aufgerufen (siehe baueExportLeinwand).
+     Beide liegen lokal — die Seite braucht fuer den Export kein Netz. -->
+<script src="/vendor/html-to-image-1.11.13.js"></script>
+<script src="/vendor/html2canvas-1.4.1.min.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -640,27 +673,178 @@ let fotoDataUrl=null, zoomLevel=100;
 let currentFormatIdx=0;
 let safeZonesVisible=false;
 
-// Textblock position (in canvas-frame px)
+// Elementpositionen werden RELATIV gehalten (0..1 der jeweiligen Rahmenkante).
+// Nur so ueberlebt ein Layout den Formatwechsel. tbX/tbY sind die daraus
+// abgeleiteten Anzeigepixel und dienen nur noch den Zahlenfeldern.
+let tbRel={x:14/270, y:200/480};
+let badgeRel=null;                       // null = Standardplatzierung
 let tbX=14, tbY=200;
 
+// Schriftgroessen als Anteil der Rahmenhoehe. Beim Formatwechsel werden die
+// Regler daraus neu gesetzt, damit Schrift im Export ueberall denselben
+// Anteil der Bildhoehe einnimmt.
+let schriftRel={hl:15/480, sub:11/480};
+let schriftSperre=false;                 // waehrend des Formatwechsels nicht neu messen
+
+// Die Vorlagen wurden im Story-Rahmen 270 x 480 entworfen. Ihre absoluten
+// Zahlen werden beim Laden daraus in relative Werte umgerechnet.
+const VORLAGEN_BASIS={w:270,h:480};
+// Standardplatzierung des Stoerers, ebenfalls aus dem Story-Rahmen
+// (frueher right:14px / bottom:60px).
+const BADGE_STANDARD={rechts:14/270, unten:60/480};
+
+// ═════════════════════════════════════════════════════════════
+// FORMAT-REGISTRY — die einzige Quelle fuer Groessen und Safe Zones
+// ═════════════════════════════════════════════════════════════
+// w und h sind EXPORTPIXEL. Die Anzeigegroesse wird daraus abgeleitet
+// (anzeigeMasse), niemals umgekehrt. Damit gibt es keine zweite Wahrheit mehr
+// und der Export kann rechnerisch nicht vom Entwurf abweichen.
+//
+//   key     Identitaet, stabil ueber Umbauten hinweg
+//   label   Anzeigename, geht so auch in die Freigabe
+//   kurz    Beschriftung im schmalen Formatwaehler
+//   ratio   Seitenverhaeltnis als Text
+//   safe    Sicherheitsraender in Exportpixeln
+//   zonen   zusaetzliche Sperrflaechen (Story: Aktionsleiste rechts)
+//   gruende Klartext fuer die Legende — eine Zone ohne Begruendung wird
+//           erfahrungsgemaess ignoriert
+//   hinweis optionale Zusatzinformation unter der Legende
+
+// 5 % der jeweiligen Kante. Meta empfiehlt diesen Rand, weil Geraete mit
+// abweichendem Seitenverhaeltnis aussen beschneiden.
+function randProzent(w,h,anteil,zusatzUnten){
+  return { top:h*anteil, right:w*anteil, bottom:h*anteil+(zusatzUnten||0), left:w*anteil };
+}
+const GRUND_5PROZENT={
+  oben:'5 % Sicherheitsrand gegen Beschnitt',
+  unten:'5 % Sicherheitsrand gegen Beschnitt',
+  seiten:'5 % Sicherheitsrand gegen Beschnitt'
+};
+const GRUND_FEEDRAND={
+  oben:'Abstand zur Kante im Feed',
+  unten:'Abstand zur Kante im Feed',
+  seiten:'Abstand zur Kante im Feed'
+};
+
 const FORMATS=[
-  {w:270,h:480,label:'Story / Reel',exp:'1080×1920'},
-  {w:280,h:280,label:'Feed Quadrat',exp:'1080×1080'},
-  {w:320,h:180,label:'Querformat',  exp:'1920×1080'},
+  { key:'ig-portrait-34', label:'Instagram Feed – Hochformat', kurz:'IG Feed 3:4',
+    w:1080, h:1440, ratio:'3:4',
+    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
+
+  { key:'ig-portrait-45', label:'Instagram Feed – 4:5', kurz:'IG Feed 4:5',
+    w:1080, h:1350, ratio:'4:5',
+    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
+
+  { key:'ig-square', label:'Instagram Feed – Quadrat', kurz:'IG Feed 1:1',
+    w:1080, h:1080, ratio:'1:1',
+    safe:{top:100,right:135,bottom:100,left:135}, zonen:[],
+    gruende:{ oben:'Abstand zur Kante im Feed',
+              unten:'Abstand zur Kante im Feed',
+              seiten:'135 px — Zuschnitt im Profilraster auf 3:4' } },
+
+  { key:'ig-story', label:'Story / Reels', kurz:'Story / Reels',
+    w:1080, h:1920, ratio:'9:16',
+    safe:{top:270,right:65,bottom:672,left:65},
+    zonen:[{ x:860, y:1152, w:220, h:768, name:'Aktionsleiste',
+             grund:'Gefällt mir, Kommentar, Senden, Menü' }],
+    gruende:{ oben:'Profilbild, Name und Zeitstempel überlagern',
+              unten:'Reels-Bedienleiste und Antwortfeld',
+              seiten:'Beschnitt auf schmalen Geräten' },
+    hinweis:'Untere Zone nach Reels-Maß (35 %). Reine Story braucht nur 250 px.' },
+
+  { key:'fb-feed', label:'Facebook Feed – Bild', kurz:'FB Feed',
+    w:1200, h:1200, ratio:'1:1',
+    safe:randProzent(1200,1200,.05), zonen:[], gruende:GRUND_5PROZENT },
+
+  { key:'fb-link', label:'Facebook Link-Vorschau', kurz:'FB Link',
+    w:1200, h:630, ratio:'1,91:1',
+    safe:randProzent(1200,630,.05), zonen:[], gruende:GRUND_5PROZENT },
+
+  { key:'fb-event', label:'Facebook Veranstaltung', kurz:'FB Event',
+    w:1920, h:1005, ratio:'1,91:1',
+    safe:randProzent(1920,1005,.05,120), zonen:[],
+    gruende:{ oben:'5 % Sicherheitsrand gegen Beschnitt',
+              unten:'5 % plus 120 px — Titel- und Datumsleiste',
+              seiten:'5 % Sicherheitsrand gegen Beschnitt' } },
+
+  { key:'web-169', label:'Quer / Web / Präsentation', kurz:'Quer 16:9',
+    w:1920, h:1080, ratio:'16:9',
+    safe:randProzent(1920,1080,.05), zonen:[], gruende:GRUND_5PROZENT },
 ];
-const EXPORT_RES=[{w:1080,h:1920},{w:1080,h:1080},{w:1920,h:1080}];
+
+// Alt-Kennungen. Frueher lief das Format als Index (0/1/2), als
+// Seitenverhaeltnis oder als Anzeigename. Alles davon wird weiterhin
+// aufgeloest, damit vorhandene Links und eingereichte Posts nicht brechen.
+const FORMAT_ALIAS={
+  '9:16':'ig-story',  '1:1':'ig-square',   '16:9':'web-169',
+  '0':'ig-story',     '1':'ig-square',     '2':'web-169',
+  'Story / Reel':'ig-story', 'Story':'ig-story', 'story':'ig-story',
+  'Feed Quadrat':'ig-square', 'sq':'ig-square', 'feed':'ig-square',
+  'Querformat':'web-169', 'quer':'web-169'
+};
+function formatIndex(kennung){
+  if(kennung===null || kennung===undefined || kennung==='') return 0;
+  const k=String(kennung).trim();
+  let i=FORMATS.findIndex(f=>f.key===k);          if(i>=0) return i;
+  i=FORMATS.findIndex(f=>f.label===k);            if(i>=0) return i;
+  const ziel=FORMAT_ALIAS[k];
+  if(ziel){ i=FORMATS.findIndex(f=>f.key===ziel); if(i>=0) return i; }
+  return 0;
+}
+function aktFormat(){ return FORMATS[currentFormatIdx]||FORMATS[0]; }
+
+// ── Anzeige ──
+// Die Box ist so gewaehlt, dass die Story exakt 270 x 480 misst und das
+// Standardformat 3:4 exakt 360 x 480 — beide also Hoehe 480, die Hoehe, in
+// der die Vorlagen entworfen wurden. Ein frisch geladener Entwurf sieht
+// dadurch aus wie bisher.
+const ANZEIGE_BOX={w:560,h:480};
+function anzeigeMasse(f){
+  const s=Math.min(ANZEIGE_BOX.w/f.w, ANZEIGE_BOX.h/f.h);
+  return { w:Math.round(f.w*s), h:Math.round(f.h*s) };
+}
+// Anzeige-px <-> Exportpixel. Der Ansichtszoom kommt hier bewusst nicht vor.
+function exportFaktor(f){ return f.w/anzeigeMasse(f).w; }
+function anzeigeFaktor(f){ return anzeigeMasse(f).w/f.w; }
+function safeAnzeige(f){
+  const k=anzeigeFaktor(f), s=f.safe;
+  return { top:s.top*k, right:s.right*k, bottom:s.bottom*k, left:s.left*k };
+}
+
+// ── Sperrflaechen als Rechtecke in Exportpixeln ──
+function zonenListe(f){
+  const s=f.safe, W=f.w, H=f.h, aus=[];
+  if(s.top>0)    aus.push({name:'obere Zone',   grund:f.gruende.oben,   x:0,         y:0,          w:W,       h:s.top});
+  if(s.bottom>0) aus.push({name:'untere Zone',  grund:f.gruende.unten,  x:0,         y:H-s.bottom, w:W,       h:s.bottom});
+  if(s.left>0)   aus.push({name:'linker Rand',  grund:f.gruende.seiten, x:0,         y:0,          w:s.left,  h:H});
+  if(s.right>0)  aus.push({name:'rechter Rand', grund:f.gruende.seiten, x:W-s.right, y:0,          w:s.right, h:H});
+  (f.zonen||[]).forEach(z=>aus.push({name:z.name||'Sperrfläche', grund:z.grund, x:z.x, y:z.y, w:z.w, h:z.h}));
+  return aus;
+}
+// tol federt Rundungsrauschen ab: Anzeigepixel sind ganzzahlig, im Export
+// entspricht ein einziger davon je nach Format bis zu 4 Pixeln. Ein
+// Ueberstand in dieser Groessenordnung ist kein Gestaltungsfehler und
+// gehoert nicht als Warnung gemeldet.
+const KOLLISION_TOLERANZ=4;
+function schneidet(a,b,tol){
+  const t=tol||0;
+  return a.x+t < b.x+b.w && a.x+a.w-t > b.x &&
+         a.y+t < b.y+b.h && a.y+a.h-t > b.y;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // LOGO UND KI-KENNZEICHNUNG — gemeinsame Groessenlogik
 // ═══════════════════════════════════════════════════════════════
 // Beide Marken werden ueber ihre HOEHE gesteuert, bezogen auf die KURZE
-// Bildkante. Nur dieser Bezug ergibt in allen drei Formaten dieselbe
-// absolute Groesse im Export, denn die kurze Kante ist dort immer 1080 px:
-//   Story  270 x 480  ->  1080 x 1920      Feed 280 x 280 -> 1080 x 1080
-//   Quer   320 x 180  ->  1920 x 1080
+// Kante des Anzeigerahmens. Weil der Exportfaktor fuer beide Achsen derselbe
+// ist, ergibt dieser Bezug in jedem Format denselben Anteil an der kurzen
+// Bildkante — unabhaengig davon, wie gross der Rahmen auf dem Bildschirm
+// gerade ist.
 function kiKurzeKante(){
-  const f=FORMATS[currentFormatIdx]||FORMATS[0];
-  return Math.min(f.w,f.h);
+  const rahmen=document.getElementById('canvas-frame');
+  if(rahmen && rahmen.offsetWidth) return Math.min(rahmen.offsetWidth, rahmen.offsetHeight);
+  const d=anzeigeMasse(aktFormat());
+  return Math.min(d.w,d.h);
 }
 
 // vhs-Logo: Originaldatei, Zuschnitt 47 100 385 78 -> Verhaeltnis 4,9359 : 1.
@@ -743,7 +927,6 @@ function renderKI(){
     return;
   }
 
-  const f=FORMATS[currentFormatIdx]||FORMATS[0];
   const H=kiKurzeKante()*KI.groesse/100;
   const d=kiDateiname();
   if(img.getAttribute('src')!==d.pfad) img.setAttribute('src',d.pfad);
@@ -761,19 +944,8 @@ function renderKI(){
     hin.style.display='none';
   }
 
-  blk.style.top=blk.style.bottom=blk.style.left=blk.style.right='auto';
-  blk.style.alignItems='flex-start';
-  if(KI.pos==='ol'){
-    blk.style.top='12px'; blk.style.left='12px';
-  } else if(KI.pos==='ur'){
-    blk.style.right='14px'; blk.style.bottom='36px'; blk.style.alignItems='flex-end';
-  } else if(KI.pos==='story'){
-    blk.style.left='14px';
-    blk.style.bottom=Math.max(Math.round(f.h*0.21),36)+'px';
-  } else {
-    blk.style.left='14px'; blk.style.bottom='10px';
-  }
   blk.style.display='flex';
+  kiPlatziere(blk, H);   // erst nach dem Einblenden — vorher ist der Block 0 px gross
   blk.setAttribute('aria-hidden','false');
   kiStatus();
 }
@@ -794,14 +966,13 @@ function kiStatus(){
   }
   const info=document.getElementById('ki-groesse-info');
   if(info && KI.typ){
-    const res=EXPORT_RES[currentFormatIdx]||EXPORT_RES[0];
-    const f=FORMATS[currentFormatIdx]||FORMATS[0];
-    const skala=res.w/f.w;
+    const f=aktFormat();
+    const skala=exportFaktor(f);
     const H=kiKurzeKante()*KI.groesse/100, B=H*KI_RATIO[KI.typ];
     info.innerHTML=
       'Entwurf '+H.toFixed(1)+'&times;'+B.toFixed(1)+'&nbsp;px &middot; Export '+
       Math.round(H*skala)+'&times;'+Math.round(B*skala)+'&nbsp;px &middot; '+
-      Math.round(B/f.w*100)+'&nbsp;% der Bildbreite'+
+      Math.round(B*skala/f.w*100)+'&nbsp;% der Bildbreite'+
       (KI.groesse<4.5
         ? '<br><span class="ki-warn">Unter 4,5&nbsp;% wird die Schrift auf dem Handy grenzwertig klein.</span>'
         : (KI.groesse>7
@@ -915,37 +1086,90 @@ function kiModalAbbruch(){
 function kiFuerPost(){ return KI.entschieden ? (KI.typ || 'keine') : ''; }
 
 // ═══════════════════════════════════════════════════════════════
+// EXPORT — Renderer
+// ═══════════════════════════════════════════════════════════════
+// html-to-image rendert ueber foreignObject und damit durch die echte
+// Layout- und Paint-Engine des Browsers. Anders als html2canvas kommen
+// dadurch CSS filter, box-shadow, object-fit und Blend-Modes im Export an —
+// das Studio steuert Helligkeit, Saettigung und Kontrast des Fotos ueber
+// CSS filter, der mit html2canvas schlicht fehlte.
+// html2canvas bleibt geladen, wird aber nicht mehr aufgerufen.
+
+// html-to-image ueberspringt jeden Knoten, fuer den filter() false liefert.
+// Das ersetzt die frueher genutzte ignoreElements-Logik eins zu eins:
+// Klasse kein-export -> nicht rendern. Logo und KI-Symbol fallen dadurch
+// weiterhin heraus und werden per zeichneVektor nachgezeichnet.
+function exportFilter(node){
+  return !(node.classList && node.classList.contains('kein-export'));
+}
+
+// Schrifteinbettung ist teuer — die Schriftdateien wandern als Data-URL in
+// das SVG — und aendert sich waehrend einer Sitzung nicht. Deshalb genau
+// einmal ermitteln und merken.
+let fontEmbedCache=null;
+async function schriftenEinbetten(node){
+  if(fontEmbedCache!==null) return fontEmbedCache;
+  try{
+    fontEmbedCache=await htmlToImage.getFontEmbedCSS(node);
+  }catch(e){
+    console.warn('[export] Schrifteinbettung fehlgeschlagen:', e.message);
+    fontEmbedCache='';
+  }
+  return fontEmbedCache;
+}
+
+// Bekannter Stolperstein von html-to-image: der erste Lauf liefert Bilder
+// gelegentlich leer, weil der Klon gezeichnet wird, bevor die Quellbilder
+// dekodiert sind. decode() wartet genau darauf — verlaesslicher als ein
+// zweiter Renderlauf ins Blaue.
+async function bilderVorladen(node){
+  const bilder=Array.from(node.querySelectorAll('img')).filter(b=>b.getAttribute('src'));
+  await Promise.all(bilder.map(b => {
+    const p = (b.decode ? b.decode() : Promise.resolve());
+    return p.catch(()=>{});   // fehlende Bilder fallen im Render auf, nicht hier
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════
 // EXPORT — Vektoren scharf nachzeichnen
 // ═══════════════════════════════════════════════════════════════
-// html2canvas bildet die beiden SVG-Ebenen nicht korrekt ab und rastert sie
-// in Bildschirmgroesse. Sie werden deshalb uebersprungen (kein-export) und
-// hier in Exportaufloesung nachgezeichnet.
-async function zeichneVektor(canvas, frame, skala, id, name){
+// Logo und KI-Symbol werden vom Renderer uebersprungen und hier in
+// Exportaufloesung als SVG nachgezeichnet. Die Geometrie wird VOR dem Umbau
+// der Hilfsebenen gemessen: danach steht im Motiv ein Platzhalter an der
+// Stelle des Symbols, und die Messung waere verfaelscht.
+function vektorGeometrie(frame, id){
+  const el=document.getElementById(id);
+  if(!el || getComputedStyle(el).display==='none') return null;
+  const quelle = el.tagName==='IMG' ? el : el.querySelector('img');
+  if(!quelle || !quelle.getAttribute('src')) return null;
+  const fr=frame.getBoundingClientRect();
+  const lr=quelle.getBoundingClientRect();
+  if(!lr.width || !lr.height || !fr.width){
+    console.warn('[export] keine Masse fuer '+id+' ermittelbar');
+    return null;
+  }
+  // Ansichtszoom herausrechnen. Er wird vorher zwar abgeschaltet, aber das
+  // Verhaeltnis aus gemessener zu gelayouteter Breite ist genau der wirksame
+  // Zoomfaktor — als zweite Sicherung.
+  const zoom = (frame.offsetWidth ? (fr.width/frame.offsetWidth) : 1) || 1;
+  return { src: quelle.getAttribute('src'),
+           x:(lr.left-fr.left)/zoom, y:(lr.top-fr.top)/zoom,
+           w: lr.width/zoom,         h: lr.height/zoom };
+}
+
+async function zeichneVektor(leinwand, geo, skala, name){
+  if(!geo) return true;                  // Ebene ausgeblendet — nichts zu tun
   try{
-    const el = document.getElementById(id);
-    if(!el || getComputedStyle(el).display === 'none') return true;
-    const quelle = el.tagName === 'IMG' ? el : el.querySelector('img');
-    if(!quelle || !quelle.getAttribute('src')) return true;
-    const fr = frame.getBoundingClientRect();
-    const lr = quelle.getBoundingClientRect();
-    if(!lr.width || !lr.height || !fr.width){
-      console.warn('['+name+'] keine Masse ermittelbar');
-      return false;
-    }
-    const bild = new Image();
-    await new Promise((fertig, fehler) => {
-      bild.onload = fertig;
-      bild.onerror = () => fehler(new Error('SVG nicht ladbar'));
-      bild.src = quelle.getAttribute('src');
+    const bild=new Image();
+    bild.crossOrigin='anonymous';        // sonst faerbt das SVG die Leinwand ein
+    await new Promise((fertig,fehler)=>{
+      bild.onload=fertig;
+      bild.onerror=()=>fehler(new Error('SVG nicht ladbar'));
+      bild.src=geo.src;
     });
-    canvas.getContext('2d').drawImage(
-      bild,
-      (lr.left - fr.left) * skala, (lr.top - fr.top) * skala,
-      lr.width * skala, lr.height * skala
-    );
-    console.log('['+name+'] scharf nachgezeichnet bei',
-      Math.round((lr.left - fr.left) * skala), Math.round((lr.top - fr.top) * skala),
-      'Groesse', Math.round(lr.width * skala));
+    leinwand.getContext('2d').drawImage(bild,
+      Math.round(geo.x*skala), Math.round(geo.y*skala),
+      Math.round(geo.w*skala), Math.round(geo.h*skala));
     return true;
   }catch(e){
     console.warn('['+name+'] Nachzeichnen fehlgeschlagen:', e.message);
@@ -953,45 +1177,136 @@ async function zeichneVektor(canvas, frame, skala, id, name){
   }
 }
 
-// Die Leinwand, die html2canvas zurueckgibt, nimmt keine weiteren Zeichnungen
-// mehr an — fillRect und drawImage darauf bleiben wirkungslos. Deshalb wird
-// das Ergebnis zuerst auf eine eigene Leinwand kopiert.
-async function baueExportLeinwand(frame, res, f){
-  const roh = await html2canvas(frame, {
-    scale: res.w/f.w, useCORS:true, allowTaint:true,
-    backgroundColor:null, logging:false, width:f.w, height:f.h,
-    ignoreElements: el => !!(el.classList && el.classList.contains('kein-export')),
+// ═══════════════════════════════════════════════════════════════
+// EXPORT — Vorbereitung, Leinwand, Pruefung
+// ═══════════════════════════════════════════════════════════════
+// Regel: Die Zielgroesse kommt ausschliesslich aus FORMATS. Weder der
+// Ansichtszoom noch devicePixelRatio noch die Rahmengroesse duerfen sie
+// beeinflussen.
+function exportVorbereiten(){
+  const frame=document.getElementById('canvas-frame');
+
+  // Zuerst den Ansichtszoom neutralisieren, dann messen.
+  const zoomVorher=frame.style.transform;
+  frame.style.transform='none';
+
+  // Geometrie der nachzuzeichnenden Vektoren, solange das Motiv unveraendert ist
+  const geo={ logo:   vektorGeometrie(frame,'canvas-logo-img'),
+              symbol: vektorGeometrie(frame,'ki-symbol') };
+
+  // Auswahlrahmen, Anfasser, Kollisionsmarkierung
+  const klassen=[];
+  ['selected','dragging','kollision'].forEach(kl=>{
+    frame.querySelectorAll('.'+kl).forEach(el=>{ el.classList.remove(kl); klassen.push([el,kl]); });
   });
-  const leinwand = document.createElement('canvas');
-  leinwand.width  = roh.width;
-  leinwand.height = roh.height;
-  leinwand.getContext('2d').drawImage(roh, 0, 0);
-  const marke  = await zeichneVektor(leinwand, frame, res.w/f.w, 'canvas-logo-img', 'vhs-logo');
-  const symbol = await zeichneVektor(leinwand, frame, res.w/f.w, 'ki-symbol', 'ki-symbol');
+
+  // Safe-Zone-Overlay, Raster, Hilfslinien, Ebenen-Badge, Koordinatenanzeige
+  const versteckt=[];
+  ['safe-zone-svg','layer-badge','coord-readout'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ versteckt.push([el, el.style.display]); el.style.display='none'; }
+  });
+
+  // Das KI-Symbol wird uebersprungen und spaeter nachgezeichnet. Ohne
+  // Platzhalter ruecken Hinweiszeile und Blockhoehe im Export nach oben,
+  // weil #ki-block ein Flex-Container ist.
+  let platzhalter=null;
+  const sym=document.getElementById('ki-symbol');
+  if(sym && getComputedStyle(sym).display!=='none' && sym.offsetHeight){
+    platzhalter=document.createElement('div');
+    platzhalter.style.width  = sym.offsetWidth+'px';
+    platzhalter.style.height = sym.offsetHeight+'px';
+    platzhalter.style.flex   = '0 0 auto';
+    sym.parentNode.insertBefore(platzhalter, sym);
+  }
+
+  return { geo, zurueck: function(){
+    klassen.forEach(([el,kl])=>el.classList.add(kl));
+    versteckt.forEach(([el,d])=>{ el.style.display=d; });
+    if(platzhalter && platzhalter.parentNode) platzhalter.parentNode.removeChild(platzhalter);
+    frame.style.transform=zoomVorher;
+  }};
+}
+
+// Aufloesungsweg — bewusste Entscheidung, Vergleich unter /export-test.html:
+// Gerendert wird direkt am Motiv mit pixelRatio = FORMAT.w / offsetWidth.
+// Der Klonweg (versteckter Container in Exportbreite, pixelRatio 1) wurde
+// verworfen: bei 1080 px Breite bricht der Text NEU um, der Export wiche
+// also vom Entwurf ab — genau das, was hier verhindert werden soll. Der
+// pixelRatio-Weg uebernimmt den Umbruch der Arbeitsflaeche unveraendert und
+// rastert ihn in Zielaufloesung; Text und Vektoren bleiben scharf, weil
+// foreignObject durch die echte Paint-Engine des Browsers geht.
+async function baueExportLeinwand(frame, f, geo){
+  await document.fonts.ready;            // erst zeichnen, wenn DM Sans steht
+  await bilderVorladen(frame);
+  const fontEmbedCSS=await schriftenEinbetten(frame);
+  const pixelRatio=f.w/frame.offsetWidth;
+
+  const roh=await htmlToImage.toCanvas(frame,{
+    pixelRatio,
+    backgroundColor:null,
+    cacheBust:false,
+    filter:exportFilter,
+    fontEmbedCSS
+  });
+
+  // Endgroesse erzwingen: was FORMATS sagt, gilt.
+  const leinwand=document.createElement('canvas');
+  leinwand.width  = Math.round(f.w);
+  leinwand.height = Math.round(f.h);
+  const ctx=leinwand.getContext('2d');
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(roh,
+    0, 0, Math.round(roh.width), Math.round(roh.height),
+    0, 0, Math.round(f.w),       Math.round(f.h));
+
+  const g = geo || { logo:null, symbol:null };
+  const marke  = await zeichneVektor(leinwand, g.logo,   pixelRatio, 'vhs-logo');
+  const symbol = await zeichneVektor(leinwand, g.symbol, pixelRatio, 'ki-symbol');
   if(!(marke && symbol)) throw new Error('vhs-Logo oder KI-Symbol konnten nicht gezeichnet werden');
   return leinwand;
 }
 
+function leinwandAlsBlob(leinwand){
+  return new Promise((ok,fehler)=>{
+    leinwand.toBlob(b => b ? ok(b) : fehler(new Error('toBlob lieferte kein Bild')), 'image/png');
+  });
+}
+function blobAlsDataUrl(blob){
+  return new Promise((ok,fehler)=>{
+    const r=new FileReader();
+    r.onload =()=>ok(r.result);
+    r.onerror=()=>fehler(new Error('PNG nicht lesbar'));
+    r.readAsDataURL(blob);
+  });
+}
 
-// Safe-Zone-Definitionen (als Anteil 0..1 der Canvas-Größe)
-// Basierend auf Meta/Instagram Story Guidelines
-const SAFE_ZONES=[
-  // Typ, Beschreibung, Farbe, [x,y,w,h] als Anteil
-  {id:'outer',  label:'Außenrand (5%)',           color:'rgba(250,185,15,.55)', dash:'4,3',
-   rect: f=>({x:f.w*.05, y:f.h*.05, w:f.w*.90, h:f.h*.90})},
-  {id:'top',    label:'Profilbild/UI oben (14%)', color:'rgba(100,185,230,.6)', dash:'6,3',
-   rect: f=>({x:0, y:0, w:f.w, h:f.h*.14})},
-  {id:'bottom', label:'Story-UI unten (20%)',     color:'rgba(100,185,230,.6)', dash:'6,3',
-   rect: f=>({x:0, y:f.h*.80, w:f.w, h:f.h*.20})},
-  {id:'text',   label:'Text-Safe-Bereich',        color:'rgba(175,200,5,.45)', dash:'3,3',
-   rect: f=>({x:f.w*.08, y:f.h*.16, w:f.w*.84, h:f.h*.62})},
-  // Mittellinie horizontal
-  {id:'hcenter',label:'Horizontale Mitte',        color:'rgba(255,255,255,.18)', dash:'2,4',
-   line: f=>({x1:0, y1:f.h/2, x2:f.w, y2:f.h/2})},
-  // Mittellinie vertikal
-  {id:'vcenter',label:'Vertikale Mitte',          color:'rgba(255,255,255,.18)', dash:'2,4',
-   line: f=>({x1:f.w/2, y1:0, x2:f.w/2, y2:f.h})},
-];
+// Gegenprobe am fertigen Blob: gemessen wird, was auf der Platte landet —
+// nicht das, was wir zu zeichnen glaubten.
+async function pruefeExport(blob, f){
+  if(typeof createImageBitmap!=='function') return null;
+  const bild=await createImageBitmap(blob);
+  const ist={w:bild.width, h:bild.height};
+  if(bild.close) bild.close();
+  if(ist.w!==f.w || ist.h!==f.h){
+    throw new Error('Das PNG misst '+ist.w+' × '+ist.h+
+                    ' px statt '+f.w+' × '+f.h+' px.');
+  }
+  return ist;
+}
+
+function exportFehlerZeigen(text){
+  const el=document.getElementById('export-fehler');
+  if(!el){ console.error('[export]', text); return; }
+  el.innerHTML='<span class="ef-zu" onclick="exportFehlerVerbergen()">✕</span>'+
+               '❌ Export nicht verwendbar — '+escHtml(text);
+  el.style.display='block';
+}
+function exportFehlerVerbergen(){
+  const el=document.getElementById('export-fehler');
+  if(el) el.style.display='none';
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TEMPLATES
@@ -1042,7 +1357,11 @@ function applyRedaktionPayload() {
   if (p.hl)     { document.getElementById('tf-headline').value = p.hl; }
   if (p.sub)    { document.getElementById('tf-sub').value      = p.sub; }
   if (p.anlass) { document.getElementById('exp-anlass').value  = p.anlass; }
-  if (p.hlsize) { document.getElementById('sl-hlsize').value   = p.hlsize; }
+  if (p.hlsize) {
+    // Der Wert ist auf die Rahmenhoehe 480 bezogen (VORLAGEN_BASIS)
+    schriftRel.hl = p.hlsize/VORLAGEN_BASIS.h;
+    schriftAnwenden(document.getElementById('canvas-frame').offsetHeight||VORLAGEN_BASIS.h);
+  }
   if (p.full)   {
     const ft  = document.getElementById('tf-fulltext-preview');
     const sec = document.getElementById('fulltext-preview-section');
@@ -1126,6 +1445,10 @@ window.addEventListener('load', async () => {
   } catch(e) { if (!isInIframe) window.location.href = '/'; return; }
 
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
+  baueFormatButtons();
+  // Format zuerst: es bestimmt Rahmenmasse, Schriftgroessen und Positionen.
+  // ?format= nimmt Key, Anzeigename und die Alt-Kennungen 9:16 / 1:1 / 16:9.
+  setFormat(qp.get('format') || FORMATS[0].key);
   loadTemplate(0);
   kiSyncPanel();   // Logo und KI-Kennzeichnung angleichen
   initDrag();
@@ -1160,13 +1483,18 @@ async function doLogout() {
 // DRAG & DROP — Textblock
 // ═══════════════════════════════════════════════════════════════
 function initDrag(){
+  const frame=document.getElementById('canvas-frame');
   makeDraggable(document.getElementById('text-block'), (x,y)=>{
     tbX=x; tbY=y;
+    // Relativ merken — nur so ueberlebt die Position den Formatwechsel
+    tbRel={x:x/frame.offsetWidth, y:y/frame.offsetHeight};
     document.getElementById('pos-x').value=Math.round(x);
     document.getElementById('pos-y').value=Math.round(y);
     document.getElementById('coord-readout').textContent='x: '+Math.round(x)+'  y: '+Math.round(y);
   });
-  makeDraggable(document.getElementById('badge-block'), ()=>{});
+  makeDraggable(document.getElementById('badge-block'), (x,y)=>{
+    badgeRel={x:x/frame.offsetWidth, y:y/frame.offsetHeight};
+  });
 }
 
 function makeDraggable(el, onMove){
@@ -1205,24 +1533,17 @@ function makeDraggable(el, onMove){
     const ew=el.offsetWidth, eh=el.offsetHeight;
     let nx=Math.max(0,Math.min(fw-ew, startLeft+dx));
     let ny=Math.max(0,Math.min(fh-eh, startTop+dy));
-    // Snap to safe-zone edges (5px threshold)
-    const f=FORMATS[currentFormatIdx];
-    const scaleF=fw/f.w;
+    // An den Kanten der Safe Zone einrasten (5 px Schwelle)
+    const sa=safeAnzeige(aktFormat());
     const snap=5;
-    const snapPoints=[
-      f.w*.05*scaleF, f.w*.08*scaleF,
-      (f.w*.05+f.w*.90)*scaleF-ew,
-    ];
-    const snapY=[
-      f.h*.14*scaleF, f.h*.16*scaleF,
-      (f.h*.80)*scaleF-eh,
-    ];
-    snapPoints.forEach(s=>{ if(Math.abs(nx-s)<snap) nx=s; });
-    snapY.forEach(s=>{ if(Math.abs(ny-s)<snap) ny=s; });
+    [sa.left, fw-sa.right-ew].forEach(p=>{ if(Math.abs(nx-p)<snap) nx=p; });
+    [sa.top,  fh-sa.bottom-eh].forEach(p=>{ if(Math.abs(ny-p)<snap) ny=p; });
 
     el.style.left=Math.round(nx)+'px';
     el.style.top=Math.round(ny)+'px';
+    el.style.right='auto'; el.style.bottom='auto';
     onMove(Math.round(nx), Math.round(ny));
+    kollisionMelden();
   }
 
   function pointerUp(){
@@ -1240,57 +1561,90 @@ function makeDraggable(el, onMove){
 }
 
 function setPosByInput(){
+  const frame=document.getElementById('canvas-frame');
   const x=parseInt(document.getElementById('pos-x').value)||0;
   const y=parseInt(document.getElementById('pos-y').value)||0;
   const tb=document.getElementById('text-block');
   tb.style.left=x+'px'; tb.style.top=y+'px';
   tbX=x; tbY=y;
+  tbRel={x:x/frame.offsetWidth, y:y/frame.offsetHeight};
+  kollisionMelden();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // SAFE ZONES
 // ═══════════════════════════════════════════════════════════════
+// Gezeichnet wird in Anzeigepixeln, gerechnet in Exportpixeln. Die Overlays
+// liegen in #safe-zone-svg (Klasse kein-export) und werden vor jedem Export
+// ausgeblendet.
+const SZ_FUELLUNG='rgba(225,0,15,.12)';   // #E1000F bei 12 % Deckkraft
+const SZ_KONTUR  ='rgba(225,0,15,.85)';
+
 function drawSafeZones(){
   const svg=document.getElementById('safe-zone-svg');
   const frame=document.getElementById('canvas-frame');
+  if(!svg||!frame) return;
   const fw=frame.offsetWidth, fh=frame.offsetHeight;
-  const f=FORMATS[currentFormatIdx];
-  // Scale factor canvas display px → logical %
-  const sx=fw/f.w, sy=fh/f.h;
-  svg.setAttribute('viewBox',`0 0 ${fw} ${fh}`);
-  svg.setAttribute('width',fw);
-  svg.setAttribute('height',fh);
+  const f=aktFormat(), k=anzeigeFaktor(f);
+  svg.setAttribute('viewBox','0 0 '+fw+' '+fh);
+  svg.setAttribute('width', fw);
+  svg.setAttribute('height', fh);
 
-  let content='';
-  // Label definitions
-  const LABELS=[
-    {id:'outer', text:'5% Außenrand'},
-    {id:'top',   text:'Story-UI oben 14%'},
-    {id:'bottom',text:'Story-UI unten 20%'},
-    {id:'text',  text:'Text-Safe-Zone'},
-  ];
+  const t=Math.round(f.safe.top*k),  b=Math.round(f.safe.bottom*k),
+        l=Math.round(f.safe.left*k), r=Math.round(f.safe.right*k);
+  const mitte=Math.max(0, fh-t-b);
 
-  SAFE_ZONES.forEach(z=>{
-    if(z.rect){
-      const r=z.rect({w:f.w*sx,h:f.h*sy});
-      content+=`<rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"
-        fill="none" stroke="${z.color}" stroke-width="1"
-        stroke-dasharray="${z.dash}" rx="2"/>`;
-      // Label im Strich
-      const lbl=LABELS.find(l=>l.id===z.id);
-      if(lbl){
-        const lx=r.x+4, ly=r.y+(z.id==='bottom'?12:10);
-        content+=`<rect x="${lx-2}" y="${ly-9}" width="${lbl.text.length*4.8+4}" height="12" rx="2" fill="rgba(0,0,0,.55)"/>`;
-        content+=`<text x="${lx}" y="${ly}" font-family="Arial,sans-serif" font-size="8" fill="${z.color}" font-weight="700">${lbl.text}</text>`;
-      }
-    }
-    if(z.line){
-      const l=z.line({w:fw,h:fh});
-      content+=`<line x1="${l.x1}" y1="${l.y1}" x2="${l.x2}" y2="${l.y2}"
-        stroke="${z.color}" stroke-width="0.75" stroke-dasharray="${z.dash}"/>`;
-    }
+  // Halbe Pixel, damit die 1-px-Kontur nicht verwaschen wirkt
+  const flaeche=(x,y,w,h)=> (w<=0||h<=0) ? '' :
+    '<rect x="'+(x+.5)+'" y="'+(y+.5)+'" width="'+Math.max(0,w-1)+
+    '" height="'+Math.max(0,h-1)+'" fill="'+SZ_FUELLUNG+
+    '" stroke="'+SZ_KONTUR+'" stroke-width="1"/>';
+
+  let c='';
+  c+=flaeche(0,    0,  fw, t);        // oben
+  c+=flaeche(0,    fh-b, fw, b);      // unten
+  c+=flaeche(0,    t,  l,  mitte);    // links
+  c+=flaeche(fw-r, t,  r,  mitte);    // rechts
+  (f.zonen||[]).forEach(z=>{
+    c+=flaeche(Math.round(z.x*k), Math.round(z.y*k),
+               Math.round(z.w*k), Math.round(z.h*k));
   });
-  svg.innerHTML=content;
+  // Mittelachsen als Setzhilfe — keine Sperrflaeche, deshalb dezent.
+  c+='<line x1="0" y1="'+(fh/2)+'" x2="'+fw+'" y2="'+(fh/2)+
+     '" stroke="rgba(255,255,255,.18)" stroke-width="0.75" stroke-dasharray="2,4"/>';
+  c+='<line x1="'+(fw/2)+'" y1="0" x2="'+(fw/2)+'" y2="'+fh+
+     '" stroke="rgba(255,255,255,.18)" stroke-width="0.75" stroke-dasharray="2,4"/>';
+  svg.innerHTML=c;
+}
+
+// Legende. Steht ausserhalb von #canvas-frame und kann deshalb gar nicht
+// erst in den Export geraten.
+function zeichneLegende(){
+  const el=document.getElementById('safe-legend');
+  if(!el) return;
+  if(!safeZonesVisible){ el.style.display='none'; return; }
+  const f=aktFormat();
+  const zeile=(mass,grund,voll)=>
+    '<div class="sl-zeile"><span class="sl-punkt'+(voll?' voll':'')+'"></span>'+
+    '<span><b>'+mass+'</b> — '+grund+'</span></div>';
+  let h='<div class="sl-titel">'+escHtml(f.label)+'</div>'+
+        '<div class="sl-masse">'+f.w+' × '+f.h+' px · '+f.ratio+'</div>';
+  if(f.safe.top>0)    h+=zeile('oben '+Math.round(f.safe.top)+' px',    f.gruende.oben);
+  if(f.safe.bottom>0) h+=zeile('unten '+Math.round(f.safe.bottom)+' px', f.gruende.unten);
+  if(f.safe.left>0||f.safe.right>0){
+    const gleich=Math.round(f.safe.left)===Math.round(f.safe.right);
+    h+=zeile(gleich ? 'seitlich '+Math.round(f.safe.left)+' px'
+                    : 'links '+Math.round(f.safe.left)+' / rechts '+Math.round(f.safe.right)+' px',
+             f.gruende.seiten);
+  }
+  (f.zonen||[]).forEach(z=>{ h+=zeile(z.name||'Sperrfläche', z.grund, true); });
+  if(f.hinweis) h+='<div class="sl-hinweis">'+f.hinweis+'</div>';
+  // Feste Ebenen melden — sie lassen sich nicht verschieben, der Konflikt
+  // gehoert aber trotzdem auf den Tisch.
+  const fest=festeEbenenKonflikt(f);
+  if(fest.length) h+='<div class="sl-fest">⚠ '+fest.join('<br>⚠ ')+'</div>';
+  el.innerHTML=h;
+  el.style.display='block';
 }
 
 function toggleSafeZones(){
@@ -1300,8 +1654,125 @@ function toggleSafeZones(){
   const btn=document.getElementById('sz-toggle-btn');
   svg.style.display=safeZonesVisible?'block':'none';
   if(cb) cb.checked=safeZonesVisible;
-  btn.classList.toggle('on',safeZonesVisible);
+  if(btn) btn.classList.toggle('on',safeZonesVisible);
   if(safeZonesVisible) drawSafeZones();
+  zeichneLegende();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KOLLISIONSWARNUNG
+// ═══════════════════════════════════════════════════════════════
+// Warnt, blockiert aber nicht: es gibt Motive, bei denen ein Anschnitt
+// gewollt ist. Die Entscheidung bleibt in der Redaktion.
+function elementRechteck(el){
+  const frame=document.getElementById('canvas-frame');
+  const k=exportFaktor(aktFormat());
+  // offsetLeft/offsetTop statt getBoundingClientRect: von CSS-Transformen
+  // und damit vom Ansichtszoom unabhaengig.
+  let x=0, y=0, node=el;
+  while(node && node!==frame){ x+=node.offsetLeft; y+=node.offsetTop; node=node.offsetParent; }
+  // Beide Kanten runden und die Groesse daraus ableiten. Position und
+  // Groesse getrennt zu runden addiert die Fehler und laesst ein Element
+  // um bis zu einen Pixel groesser erscheinen, als es ist.
+  const x0=Math.round(x*k), y0=Math.round(y*k);
+  return { x:x0, y:y0,
+           w:Math.round((x+el.offsetWidth)*k)-x0,
+           h:Math.round((y+el.offsetHeight)*k)-y0 };
+}
+function sichtbar(el){
+  return !!(el && el.offsetWidth && el.offsetHeight && getComputedStyle(el).display!=='none');
+}
+function pruefeKollision(el){
+  const treffer=zonenListe(aktFormat()).filter(z=>schneidet(elementRechteck(el), z, KOLLISION_TOLERANZ));
+  el.classList.toggle('kollision', treffer.length>0);
+  return treffer;
+}
+const BEWEGLICH=[{id:'text-block',name:'Textblock'},{id:'badge-block',name:'Störer'}];
+function kollisionMelden(){
+  const meldungen=[];
+  BEWEGLICH.forEach(e=>{
+    const el=document.getElementById(e.id);
+    if(!el) return;
+    if(!sichtbar(el)){ el.classList.remove('kollision'); return; }
+    const treffer=pruefeKollision(el);
+    if(treffer.length) meldungen.push(e.name+' ragt in: '+treffer.map(z=>z.name).join(', '));
+  });
+  const st=document.getElementById('safe-status');
+  if(!st) return;
+  if(meldungen.length){
+    st.innerHTML='⚠ '+meldungen.join(' · ')+
+      ' <span class="ss-mild">Export bleibt möglich.</span>';
+    st.style.display='block';
+  } else {
+    st.style.display='none';
+  }
+}
+// Logo, Fusszeile und KI-Symbol sind nicht verschiebbar. Sie werden nur
+// gemeldet, nicht bewegt — die Platzierung der Marke ist eine
+// Designentscheidung und gehoert nicht in eine Automatik.
+const FESTE_EBENEN=[{id:'canvas-logo-img',name:'vhs-Logo'},
+                    {id:'tb-footer',name:'Fußzeile'},
+                    {id:'ki-block',name:'KI-Symbol'}];
+function festeEbenenKonflikt(f){
+  const aus=[];
+  FESTE_EBENEN.forEach(e=>{
+    const el=document.getElementById(e.id);
+    if(!sichtbar(el)) return;
+    const treffer=zonenListe(f).filter(z=>schneidet(elementRechteck(el), z, KOLLISION_TOLERANZ));
+    if(treffer.length) aus.push(e.name+' liegt in: '+treffer.map(z=>z.name).join(', '));
+  });
+  return aus;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KI-KENNZEICHNUNG — Platzierung innerhalb der Safe Zone
+// ═══════════════════════════════════════════════════════════════
+// Ein Kennzeichen, das die App-Bedienelemente ueberdeckt, erfuellt Art. 50
+// nicht — es muss lesbar bleiben. Deshalb wird die gewuenschte Ecke an den
+// Safe-Zone-Kanten ausgerichtet und bei Bedarf ausgewichen: in der Story
+// liegt unten rechts die Aktionsleiste, dort wird nach unten links gewechselt.
+function kiPlatziere(blk, symbolHoehe){
+  const f=aktFormat();
+  const frame=document.getElementById('canvas-frame');
+  const fw=frame.offsetWidth, fh=frame.offsetHeight;
+  const sa=safeAnzeige(f);
+
+  // Die echten Masse des eingeblendeten Blocks, nicht die gerechneten:
+  // offsetWidth/offsetHeight sind ganzzahlig und immer >= dem Inhalt.
+  // Mit den gerundeten Zahlen zu rechnen und dann die Position zu runden
+  // schob den Block bisher um bis zu einen Anzeigepixel aus der Zone —
+  // im Export je nach Format bis zu vier.
+  const bw = blk.offsetWidth  || Math.ceil(symbolHoehe*(KI_RATIO[KI.typ]||1));
+  const bh = blk.offsetHeight || Math.ceil(symbolHoehe);
+
+  // Innenkanten der Safe Zone, konsequent nach innen gerundet
+  const links  = Math.ceil(sa.left);
+  const oben   = Math.ceil(sa.top);
+  const rechts = Math.floor(fw - sa.right);
+  const unten  = Math.floor(fh - sa.bottom);
+
+  const ecken={
+    ol:    {x:links,      y:oben},
+    fl:    {x:links,      y:unten-bh},
+    story: {x:links,      y:unten-bh},
+    ur:    {x:rechts-bw,  y:unten-bh}
+  };
+  let p=ecken[KI.pos]||ecken.fl;
+
+  // Sperrflaechen des Formats beruecksichtigen: in der Story liegt unten
+  // rechts die Aktionsleiste, dort wird nach unten links ausgewichen.
+  const k=exportFaktor(f);
+  const belegt=(f.zonen||[]).some(z=>schneidet(
+    {x:p.x*k, y:p.y*k, w:bw*k, h:bh*k}, z));
+  if(belegt) p=ecken.fl;
+
+  const px=Math.max(links, Math.min(rechts-bw, p.x));
+  const py=Math.max(oben,  Math.min(unten-bh,  p.y));
+  blk.style.left  = px+'px';
+  blk.style.top   = py+'px';
+  blk.style.right = 'auto';
+  blk.style.bottom= 'auto';
+  blk.style.alignItems='flex-start';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1335,19 +1806,21 @@ function loadTemplate(idx){
   document.getElementById('tf-footer').value=t.footer;
   document.getElementById('tf-badge').value=t.badge;
   document.getElementById('badge-vis').checked=t.badgeVis;
-  document.getElementById('sl-hlsize').value=t.hlsize;
-  document.getElementById('sl-subsize').value=t.subsize;
+  // Die Schriftgroessen der Vorlage beziehen sich auf die Rahmenhoehe 480
+  // (VORLAGEN_BASIS) und werden auf die Hoehe des aktuellen Formats umgerechnet.
+  schriftRel={ hl:t.hlsize/VORLAGEN_BASIS.h, sub:t.subsize/VORLAGEN_BASIS.h };
+  schriftAnwenden(document.getElementById('canvas-frame').offsetHeight||VORLAGEN_BASIS.h);
   document.getElementById('sl-tbwidth').value=t.tbWidth||88;
 
   lineColor=t.lineColor; badgeColor=t.badgeColor; textColor=t.textColor;
   syncLineSwatches(t.lineColor); syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
 
-  // Textblock platzieren
-  tbX=t.tbX||14; tbY=t.tbY||160;
-  const tb=document.getElementById('text-block');
-  tb.style.left=tbX+'px'; tb.style.top=tbY+'px';
-  document.getElementById('pos-x').value=tbX;
-  document.getElementById('pos-y').value=tbY;
+  // Textblock platzieren. Die Vorlagenwerte stammen aus dem Story-Rahmen
+  // 270 x 480 und werden in relative Positionen umgerechnet, damit sie in
+  // jedem Format an derselben Stelle des Motivs sitzen.
+  tbRel={ x:(t.tbX||14)/VORLAGEN_BASIS.w, y:(t.tbY||160)/VORLAGEN_BASIS.h };
+  badgeRel=null;
+  positionenAnwenden();
 
   // KI-Voreinstellung des Templates uebernehmen. Eine bereits getroffene
   // Entscheidung bleibt bestehen — sie gehoert zum Inhalt, nicht zum Layout.
@@ -1367,7 +1840,10 @@ function loadTemplate(idx){
   } else {
     updateText();
   }
+  renderKI();
   if(safeZonesVisible) drawSafeZones();
+  zeichneLegende();
+  kollisionMelden();
 }
 
 
@@ -1453,7 +1929,7 @@ function updateText(){
   document.getElementById('tb-author').style.display=author?'block':'none';
 
   document.getElementById('tb-role').innerHTML=escHtml(role);
-  document.getElementById('tb-role').style.fontSize=Math.max(8,subsize-2)+'px';
+  document.getElementById('tb-role').style.fontSize=Math.max(5,subsize-2)+'px';
   document.getElementById('tb-role').style.color=tc75;
   document.getElementById('tb-role').style.display=role?'block':'none';
 
@@ -1472,16 +1948,28 @@ function updateText(){
     const bsz=Math.round(hlsize*3.8);
     bi.style.width=bsz+'px'; bi.style.height=bsz+'px';
     bi.style.fontSize=Math.round(hlsize*.6)+'px';
-    // Default badge position if not yet placed
-    if(!bb.style.left){
-      bb.style.right='14px';
-      bb.style.bottom='60px';
-      bb.style.left='';
-      bb.style.top='';
+    // Platzierung immer relativ zur Rahmenkante. Solange der Stoerer nicht
+    // bewegt wurde, gilt die Standardecke unten rechts.
+    const bfw=frame.offsetWidth, bfh=frame.offsetHeight;
+    if(badgeRel){
+      bb.style.left=Math.round(badgeRel.x*bfw)+'px';
+      bb.style.top =Math.round(badgeRel.y*bfh)+'px';
+    } else {
+      bb.style.left=Math.round(bfw-bfw*BADGE_STANDARD.rechts-bsz)+'px';
+      bb.style.top =Math.round(bfh-bfh*BADGE_STANDARD.unten -bsz)+'px';
     }
+    bb.style.right='auto'; bb.style.bottom='auto';
   } else {
     bb.style.display='none';
   }
+
+  // Schriftgroessen als Anteil der Rahmenhoehe merken. Waehrend eines
+  // Formatwechsels nicht — dort sind die Regler gerade erst gesetzt worden.
+  if(!schriftSperre){
+    const rh=frame.offsetHeight||VORLAGEN_BASIS.h;
+    schriftRel={hl:hlsize/rh, sub:subsize/rh};
+  }
+  kollisionMelden();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1516,17 +2004,85 @@ function syncTextSwatches(col){
 // ═══════════════════════════════════════════════════════════════
 // FORMAT
 // ═══════════════════════════════════════════════════════════════
-function setFormat(idx,w,h,label,dim){
-  currentFormatIdx=idx;
-  document.querySelectorAll('.fmt-btn').forEach((b,i)=>b.classList.toggle('on',i===idx));
+// Die Schaltflaechen entstehen aus FORMATS — kein Mass im Markup.
+function baueFormatButtons(){
+  const box=document.getElementById('format-btns');
+  if(!box) return;
+  box.innerHTML=FORMATS.map(f=>{
+    // Vorschausymbol im Seitenverhaeltnis des Formats, laengste Kante 18 px
+    const s=Math.min(18/f.w, 18/f.h);
+    const iw=Math.max(6,Math.round(f.w*s)), ih=Math.max(6,Math.round(f.h*s));
+    return '<div class="fmt-btn" id="fmt-'+f.key+'" onclick="setFormat(\''+f.key+'\')" '+
+           'title="'+f.label+' · '+f.w+'×'+f.h+'">'+
+           '<div class="fmt-icon" style="width:'+iw+'px;height:'+ih+'px"></div>'+
+           '<span class="fmt-name">'+f.kurz+'</span>'+
+           '<span class="fmt-dim">'+f.w+'×'+f.h+'</span></div>';
+  }).join('');
+}
+
+// Nimmt Key, Anzeigename, Alt-Kennung oder Index entgegen (siehe formatIndex).
+function setFormat(kennung){
+  currentFormatIdx=formatIndex(kennung);
+  const f=aktFormat(), d=anzeigeMasse(f);
+
+  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.toggle('on', b.id==='fmt-'+f.key));
+
   const frame=document.getElementById('canvas-frame');
-  frame.style.width=w+'px'; frame.style.height=h+'px';
-  document.getElementById('format-tag').textContent=label;
-  document.getElementById('exp-info').innerHTML=`Format: ${label}<br>Export: ${dim} px<br>Farbprofil: sRGB`;
+  frame.style.width  = d.w+'px';
+  frame.style.height = d.h+'px';
+
+  const tag=document.getElementById('format-tag');
+  if(tag) tag.textContent=f.label+' · '+f.ratio;
+  const info=document.getElementById('exp-info');
+  if(info) info.innerHTML='Format: '+escHtml(f.label)+'<br>Export: '+f.w+' × '+f.h+
+                          ' px<br>Farbprofil: sRGB';
+
+  // Schrift proportional zur neuen Rahmenhoehe, Positionen aus den relativen
+  // Werten neu aufloesen. schriftSperre verhindert, dass updateText die
+  // gerade gesetzten Reglerwerte gleich wieder als neue Referenz misst.
+  schriftSperre=true;
+  schriftAnwenden(d.h);
+  positionenAnwenden();
   updateText();
-  if(safeZonesVisible) setTimeout(drawSafeZones,50);
+  schriftSperre=false;
+
   renderLogo();
   renderKI();
+  if(safeZonesVisible) drawSafeZones();
+  zeichneLegende();
+  kollisionMelden();
+}
+
+// Reglerwerte aus den relativen Schriftgroessen neu setzen
+function schriftAnwenden(rahmenHoehe){
+  const setzen=(id,anteil)=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const min=parseFloat(el.min), max=parseFloat(el.max);
+    el.value=Math.min(max, Math.max(min, Math.round(anteil*rahmenHoehe)));
+  };
+  setzen('sl-hlsize',  schriftRel.hl);
+  setzen('sl-subsize', schriftRel.sub);
+}
+
+// Relative Positionen in Anzeigepixel aufloesen
+function positionenAnwenden(){
+  const frame=document.getElementById('canvas-frame');
+  const fw=frame.offsetWidth, fh=frame.offsetHeight;
+  const tb=document.getElementById('text-block');
+  if(tb){
+    tbX=Math.round(tbRel.x*fw); tbY=Math.round(tbRel.y*fh);
+    tb.style.left=tbX+'px'; tb.style.top=tbY+'px';
+    const px=document.getElementById('pos-x'), py=document.getElementById('pos-y');
+    if(px) px.value=tbX;
+    if(py) py.value=tbY;
+  }
+  const bb=document.getElementById('badge-block');
+  if(bb && badgeRel){
+    bb.style.left=Math.round(badgeRel.x*fw)+'px';
+    bb.style.top =Math.round(badgeRel.y*fh)+'px';
+    bb.style.right='auto'; bb.style.bottom='auto';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1591,71 +2147,69 @@ async function exportPNG(){
   // Kennzeichnungsfrage vor den Export, nicht danach — hinterher fasst
   // niemand das Layout nochmal an.
   if(!await kiAbfrage()) return;
+  exportFehlerVerbergen();
   showToast('🖼 Wird erstellt …');
-  const svgEl=document.getElementById('safe-zone-svg');
-  const wasVisible=safeZonesVisible;
-  if(wasVisible){ svgEl.style.display='none'; }// Safe Zones ausblenden
-  // Outline temporär entfernen
-  const tb=document.getElementById('text-block');
-  tb.classList.remove('selected');
+  const f=aktFormat();
   const frame=document.getElementById('canvas-frame');
-  const origT=frame.style.transform;
-  frame.style.transform='scale(1)';
-  const res=EXPORT_RES[currentFormatIdx]||{w:1080,h:1920};
-  const f=FORMATS[currentFormatIdx];
+  const vor=exportVorbereiten();
+  const start=performance.now();
   try{
-    const canvas=await baueExportLeinwand(frame, res, f);
-    frame.style.transform=origT;
-    tb.classList.add('selected');
-    if(wasVisible){ svgEl.style.display='block'; }
+    const leinwand=await baueExportLeinwand(frame, f, vor.geo);
+    const blob=await leinwandAlsBlob(leinwand);
+    await pruefeExport(blob, f);
+    const dauer=Math.round(performance.now()-start);
+    console.log('[export] '+f.key+' '+f.w+'×'+f.h+' in '+dauer+' ms, '+
+                Math.round(blob.size/1024)+' kB');
+    const url=URL.createObjectURL(blob);
     const link=document.createElement('a');
-    link.download='vhs-spandau-'+Date.now()+'.png';
-    link.href=canvas.toDataURL('image/png');
+    link.download='vhs-spandau-'+f.key+'-'+f.w+'x'+f.h+'-'+Date.now()+'.png';
+    link.href=url;
     link.click();
-    showToast('✅ PNG gespeichert');
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    showToast('✅ PNG gespeichert — '+f.w+' × '+f.h+' px');
   }catch(err){
-    frame.style.transform=origT;
-    tb.classList.add('selected');
-    if(wasVisible){ svgEl.style.display='block'; }
     console.error('[export]', err);
-    showToast('❌ Export fehlgeschlagen — ' + (err.message||''));
+    exportFehlerZeigen(err.message||'unbekannter Fehler');
+    showToast('❌ Export fehlgeschlagen');
+  }finally{
+    vor.zurueck();
   }
 }
 
 async function exportUndFreigabe() {
   if(!await kiAbfrage()) return;
+  exportFehlerVerbergen();
   const btn = document.getElementById('btn-freigabe-submit');
-  const statusEl = document.getElementById('freigabe-cta-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ PNG wird erstellt …'; }
 
-  const svgEl = document.getElementById('safe-zone-svg');
-  const wasVisible = safeZonesVisible;
-  if (wasVisible) svgEl.style.display = 'none';
-  const tb = document.getElementById('text-block');
-  tb.classList.remove('selected');
-  const frame = document.getElementById('canvas-frame');
-  const origT = frame.style.transform;
-  frame.style.transform = 'scale(1)';
-  const res = EXPORT_RES[currentFormatIdx] || { w:1080, h:1920 };
-  const f = FORMATS[currentFormatIdx];
+  const f=aktFormat();
+  const frame=document.getElementById('canvas-frame');
+  const vor=exportVorbereiten();
+  const start=performance.now();
 
   let pngDataUrl = null;
   try {
-    const canvas = await baueExportLeinwand(frame, res, f);
-    pngDataUrl = canvas.toDataURL('image/png');
+    const leinwand=await baueExportLeinwand(frame, f, vor.geo);
+    const blob=await leinwandAlsBlob(leinwand);
+    await pruefeExport(blob, f);
+    console.log('[export] '+f.key+' '+f.w+'×'+f.h+' in '+
+                Math.round(performance.now()-start)+' ms');
+    // Der Post fuehrt das Bild als Data-URL mit — dafuer wird der
+    // geprueifte Blob umgewandelt, nicht ein zweites Mal gerendert.
+    pngDataUrl = await blobAlsDataUrl(blob);
+    const url=URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = 'vhs-spandau-' + Date.now() + '.png';
-    link.href = pngDataUrl; link.click();
+    link.download = 'vhs-spandau-'+f.key+'-'+f.w+'x'+f.h+'-'+Date.now()+'.png';
+    link.href = url; link.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
   } catch(err) {
-    frame.style.transform = origT; tb.classList.add('selected');
-    if (wasVisible) svgEl.style.display = 'block';
     console.error('[export]', err);
-    showToast('❌ PNG-Export fehlgeschlagen — ' + (err.message||''));
+    exportFehlerZeigen(err.message||'unbekannter Fehler');
+    showToast('❌ PNG-Export fehlgeschlagen');
     if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
     return;
   } finally {
-    frame.style.transform = origT; tb.classList.add('selected');
-    if (wasVisible) svgEl.style.display = 'block';
+    vor.zurueck();
   }
 
   if (btn) btn.textContent = '⏳ Wird eingereicht …';
@@ -1669,7 +2223,9 @@ async function exportUndFreigabe() {
     kurs:    payload.kurs    || '',
     text:    payload.fulltext || '',
     status:  'freigabe_ausstehend',
-    format:  FORMATS[currentFormatIdx]?.label || 'Story',
+    // Freigabe und Voransicht zeigen dieses Feld als Klartext an, deshalb
+    // der Anzeigename und nicht der Key.
+    format:  f.label,
     bild:    pngDataUrl || null,
     pb:      payload.pb      || '',
     autor:   payload.autor   || '',
@@ -1725,6 +2281,8 @@ function resetEditor(){
   removeFoto();
   // Neues Motiv, neue Entscheidung: die Kennzeichnung gehoert zum Inhalt
   KI.typ=''; KI.entschieden=false;
+  exportFehlerVerbergen();
+  setFormat(FORMATS[0].key);
   loadTemplate(0);
   kiSyncPanel();
   showToast('↺ Editor zurückgesetzt');
