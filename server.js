@@ -578,15 +578,31 @@ const server = http.createServer(async (req, res) => {
     }
     if (!u) return jsonRes(res, 401, { error:"Ungültige Zugangsdaten" });
     const token = createSession(u);
+    // Path=/ ist nicht optional. Fehlt es, gilt nach RFC 6265 der Pfad der
+    // setzenden Anfrage — bei /api/login also /api. Das Cookie ging dann nur
+    // an /api/*. Die Anmeldung sah deshalb erfolgreich aus (/api/me bekam es),
+    // aber jede Seitenanfrage wie /editor kam ohne Sitzung an und wurde vom
+    // Waechter zurueck zur Anmeldung geschickt.
+    // Die erste Zeile raeumt das alte, auf /api beschraenkte Cookie ab. Sonst
+    // liegen zwei Cookies namens session im Browser; bei /api/* wird das mit
+    // dem laengeren Pfad zuerst geschickt, und das Abmelden trifft das falsche.
     return jsonRes(res, 200, { ok:true, user:safeUser(u) },
-      { "Set-Cookie":`session=${token}; HttpOnly; SameSite=Lax; Max-Age=28800` });
+      { "Set-Cookie":[
+        "session=; Path=/api; HttpOnly; Max-Age=0",
+        `session=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800`
+      ] });
   }
 
   if (req.method === "POST" && url === "/api/logout") {
     const t = getToken(req);
     if (t && SESSIONS[t]) { delete SESSIONS[t]; SESSIONS_GEAENDERT = true; saveSessions(); }
+    // Geloescht wird ein Cookie nur bei gleichem Pfad. Beide Pfade abraeumen:
+    // der neue und der alte aus der Zeit ohne Path.
     return jsonRes(res, 200, { ok:true },
-      { "Set-Cookie":"session=; HttpOnly; Max-Age=0" });
+      { "Set-Cookie":[
+        "session=; Path=/; HttpOnly; Max-Age=0",
+        "session=; Path=/api; HttpOnly; Max-Age=0"
+      ] });
   }
 
   if (req.method === "POST" && url === "/api/change-password") {
