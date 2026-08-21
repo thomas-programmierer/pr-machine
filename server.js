@@ -624,7 +624,20 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && url === "/api/me") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
-    return jsonRes(res, 200, { user: safeUser(sess.user) });
+    // Selbstheilung. Wer sich vor der Path-Korrektur angemeldet hat, traegt ein
+    // Cookie, das nur an /api geht. Das reicht fuer genau diese Anfrage hier,
+    // aber nicht fuer /editor — der Waechter schickt zurueck zur Anmeldung, die
+    // Anmeldeseite sieht ueber /api/me eine gueltige Sitzung und schickt wieder
+    // hin. Eine Schleife, aus der man sich nicht neu anmelden kann, weil die
+    // Anmeldeseite nie stehen bleibt.
+    // Darum wird das Cookie hier neu ausgestellt, mit Path=/ und ohne die alte
+    // Fassung. /api/me laeuft beim Laden jeder Seite, die Sitzung repariert
+    // sich also von selbst — ohne neue Anmeldung, ohne Browserdaten loeschen.
+    return jsonRes(res, 200, { user: safeUser(sess.user) },
+      { "Set-Cookie":[
+        "session=; Path=/api; HttpOnly; Max-Age=0",
+        `session=${getToken(req)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=28800`
+      ] });
   }
 
   // ── USERS ─────────────────────────────────────────────────────────────────
