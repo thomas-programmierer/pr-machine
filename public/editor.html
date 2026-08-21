@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Foto-Editor — VHS Spandau</title>
+<title>Grafik-Studio — VHS Spandau</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -29,10 +29,11 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 .ext-nav-user{margin-left:auto;font-size:11px;color:rgba(255,255,255,.45);padding:0 6px;flex-shrink:0}
 .ext-logout-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:4px 10px;color:rgba(255,255,255,.65);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;flex-shrink:0}.ext-logout-btn:hover{background:rgba(255,255,255,.15);color:#fff}
 
-.editor-wrap{flex:1;display:grid;grid-template-columns:220px 1fr 250px;overflow:hidden;min-height:0}
+/* Ein Bedienfeld statt linker Spalte, Reitern und rechter Spalte. */
+.editor-wrap{flex:1;display:grid;grid-template-columns:286px 1fr;overflow:hidden;min-height:0}
 
 .panel{background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
-.panel-r{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;border-right:none}
+
 .p-section{padding:12px 14px;border-bottom:1px solid var(--border)}
 .p-label{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 
@@ -42,7 +43,7 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 .tpl-name{font-size:9px;font-weight:600;color:var(--blau60);text-align:center;margin-top:3px}
 
 .upload-zone{border:2px dashed rgba(255,255,255,.2);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.03)}.upload-zone:hover,.upload-zone.drag{border-color:var(--gelb);background:rgba(250,185,15,.06)}
-.uz-icon{font-size:22px;margin-bottom:5px}
+.uz-icon{margin:0 auto 6px;color:rgba(255,255,255,.45);display:block}
 .uz-text{font-size:10px;color:rgba(255,255,255,.6);line-height:1.5}
 .uz-sub{font-size:9px;color:rgba(255,255,255,.3);margin-top:3px}
 .upload-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
@@ -52,20 +53,18 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 .foto-vorschau img{width:100%;height:60px;object-fit:cover;display:block}
 .foto-del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(225,0,15,.85);border:none;cursor:pointer;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center}
 
-.format-btns{display:flex;flex-direction:column;gap:5px}
-.fmt-btn{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;transition:all .15s}.fmt-btn.on{border-color:var(--gelb);background:rgba(250,185,15,.08)}
-.fmt-icon{width:18px;height:12px;border-radius:2px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:5px;font-weight:700;color:rgba(255,255,255,.6);flex-shrink:0}
-.fmt-name{font-size:10px;font-weight:600;color:rgba(255,255,255,.8)}
-.fmt-dim{font-size:8px;color:rgba(255,255,255,.4);margin-left:auto}
+/* Formatkacheln: siehe Abschnitt FORMATKACHELN weiter unten */
 
 /* ── CANVAS ── */
 .canvas-area{background:#0d1117;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.canvas-toolbar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.65);padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);z-index:20}
+.canvas-toolbar{display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.55);
+  padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  margin-bottom:12px;white-space:nowrap;flex-shrink:0}
 .ct-btn{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.7);transition:all .15s}.ct-btn:hover{background:rgba(255,255,255,.18);color:#fff}.ct-btn.on{background:rgba(250,185,15,.2);border-color:var(--gelb);color:var(--gelb)}
 .ct-sep{width:1px;height:18px;background:rgba(255,255,255,.15)}
 .zoom-lbl{font-size:10px;color:rgba(255,255,255,.5);min-width:34px;text-align:center}
 
-.canvas-outer{position:relative}
+.canvas-outer{position:relative;display:flex;flex-direction:column;align-items:center}
 .canvas-frame{position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.55)}
 
 /* ── LAYERS ── */
@@ -94,10 +93,11 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 #safe-legend .sl-fest{margin-top:6px;color:#EB640F;font-size:8px;line-height:1.6}
 
 /* ── KOLLISIONSWARNUNG — warnt, blockiert nicht ── */
-#safe-status{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:25;
+#safe-status{position:absolute;right:12px;bottom:12px;z-index:25;
   display:none;background:rgba(225,0,15,.16);border:1px solid rgba(225,0,15,.6);
   border-radius:7px;padding:6px 11px;font-size:9px;font-weight:700;color:#fff;
-  font-family:'DM Sans',sans-serif;pointer-events:none;max-width:66%;line-height:1.5}
+  font-family:'DM Sans',sans-serif;pointer-events:none;max-width:250px;line-height:1.5;
+  display:flex;align-items:flex-start;gap:5px}
 #safe-status .ss-mild{font-weight:400;color:rgba(255,255,255,.62)}
 .kollision{outline:1.5px solid #E1000F !important;outline-offset:3px}
 
@@ -166,6 +166,16 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 .ki-status{font-size:9px;font-weight:700;padding:5px 8px;border-radius:5px;
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);margin-top:8px;line-height:1.5}
 
+#frage-modal-bg{position:fixed;inset:0;background:rgba(0,10,25,.78);z-index:420;
+  display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+#frage-modal-bg.open{display:flex}
+#frage-modal{background:#0E1E33;border:1px solid rgba(250,185,15,.3);border-radius:14px;
+  max-width:400px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#frage-modal h3{font-size:14px;font-weight:800;color:#fff;margin:0 0 6px}
+#frage-modal p{font-size:10px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:16px}
+.frage-knoepfe{display:flex;gap:7px;justify-content:flex-end}
+.frage-knoepfe .vor-btn{flex:0 0 auto;padding:7px 15px;font-size:10px}
+
 #ki-modal-bg{position:fixed;inset:0;background:rgba(0,10,25,.78);z-index:400;
   display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
 #ki-modal-bg.open{display:flex}
@@ -213,10 +223,163 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 .sz-dot{width:18px;height:2px;border-radius:1px;flex-shrink:0}
 
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--blau);color:#fff;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;transition:transform .3s;z-index:999;white-space:nowrap;display:flex;align-items:center;gap:7px;border:1px solid var(--gelb)}.toast.show{transform:translateX(-50%) translateY(0)}
-.t-dot{width:14px;height:14px;border-radius:50%;background:var(--gruen);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700}
+.t-ic{color:var(--gruen)}
+.toast-fehler{border-color:var(--rot)}
+.toast-fehler .t-ic{color:var(--rot)}
+
+/* ══ SYMBOLSATZ ══
+   Erbt die Schriftfarbe, laeuft dadurch auch auf #00285A. */
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic-14{width:14px;height:14px}
+.ic-26{width:26px;height:26px;stroke-width:1.3}
+
+/* ══ SICHTBARER FOKUS auf allem Bedienbaren ══ */
+button:focus-visible, a:focus-visible, summary:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible,
+[tabindex]:focus-visible{
+  outline:2px solid var(--gelb); outline-offset:2px; border-radius:4px}
+
+/* ══ VERLAUF in der Kopfleiste ══ */
+.tb-verlauf{display:flex;align-items:center;gap:5px;margin-left:10px;padding-left:12px;
+  border-left:1px solid rgba(255,255,255,.16)}
+.tb-ic{width:28px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.1);color:#fff;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:background .15s,opacity .15s}
+.tb-ic:hover:not(:disabled){background:rgba(255,255,255,.22)}
+.tb-ic:disabled{opacity:.3;cursor:default}
+.tb-verlauf-txt{font-size:9px;color:rgba(255,255,255,.5);max-width:170px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-btn{display:inline-flex;align-items:center;gap:5px}
+.ext-nav-tab{display:inline-flex;align-items:center;gap:6px}
+
+/* ══ AKKORDEON ══
+   <details name="bedienfeld"> klappt sich gegenseitig zu — nativ, ohne JS. */
+.abschnitt{border-bottom:1px solid var(--border)}
+.abschnitt > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  padding:11px 14px;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);
+  user-select:none;transition:background .15s}
+.abschnitt > summary::-webkit-details-marker{display:none}
+.abschnitt > summary:hover{background:rgba(255,255,255,.04)}
+.abschnitt[open] > summary{background:rgba(250,185,15,.08);color:#fff}
+.ab-nr{font-size:9px;font-weight:700;color:var(--blau60);min-width:15px;
+  font-variant-numeric:tabular-nums}
+.abschnitt[open] .ab-nr{color:var(--gelb)}
+.ab-kurz{margin-left:auto;font-size:9px;font-weight:500;color:rgba(255,255,255,.42);
+  max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.abschnitt[open] .ab-kurz{color:var(--gelb)}
+.ab-pfeil{width:10px;height:10px;stroke-width:2.2;transition:transform .18s;
+  color:rgba(255,255,255,.4)}
+.abschnitt[open] .ab-pfeil{transform:rotate(90deg);color:var(--gelb)}
+.ab-inhalt{padding:4px 14px 14px}
+.ab-block{margin-bottom:15px}
+.ab-block:last-child{margin-bottom:0}
+.ab-hinweis{font-size:9px;line-height:1.7;color:rgba(255,255,255,.38);margin-top:7px}
+.mini-lbl{display:block;font-size:8px;color:rgba(255,255,255,.45);margin-bottom:2px}
+.haekchen{display:flex;align-items:center;gap:6px;font-size:9px;
+  color:rgba(255,255,255,.62);cursor:pointer;margin-top:6px}
+.haekchen input{accent-color:var(--gelb);cursor:pointer}
+
+/* ══ FORMATKACHELN, nach Plattform gruppiert ══ */
+.fmt-gruppe{margin-bottom:12px}
+.fmt-gruppe:last-child{margin-bottom:0}
+.fmt-gruppe-titel{font-size:8px;font-weight:700;color:var(--blau60);text-transform:uppercase;
+  letter-spacing:.7px;margin-bottom:5px}
+.fmt-liste{display:flex;flex-direction:column;gap:4px}
+.fmt-kachel{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;
+  transition:border-color .15s,background .15s;text-align:left;width:100%;
+  font-family:inherit;color:inherit}
+.fmt-kachel:hover{border-color:rgba(250,185,15,.5)}
+.fmt-kachel[aria-checked="true"]{border-color:var(--gelb);background:rgba(250,185,15,.09)}
+/* Miniatur im ECHTEN Seitenverhaeltnis: feste Hoehe, Breite folgt daraus */
+.fmt-mini{height:20px;border-radius:2px;background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.28);flex-shrink:0}
+.fmt-kachel[aria-checked="true"] .fmt-mini{background:rgba(250,185,15,.35);border-color:var(--gelb)}
+.fmt-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.fmt-name{font-size:10px;font-weight:600;color:rgba(255,255,255,.85);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fmt-dim{font-size:8px;color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums}
+
+/* ══ VOREINSTELLUNGS-KNOEPFE ══ */
+.voreinst{display:flex;gap:4px;flex-wrap:wrap}
+.vor-btn{padding:4px 9px;border-radius:5px;font-size:9px;font-weight:700;
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:border-color .15s,color .15s,background .15s;flex:1;white-space:nowrap}
+.vor-btn:hover{border-color:var(--gelb);color:var(--gelb)}
+.vor-btn.stark{border-color:var(--gelb);background:rgba(250,185,15,.12);color:#fff}
+
+/* ══ KI-ZUSTAND ══ */
+.ki-zustand{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.ki-chip-zustand{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;
+  border-radius:20px;font-size:10px;font-weight:700;border:1.5px solid;white-space:nowrap}
+.kz-offen{border-color:var(--gelb);color:var(--gelb);background:rgba(250,185,15,.12)}
+.kz-gesetzt{border-color:var(--gruen);color:var(--gruen);background:rgba(175,200,5,.12)}
+.kz-keine{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.55);
+  background:rgba(255,255,255,.05)}
+.ki-mehr{margin-top:13px;padding-top:13px;border-top:1px solid var(--border)}
+
+/* ══ AUFKLAPPBARE ERKLAERUNG ══ */
+.hilfe{margin-top:9px}
+.hilfe > summary{list-style:none;cursor:pointer;font-size:9px;color:var(--blau60);
+  display:inline-flex;align-items:center;gap:4px}
+.hilfe > summary::-webkit-details-marker{display:none}
+.hilfe > summary:hover{color:var(--gelb)}
+.hilfe p{font-size:9px;line-height:1.75;color:rgba(255,255,255,.45);margin-top:7px}
+
+/* ══ PLATTFORM-WARNUNG ══ */
+.kanal-warnung{font-size:9px;line-height:1.6;color:var(--orange);margin-top:7px;
+  display:flex;align-items:flex-start;gap:5px}
+
+/* ══ EXPORTKNOEPFE ══ */
+.exp-btn{display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px 8px;font-size:11px}
+.exp-main{font-size:12px;font-weight:800;padding:13px 8px}
+
+/* ══ TEXTBLOCK: Tastaturfokus ══ */
+#text-block:focus-visible{outline:2px solid var(--gelb);outline-offset:3px}
+
 </style>
 </head>
 <body>
+
+<!-- ══ SYMBOLSATZ ══
+     Ein Sprite im Dokument statt Emoji. Emoji sehen auf jedem Betriebssystem
+     anders aus, lassen sich nicht einfaerben und tragen Bedeutung, die
+     Screenreader vorlesen. Diese Symbole erben ihre Farbe von der Schrift,
+     laufen also auch auf #00285A. Keine externe Bibliothek, keine Icon-Schrift. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-plan" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M5.5 1.6v2.8M10.5 1.6v2.8"/></symbol>
+  <symbol id="i-studio" viewBox="0 0 16 16"><rect x="1.8" y="2.6" width="12.4" height="10.8" rx="1.5"/><circle cx="5.6" cy="6.2" r="1.2"/><path d="m2.4 11.6 3.4-3.2 3 2.6 2.2-2 2.6 2.6"/></symbol>
+  <symbol id="i-freigabe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="m5.3 8.2 1.9 1.9 3.6-4"/></symbol>
+  <symbol id="i-performance" viewBox="0 0 16 16"><path d="M2.6 13.4v-3.6M6.2 13.4v-7.2M9.8 13.4v-4.8M13.4 13.4v-9.6"/></symbol>
+  <symbol id="i-datei" viewBox="0 0 16 16"><path d="M9 1.8H4.5A1.5 1.5 0 0 0 3 3.3v9.4a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5V5.8z"/><path d="M9 1.8v4h4"/></symbol>
+  <symbol id="i-kamera" viewBox="0 0 16 16"><path d="M2.2 5.4h2.2l1-1.7h5.2l1 1.7h2.2a.9.9 0 0 1 .9.9v5.9a.9.9 0 0 1-.9.9H2.2a.9.9 0 0 1-.9-.9V6.3a.9.9 0 0 1 .9-.9Z"/><circle cx="8" cy="9.3" r="2.3"/></symbol>
+  <symbol id="i-redaktion" viewBox="0 0 16 16"><path d="M9 1.8H4.5A1.5 1.5 0 0 0 3 3.3v9.4a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5V5.8z"/><path d="M9 1.8v4h4M5.4 8.6h5.2M5.4 11h3.4"/></symbol>
+  <symbol id="i-export" viewBox="0 0 16 16"><path d="M14.2 1.8 7.3 8.7"/><path d="M14.2 1.8 9.8 14.2 7.3 8.7 1.8 6.2z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.8v8.6M4.7 7.1 8 10.4l3.3-3.3M2.4 13.6h11.2"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 16 16"><path d="M2.6 6.7A5.7 5.7 0 1 1 2.3 9"/><path d="M2 3.1v3.7h3.7"/></symbol>
+  <symbol id="i-safezone" viewBox="0 0 16 16"><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="1.4"/><path d="M4.7 1.8v12.4M11.3 1.8v12.4M1.8 4.7h12.4M1.8 11.3h12.4" stroke-dasharray="2 1.7"/></symbol>
+  <symbol id="i-schliessen" viewBox="0 0 16 16"><path d="M4.2 4.2 11.8 11.8M11.8 4.2 4.2 11.8"/></symbol>
+  <symbol id="i-haken" viewBox="0 0 16 16"><path d="m3.2 8.4 3.2 3.2 6.4-7.2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3.4v9.2M3.4 8h9.2"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 16 16"><path d="M3.4 8h9.2"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 16 16"><path d="M2.2 5.6V2.9a.7.7 0 0 1 .7-.7h2.7M10.4 2.2h2.7a.7.7 0 0 1 .7.7v2.7M13.8 10.4v2.7a.7.7 0 0 1-.7.7h-2.7M5.6 13.8H2.9a.7.7 0 0 1-.7-.7v-2.7"/></symbol>
+  <symbol id="i-zurueck" viewBox="0 0 16 16"><path d="M5.8 2.9 2 6.7l3.8 3.8"/><path d="M2 6.7h7a4 4 0 0 1 0 8H5.4"/></symbol>
+  <symbol id="i-vor" viewBox="0 0 16 16"><path d="M10.2 2.9 14 6.7l-3.8 3.8"/><path d="M14 6.7H7a4 4 0 0 0 0 8h3.6"/></symbol>
+  <symbol id="i-warnung" viewBox="0 0 16 16"><path d="M8 2.2 14.6 13.4H1.4z"/><path d="M8 6.4v3.1M8 11.5v.1"/></symbol>
+  <symbol id="i-fehler" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="m5.9 5.9 4.2 4.2M10.1 5.9l-4.2 4.2"/></symbol>
+  <symbol id="i-bild" viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="1.5"/><circle cx="5.6" cy="6.3" r="1.2"/><path d="m2.4 11.6 3.4-3.2 3 2.6 2.2-2 2.6 2.6"/></symbol>
+  <symbol id="i-person" viewBox="0 0 16 16"><circle cx="8" cy="5.4" r="2.8"/><path d="M2.6 14a5.4 5.4 0 0 1 10.8 0"/></symbol>
+  <symbol id="i-hilfe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M6.3 6.3a1.8 1.8 0 1 1 2.4 1.7c-.5.2-.7.6-.7 1.1v.3M8 11.9v.1"/></symbol>
+  <symbol id="i-pfeil-links" viewBox="0 0 16 16"><path d="M13.2 8H2.8M6.8 4 2.8 8l4 4"/></symbol>
+  <symbol id="i-pfeil-rechts" viewBox="0 0 16 16"><path d="m6 3.4 4.6 4.6L6 12.6"/></symbol>
+  <symbol id="i-stift" viewBox="0 0 16 16"><path d="M11.1 2.1a1.7 1.7 0 0 1 2.4 2.4l-8.1 8.1-3.2.8.8-3.2z"/></symbol>
+  <symbol id="i-zahnrad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.4 9 3.2l2-.5.4 2 2 .7-.9 1.9.9 1.9-2 .7-.4 2-2-.5-1 1.8-1-1.8-2 .5-.4-2-2-.7.9-1.9-.9-1.9 2-.7.4-2 2 .5z"/></symbol>
+  <symbol id="i-buch" viewBox="0 0 16 16"><path d="M2.4 3.2a1.4 1.4 0 0 1 1.4-1.4h9.4v11H3.8a1.4 1.4 0 0 0-1.4 1.4z"/><path d="M2.4 14.2h10.8"/></symbol>
+  <symbol id="i-post" viewBox="0 0 16 16"><rect x="1.8" y="3.4" width="12.4" height="9.2" rx="1.4"/><path d="m2.3 4.4 5.7 4 5.7-4"/></symbol>
+</defs></svg>
 
 <div class="topbar">
   <!-- Logo 1:1 aus der Originaldatei des Marketingportals
@@ -227,21 +390,39 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
          style="height:26px;width:auto;display:block">
   </div>
-  <span class="tb-title">Foto-Editor</span>
-  <span class="tb-tag" id="format-tag">—</span>
+  <span class="tb-title">Grafik-Studio</span>
+  <span class="tb-tag" id="format-tag">&mdash;</span>
+
+  <!-- Verlauf: was rueckgaengig gemacht wird, steht daneben -->
+  <div class="tb-verlauf">
+    <button type="button" class="tb-ic" id="btn-zurueck" onclick="verlaufZurueck()" disabled
+            aria-label="R&uuml;ckg&auml;ngig (Strg+Z)" title="R&uuml;ckg&auml;ngig — Strg+Z">
+      <svg class="ic ic-14" aria-hidden="true"><use href="#i-zurueck"/></svg>
+    </button>
+    <button type="button" class="tb-ic" id="btn-vor" onclick="verlaufVor()" disabled
+            aria-label="Wiederherstellen (Strg+Y)" title="Wiederherstellen — Strg+Y">
+      <svg class="ic ic-14" aria-hidden="true"><use href="#i-vor"/></svg>
+    </button>
+    <span class="tb-verlauf-txt" id="verlauf-txt" aria-live="polite"></span>
+  </div>
+
   <div class="tb-right">
-    <a href="/" class="tb-back">← Redaktion</a>
-    <button class="tb-btn tb-sec" onclick="resetEditor()">↺ Reset</button>
-    <button class="tb-btn tb-prim" onclick="exportPNG()">⬇ PNG exportieren</button>
+    <a href="/" class="tb-back">
+      <svg class="ic ic-14" aria-hidden="true"><use href="#i-pfeil-links"/></svg> Redaktion
+    </a>
+    <button type="button" class="tb-btn tb-sec" onclick="resetEditor()"
+            title="Alles auf Anfang — mit Sicherheitsabfrage, l&auml;sst sich r&uuml;ckg&auml;ngig machen">
+      <svg class="ic ic-14" aria-hidden="true"><use href="#i-reset"/></svg> Zur&uuml;cksetzen
+    </button>
   </div>
 </div>
 
 <div class="ext-nav-bar" id="ext-nav-bar">
   <a href="/" class="ext-nav-tab">Redaktion</a>
-  <a href="/kalender" class="ext-nav-tab">📅 Redaktionsplan</a>
-  <a href="/editor" class="ext-nav-tab active">🖼 Foto-Editor</a>
-  <a href="/freigabe" class="ext-nav-tab">✅ Freigabe</a>
-  <a href="/performance" class="ext-nav-tab">📊 Performance</a>
+  <a href="/kalender" class="ext-nav-tab"><svg class="ic ic-14" aria-hidden="true"><use href="#i-plan"/></svg> Redaktionsplan</a>
+  <a href="/editor" class="ext-nav-tab active"><svg class="ic ic-14" aria-hidden="true"><use href="#i-studio"/></svg> Grafik-Studio</a>
+  <a href="/freigabe" class="ext-nav-tab"><svg class="ic ic-14" aria-hidden="true"><use href="#i-freigabe"/></svg> Freigabe</a>
+  <a href="/performance" class="ext-nav-tab"><svg class="ic ic-14" aria-hidden="true"><use href="#i-performance"/></svg> Performance</a>
 </div>
 
 <input type="file" id="file-upload" accept="image/*" style="display:none" onchange="handleFile(this)">
@@ -249,90 +430,477 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 
 <div class="editor-wrap">
 
-  <!-- ══ LINKES PANEL ══ -->
-  <div class="panel">
+  <!-- ══ BEDIENFELD ══
+       Acht Abschnitte in Arbeitsreihenfolge. <details name="bedienfeld">
+       ist ein natives Akkordeon: es klappt sich gegenseitig zu, ist per
+       Tastatur bedienbar und braucht dafuer kein eigenes JavaScript. -->
+  <div class="panel" id="bedienfeld">
 
-    <div class="p-section">
-      <div class="p-label">Templates</div>
-      <div class="tpl-grid">
-        <div>
-          <div class="tpl-card on" id="tpl-0" style="background:#00285A" onclick="loadTemplate(0)">
-            <div style="position:absolute;top:4px;right:4px"><img src="/img/vhs-logo-negativ.svg" alt="" style="height:6px;width:auto;display:block;opacity:.9"></div>
-            <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
-            <div class="tpl-active-badge">Aktiv</div>
-          </div>
-          <div class="tpl-name">Zitat</div>
+    <!-- ── 01 FORMAT ─────────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-01" open>
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">01</span> Format
+        <span class="ab-kurz" id="kurz-format">—</span>
+      </summary>
+      <div class="ab-inhalt">
+        <div class="ab-block">
+          <!-- Wird aus FORMATS erzeugt (baueFormatKacheln). Im Markup steht
+               bewusst keine Groessenangabe — sonst gaebe es wieder zwei
+               Wahrheiten, die auseinanderlaufen koennen. -->
+          <div id="format-gruppen"></div>
         </div>
-        <div>
-          <div class="tpl-card" id="tpl-1" style="background:#AFC805" onclick="loadTemplate(1)">
-            <div style="margin-top:20px;font-size:7px;font-weight:700;color:#fff;line-height:1.25">Sommer 2026</div>
-            <div style="margin-top:3px;font-size:5px;color:#fff;font-weight:700">Vollfarbe · kein Foto</div>
-          </div>
-          <div class="tpl-name">Vollfarbe</div>
-        </div>
-        <div>
-          <div class="tpl-card" id="tpl-2" style="background:#00285A" onclick="loadTemplate(2)">
-            <div style="margin-top:14px;font-size:6px;font-weight:700;color:#fff;line-height:1.25">Recruiting · Coach</div>
-            <div style="position:absolute;bottom:14px;right:5px;width:22px;height:22px;border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-size:4.5px;font-weight:700;color:#fff;text-align:center">Wir such. Dich!</div>
-          </div>
-          <div class="tpl-name">Recruiting</div>
-        </div>
-        <div>
-          <div class="tpl-card" id="tpl-3" style="background:#00285A" onclick="loadTemplate(3)">
-            <div style="margin-top:14px;font-size:5.5px;font-weight:700;color:#fff;line-height:1.25">Wie stellst Du Dir die Zukunft vor?</div>
-            <div style="position:absolute;bottom:10px;right:5px;width:20px;height:2px;background:#EB640F"></div>
-          </div>
-          <div class="tpl-name">Frage</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="p-section">
-      <div class="p-label">Hintergrundfoto</div>
-      <div class="upload-zone" id="upload-zone"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleDrop(event)"
-        onclick="document.getElementById('file-upload').click()">
-        <div class="uz-icon">🖼</div>
-        <div class="uz-text">Ziehen oder klicken</div>
-        <div class="uz-sub">JPG, PNG, WebP</div>
+        <div class="ab-block">
+          <div class="p-label">Safe Zones dieses Formats</div>
+          <div class="sz-legend" id="sz-werte"></div>
+          <p class="ab-hinweis" id="sz-format-hinweis"></p>
+          <p class="ab-hinweis">
+            Einblenden ueber den Schalter in der Zoomleiste ueber der Arbeitsflaeche.
+            Die Hilfslinien erscheinen nur im Editor, nie im Export.
+          </p>
+        </div>
       </div>
-      <div class="upload-btns">
-        <div class="upload-btn" onclick="document.getElementById('file-upload').click()">📁 Datei</div>
-        <div class="upload-btn cam" onclick="document.getElementById('cam-upload').click()">📷 Kamera</div>
-      </div>
-      <div class="foto-vorschau" id="foto-vorschau">
-        <img id="foto-preview-img" src="" alt="">
-        <button class="foto-del" onclick="removeFoto()">✕</button>
-      </div>
-      <div id="no-foto-hint" style="margin-top:6px;font-size:9px;color:rgba(255,255,255,.3);text-align:center">Kein Foto → Vollfarbe</div>
-    </div>
+    </details>
 
-    <div class="p-section">
-      <div class="p-label">Format</div>
-      <!-- Wird aus FORMATS erzeugt (baueFormatButtons). Im Markup steht
-           bewusst keine Groessenangabe mehr — sonst gaebe es wieder zwei
-           Wahrheiten, die auseinanderlaufen koennen. -->
-      <div class="format-btns" id="format-btns"></div>
-    </div>
+    <!-- ── 02 VORLAGE ────────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-02">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">02</span> Vorlage
+        <span class="ab-kurz" id="kurz-vorlage">—</span>
+      </summary>
+      <div class="ab-inhalt">
+        <div class="tpl-grid" role="radiogroup" aria-label="Vorlage">
+          <div>
+            <div class="tpl-card on" id="tpl-0" role="radio" aria-checked="true" tabindex="0"
+                 aria-label="Vorlage Zitat / Portrait" style="background:#00285A"
+                 onclick="loadTemplate(0)" onkeydown="tasteAlsKlick(event)">
+              <div style="position:absolute;top:4px;right:4px"><img src="/img/vhs-logo-negativ.svg" alt="" style="height:6px;width:auto;display:block;opacity:.9"></div>
+              <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
+              <div class="tpl-active-badge">Aktiv</div>
+            </div>
+            <div class="tpl-name">Zitat</div>
+          </div>
+          <div>
+            <div class="tpl-card" id="tpl-1" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Vorlage Vollfarbe" style="background:#AFC805"
+                 onclick="loadTemplate(1)" onkeydown="tasteAlsKlick(event)">
+              <div style="margin-top:20px;font-size:7px;font-weight:700;color:#fff;line-height:1.25">Sommer 2026</div>
+              <div style="margin-top:3px;font-size:5px;color:#fff;font-weight:700">Vollfarbe · kein Foto</div>
+            </div>
+            <div class="tpl-name">Vollfarbe</div>
+          </div>
+          <div>
+            <div class="tpl-card" id="tpl-2" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Vorlage Recruiting" style="background:#00285A"
+                 onclick="loadTemplate(2)" onkeydown="tasteAlsKlick(event)">
+              <div style="margin-top:14px;font-size:6px;font-weight:700;color:#fff;line-height:1.25">Recruiting · Coach</div>
+              <div style="position:absolute;bottom:14px;right:5px;width:22px;height:22px;border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-size:4.5px;font-weight:700;color:#fff;text-align:center">Wir such. Dich!</div>
+            </div>
+            <div class="tpl-name">Recruiting</div>
+          </div>
+          <div>
+            <div class="tpl-card" id="tpl-3" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Vorlage Frage" style="background:#00285A"
+                 onclick="loadTemplate(3)" onkeydown="tasteAlsKlick(event)">
+              <div style="margin-top:14px;font-size:5.5px;font-weight:700;color:#fff;line-height:1.25">Wie stellst Du Dir die Zukunft vor?</div>
+              <div style="position:absolute;bottom:10px;right:5px;width:20px;height:2px;background:#EB640F"></div>
+            </div>
+            <div class="tpl-name">Frage</div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ── 03 FOTO ───────────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-03">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">03</span> Foto
+        <span class="ab-kurz" id="kurz-foto">—</span>
+      </summary>
+      <div class="ab-inhalt">
+        <div class="upload-zone" id="upload-zone" role="button" tabindex="0"
+          aria-label="Hintergrundfoto waehlen — ziehen oder klicken"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleDrop(event)"
+          onkeydown="tasteAlsKlick(event)"
+          onclick="document.getElementById('file-upload').click()">
+          <svg class="ic ic-26 uz-icon" aria-hidden="true"><use href="#i-bild"/></svg>
+          <div class="uz-text">Ziehen oder klicken</div>
+          <div class="uz-sub">JPG, PNG, WebP</div>
+        </div>
+        <div class="upload-btns">
+          <button type="button" class="upload-btn" title="Bilddatei vom Rechner waehlen"
+                  onclick="document.getElementById('file-upload').click()">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-datei"/></svg> Datei
+          </button>
+          <button type="button" class="upload-btn cam" title="Foto mit der Kamera aufnehmen"
+                  onclick="document.getElementById('cam-upload').click()">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-kamera"/></svg> Kamera
+          </button>
+        </div>
+        <div class="foto-vorschau" id="foto-vorschau">
+          <img id="foto-preview-img" src="" alt="Vorschau des gewaehlten Hintergrundfotos">
+          <button class="foto-del" type="button" onclick="removeFoto()"
+                  aria-label="Foto entfernen" title="Foto entfernen">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-schliessen"/></svg>
+          </button>
+        </div>
+        <p class="ab-hinweis" id="no-foto-hint" style="text-align:center">Kein Foto — die Flaeche bleibt einfarbig.</p>
+      </div>
+    </details>
+
+    <!-- ── 04 TEXT ───────────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-04">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">04</span> Text
+        <span class="ab-kurz" id="kurz-text">—</span>
+      </summary>
+      <div class="ab-inhalt">
+
+        <div class="ab-block">
+          <label class="p-label" for="tf-headline">Haupttext / Headline</label>
+          <textarea class="txt-field" id="tf-headline" rows="3" placeholder="Hauptschlagzeile …"></textarea>
+          <div class="sl-row" style="margin-top:6px">
+            <label class="sl-lbl" for="sl-hlsize">Schriftgr&ouml;&szlig;e</label>
+            <div class="sl-track"><input type="range" min="6" max="36" value="15" step="1" id="sl-hlsize"></div>
+            <span class="sl-val sv-blue" id="sv-hlsize" aria-live="off">15px</span>
+          </div>
+        </div>
+
+        <div class="ab-block">
+          <label class="p-label" for="tf-sub">Unterzeile / Subtext</label>
+          <textarea class="txt-field" id="tf-sub" rows="2" placeholder="Erg&auml;nzender Text …"></textarea>
+          <div class="sl-row" style="margin-top:6px">
+            <label class="sl-lbl" for="sl-subsize">Schriftgr&ouml;&szlig;e</label>
+            <div class="sl-track"><input type="range" min="5" max="22" value="11" step="1" id="sl-subsize"></div>
+            <span class="sl-val sv-blue" id="sv-subsize">11px</span>
+          </div>
+        </div>
+
+        <div class="ab-block" id="fulltext-preview-section" style="display:none">
+          <label class="p-label" for="tf-fulltext-preview" style="color:var(--orange);display:flex;align-items:center;gap:5px">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-redaktion"/></svg> Text aus Redaktion
+          </label>
+          <textarea class="txt-field" id="tf-fulltext-preview" rows="6" readonly
+            style="font-size:9px;color:rgba(255,255,255,.7);line-height:1.6;cursor:default;resize:none"
+            placeholder="Volltext aus Schritt 4 …"></textarea>
+        </div>
+
+        <div class="ab-block">
+          <label class="p-label" for="tf-author">Autorin / Quelle</label>
+          <input class="txt-field" id="tf-author" type="text" placeholder="Name …" style="margin-bottom:6px">
+          <label class="p-label" for="tf-role">Titel / Funktion</label>
+          <input class="txt-field" id="tf-role" type="text" placeholder="Titel / Funktion …">
+        </div>
+
+        <div class="ab-block">
+          <label class="p-label" for="tf-footer">Fu&szlig;zeile</label>
+          <input class="txt-field" id="tf-footer" type="text" value="vhs Spandau">
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label" id="lbl-textfarbe">Textfarbe</div>
+          <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-textfarbe">
+            <div class="badge-sw on" id="txtsw-0" role="radio" aria-checked="true" tabindex="0"
+                 aria-label="Textfarbe wei&szlig;" title="Wei&szlig;"
+                 style="background:#fff;border:1px solid rgba(255,255,255,.3)"
+                 onclick="setTextColor(0,'#fff')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="txtsw-1" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Textfarbe DVV-Blau" title="DVV-Blau" style="background:#00285A"
+                 onclick="setTextColor(1,'#00285A')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="txtsw-2" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Textfarbe DVV-Gelb" title="DVV-Gelb" style="background:#FAB90F"
+                 onclick="setTextColor(2,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="txtsw-3" role="radio" aria-checked="false" tabindex="0"
+                 aria-label="Textfarbe Blau 10 Prozent" title="Blau 10 %"
+                 style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)"
+                 onclick="setTextColor(3,'#E6EBF0')" onkeydown="tasteAlsKlick(event)"></div>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <!-- ── 05 FARBE UND BILD ─────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-05">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">05</span> Farbe und Bild
+        <span class="ab-kurz" id="kurz-farbe">—</span>
+      </summary>
+      <div class="ab-inhalt">
+
+        <div class="ab-block">
+          <div class="p-label" id="lbl-dvv">Farbfl&auml;che &uuml;ber dem Foto</div>
+          <div class="dvv-palette" role="radiogroup" aria-labelledby="lbl-dvv">
+            <div class="dvv-sw on" id="dvvsw-0" role="radio" aria-checked="true" tabindex="0" style="background:#00285A" title="DVV Prim&auml;rblau" aria-label="DVV Prim&auml;rblau" onclick="setOverlayColor(0,'#00285A','Blau')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-1" role="radio" aria-checked="false" tabindex="0" style="background:#AFC805" title="DVV Gr&uuml;n" aria-label="DVV Gr&uuml;n" onclick="setOverlayColor(1,'#AFC805','Grün')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-2" role="radio" aria-checked="false" tabindex="0" style="background:#E1000F" title="DVV Rot" aria-label="DVV Rot" onclick="setOverlayColor(2,'#E1000F','Rot')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-3" role="radio" aria-checked="false" tabindex="0" style="background:#64B9E6" title="Hellblau" aria-label="Hellblau" onclick="setOverlayColor(3,'#64B9E6','Hellblau')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-4" role="radio" aria-checked="false" tabindex="0" style="background:#EB640F" title="DVV Orange" aria-label="DVV Orange" onclick="setOverlayColor(4,'#EB640F','Orange')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-5" role="radio" aria-checked="false" tabindex="0" style="background:#1A2943" title="Nachtblau" aria-label="Nachtblau" onclick="setOverlayColor(5,'#1A2943','Nacht')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-6" role="radio" aria-checked="false" tabindex="0" style="background:#5B2D8E" title="Lila" aria-label="Lila" onclick="setOverlayColor(6,'#5B2D8E','Lila')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-7" role="radio" aria-checked="false" tabindex="0" style="background:#FAB90F" title="DVV Gelb" aria-label="DVV Gelb" onclick="setOverlayColor(7,'#FAB90F','Gelb')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-8" role="radio" aria-checked="false" tabindex="0" style="background:#69829B" title="Blau 60 %" aria-label="Blau 60 Prozent" onclick="setOverlayColor(8,'#69829B','Blau60')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="dvv-sw" id="dvvsw-9" role="radio" aria-checked="false" tabindex="0" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" title="Blau 10 %" aria-label="Blau 10 Prozent" onclick="setOverlayColor(9,'#E6EBF0','Blau10')" onkeydown="tasteAlsKlick(event)"></div>
+          </div>
+          <p class="ab-hinweis" style="display:flex;align-items:center;gap:5px">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--gruen);display:inline-block;flex-shrink:0"></span>
+            Nur Farben aus dem DVV-Corporate-Design.
+          </p>
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label">Regler</div>
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-opacity">Deckkraft der Farbfl&auml;che</label>
+            <div class="sl-track"><input type="range" min="0" max="100" value="72" step="1" id="sl-opacity"></div>
+            <span class="sl-val sv-blue" id="sv-opacity">72%</span>
+          </div>
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-bright">Foto-Helligkeit</label>
+            <div class="sl-track"><input type="range" min="20" max="130" value="75" step="1" id="sl-bright"></div>
+            <span class="sl-val sv-gelb" id="sv-bright">75%</span>
+          </div>
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-sat">Foto-S&auml;ttigung</label>
+            <div class="sl-track"><input type="range" min="0" max="200" value="70" step="1" id="sl-sat"></div>
+            <span class="sl-val sv-grn" id="sv-sat">70%</span>
+          </div>
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-contrast">Foto-Kontrast</label>
+            <div class="sl-track"><input type="range" min="50" max="150" value="105" step="1" id="sl-contrast"></div>
+            <span class="sl-val" style="color:rgba(255,255,255,.6)" id="sv-contrast">105%</span>
+          </div>
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label">Deckkraft-Vorgaben</div>
+          <div class="voreinst">
+            <button type="button" class="vor-btn" onclick="applyPreset(25)" title="Farbfl&auml;che auf 25 % Deckkraft">25&nbsp;% Deckkraft</button>
+            <button type="button" class="vor-btn stark" onclick="applyPreset(72)" title="Farbfl&auml;che auf 72 % Deckkraft — Vorlage Zitat">72&nbsp;% &middot; Zitat</button>
+            <button type="button" class="vor-btn" onclick="applyPreset(85)" title="Farbfl&auml;che auf 85 % Deckkraft">85&nbsp;% Deckkraft</button>
+            <button type="button" class="vor-btn" onclick="applyPreset(100)" title="Farbfl&auml;che vollflaechig">100&nbsp;% Deckkraft</button>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <!-- ── 06 FEINHEITEN ─────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-06">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">06</span> Feinheiten
+        <span class="ab-kurz" id="kurz-fein">—</span>
+      </summary>
+      <div class="ab-inhalt">
+
+        <div class="ab-block">
+          <div class="p-label" id="lbl-linie">Akzentlinie in der Fu&szlig;zeile</div>
+          <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-linie">
+            <div class="badge-sw on" id="linesw-0" role="radio" aria-checked="true" tabindex="0" aria-label="Akzentlinie DVV-Gelb" title="DVV-Gelb" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="linesw-1" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Orange" title="Orange" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="linesw-2" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Gr&uuml;n" title="Gr&uuml;n" style="background:#AFC805" onclick="setLineColor(2,'#AFC805')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="linesw-3" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Hellblau" title="Hellblau" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="linesw-4" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Wei&szlig;" title="Wei&szlig;" style="background:#fff" onclick="setLineColor(4,'#fff')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="linesw-5" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Rot" title="Rot" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')" onkeydown="tasteAlsKlick(event)"></div>
+          </div>
+        </div>
+
+        <div class="ab-block">
+          <label class="p-label" for="tf-badge">St&ouml;rer / Handlungsaufruf</label>
+          <input class="txt-field" id="tf-badge" type="text" placeholder="z. B. Jetzt anmelden!" style="margin-bottom:6px">
+          <label class="haekchen">
+            <input type="checkbox" id="badge-vis"> St&ouml;rer einblenden
+          </label>
+          <div class="p-label" id="lbl-badge" style="margin-top:8px">St&ouml;rerfarbe</div>
+          <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-badge">
+            <div class="badge-sw on" id="bgsw-0" role="radio" aria-checked="true" tabindex="0" aria-label="St&ouml;rer Lila" title="Lila" style="background:#5B2D8E" onclick="setBadgeColor(0,'#5B2D8E')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="bgsw-1" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Rot" title="Rot" style="background:#E1000F" onclick="setBadgeColor(1,'#E1000F')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="bgsw-2" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Gelb" title="Gelb" style="background:#FAB90F" onclick="setBadgeColor(2,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="bgsw-3" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Gr&uuml;n" title="Gr&uuml;n" style="background:#AFC805" onclick="setBadgeColor(3,'#AFC805')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="bgsw-4" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Blau" title="Blau" style="background:#00285A" onclick="setBadgeColor(4,'#00285A')" onkeydown="tasteAlsKlick(event)"></div>
+          </div>
+        </div>
+
+        <div class="ab-block">
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-tbwidth">Textblock-Breite</label>
+            <div class="sl-track"><input type="range" min="50" max="100" value="88" step="1" id="sl-tbwidth"></div>
+            <span class="sl-val sv-grn" id="sv-tbwidth">88%</span>
+          </div>
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label">Position des Textblocks</div>
+          <p class="ab-hinweis" style="margin-top:0">
+            Auf der Arbeitsfl&auml;che ziehen, oder den Block anklicken und mit den
+            Pfeiltasten bewegen &mdash; 1&nbsp;% je Schritt, mit Umschalt 5&nbsp;%.
+            An den Safe-Zone-Kanten rastet er ein.
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <div>
+              <label class="mini-lbl" for="pos-x">X in Pixeln</label>
+              <input class="txt-field" id="pos-x" type="number" value="14" style="font-size:10px;padding:4px 7px">
+            </div>
+            <div>
+              <label class="mini-lbl" for="pos-y">Y in Pixeln</label>
+              <input class="txt-field" id="pos-y" type="number" value="200" style="font-size:10px;padding:4px 7px">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <!-- ── 07 KI-KENNZEICHNUNG ───────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-07">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">07</span> KI-Kennzeichnung
+        <span class="ab-kurz" id="kurz-ki">—</span>
+      </summary>
+      <div class="ab-inhalt">
+
+        <div class="ki-zustand">
+          <span class="ki-chip-zustand kz-offen" id="ki-chip-zustand" aria-live="polite">offen</span>
+          <button type="button" class="vor-btn stark" onclick="kiEntscheiden()"
+                  title="Pflichtdialog zur KI-Kennzeichnung &ouml;ffnen">Entscheiden</button>
+        </div>
+        <p class="ab-hinweis" style="margin-top:0" id="ki-status">
+          Noch nicht entschieden &mdash; wird sp&auml;testens vor dem Export abgefragt.
+        </p>
+
+        <details class="hilfe">
+          <summary title="Rechtlicher Hintergrund zur Kennzeichnungspflicht">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-hilfe"/></svg> Warum diese Frage?
+          </summary>
+          <p>
+            Pflicht nach Art.&nbsp;50 Abs.&nbsp;4 EU AI Act seit 2.&nbsp;August 2026.
+            Das Symbol wird ins Bild gerendert und bleibt beim Teilen und Herunterladen
+            sichtbar. Verwendet werden nur die Originaldateien der EU-Kommission,
+            unver&auml;ndert in den Proportionen. Die Entscheidung wird am Post vermerkt
+            und geht mit in die Freigabe.
+          </p>
+        </details>
+
+        <div class="ki-mehr" id="ki-optionen" style="display:none">
+          <div class="sl-row" style="margin-bottom:3px">
+            <label class="sl-lbl" for="sl-ki-groesse">Symbolh&ouml;he</label>
+            <div class="sl-track"><input type="range" min="3" max="8" value="6" step="0.1" id="sl-ki-groesse"></div>
+            <span class="sl-val sv-blue" id="sv-ki-groesse">6,0&nbsp;%</span>
+          </div>
+          <div class="voreinst" style="margin-bottom:3px">
+            <button type="button" class="vor-btn ki-preset" data-wert="4.5" onclick="kiSetGroesse(4.5,true)" title="Symbolh&ouml;he 4,5 Prozent">dezent 4,5&nbsp;%</button>
+            <button type="button" class="vor-btn ki-preset stark" data-wert="6" onclick="kiSetGroesse(6,true)" title="Symbolh&ouml;he 6 Prozent — Standard">Standard 6&nbsp;%</button>
+            <button type="button" class="vor-btn ki-preset" data-wert="7.5" onclick="kiSetGroesse(7.5,true)" title="Symbolh&ouml;he 7,5 Prozent">deutlich 7,5&nbsp;%</button>
+          </div>
+          <p class="ab-hinweis" id="ki-groesse-info"></p>
+
+          <div class="p-label" id="lbl-ki-pos" style="margin-top:12px">Position im Bild</div>
+          <div class="ki-seg" role="radiogroup" aria-labelledby="lbl-ki-pos">
+            <div class="on" id="ki-pos-fl"    role="radio" aria-checked="true"  tabindex="0" onclick="kiSetPos('fl')"    onkeydown="tasteAlsKlick(event)">Fu&szlig;zeile</div>
+            <div          id="ki-pos-story" role="radio" aria-checked="false" tabindex="0" onclick="kiSetPos('story')" onkeydown="tasteAlsKlick(event)">Story-sicher</div>
+            <div          id="ki-pos-ol"    role="radio" aria-checked="false" tabindex="0" onclick="kiSetPos('ol')"    onkeydown="tasteAlsKlick(event)">oben links</div>
+            <div          id="ki-pos-ur"    role="radio" aria-checked="false" tabindex="0" onclick="kiSetPos('ur')"    onkeydown="tasteAlsKlick(event)">unten rechts</div>
+          </div>
+
+          <div class="p-label" id="lbl-ki-var" style="margin-top:12px">Farbvariante</div>
+          <div class="ki-seg" role="radiogroup" aria-labelledby="lbl-ki-var">
+            <div class="on" id="ki-var-auto"  role="radio" aria-checked="true"  tabindex="0" onclick="kiSetVariante('auto')"  onkeydown="tasteAlsKlick(event)">automatisch</div>
+            <div          id="ki-var-white" role="radio" aria-checked="false" tabindex="0" onclick="kiSetVariante('white')" onkeydown="tasteAlsKlick(event)">wei&szlig;</div>
+            <div          id="ki-var-black" role="radio" aria-checked="false" tabindex="0" onclick="kiSetVariante('black')" onkeydown="tasteAlsKlick(event)">schwarz</div>
+          </div>
+
+          <label class="haekchen" style="margin-top:9px">
+            <input type="checkbox" id="ki-transparent"> Fl&auml;che 50&nbsp;% transparent (EU-Variante)
+          </label>
+          <label class="haekchen">
+            <input type="checkbox" id="ki-hinweis-vis"> Hinweissatz unter dem Symbol
+          </label>
+        </div>
+
+      </div>
+    </details>
+
+    <!-- ── 08 EINREICHEN ─────────────────────────────────────── -->
+    <details class="abschnitt" name="bedienfeld" id="ab-08">
+      <summary>
+        <svg class="ic ab-pfeil" aria-hidden="true"><use href="#i-pfeil-rechts"/></svg>
+        <span class="ab-nr">08</span> Einreichen
+        <span class="ab-kurz" id="kurz-export">—</span>
+      </summary>
+      <div class="ab-inhalt">
+
+        <div class="ab-block">
+          <label class="p-label" for="exp-anlass">Anlass / Titel des Posts</label>
+          <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Titel des Posts …" style="font-size:10px;margin-bottom:8px">
+          <label class="p-label" for="exp-datum">Geplantes Datum</label>
+          <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
+        </div>
+
+        <!-- Plattformwahl steht ueber den Knoepfen und prueft gegen das Format -->
+        <div class="ab-block">
+          <label class="p-label" for="exp-kanal">Plattform</label>
+          <select class="txt-field" id="exp-kanal" style="font-size:10px">
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Instagram &amp; Facebook">Instagram und Facebook</option>
+          </select>
+          <p class="kanal-warnung" id="kanal-warnung" style="display:none"></p>
+        </div>
+
+        <div class="ab-block">
+          <button class="exp-btn exp-main" id="btn-freigabe-submit" onclick="exportUndFreigabe()">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-export"/></svg>
+            PNG erstellen und zur Freigabe
+          </button>
+          <button class="exp-btn" onclick="exportPNG()" title="PNG nur herunterladen, ohne Einreichen">
+            <svg class="ic ic-14" aria-hidden="true"><use href="#i-download"/></svg>
+            Nur lokal speichern
+          </button>
+          <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label">Aufl&ouml;sung</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)" id="exp-ki-info"></div>
+        </div>
+
+      </div>
+    </details>
 
   </div>
 
-  <!-- ══ CANVAS ══ -->
+  <!-- ══ ARBEITSFLAECHE ══ -->
   <div class="canvas-area">
     <div class="canvas-outer" id="canvas-outer">
 
       <div class="canvas-toolbar">
-        <div class="ct-btn" onclick="zoom(-10)">−</div>
+        <button type="button" class="ct-btn" onclick="zoom(-10)" aria-label="Ansicht verkleinern" title="Ansicht verkleinern">
+          <svg class="ic ic-14" aria-hidden="true"><use href="#i-minus"/></svg>
+        </button>
         <span class="zoom-lbl" id="zoom-lbl">100%</span>
-        <div class="ct-btn" onclick="zoom(+10)">+</div>
+        <button type="button" class="ct-btn" onclick="zoom(+10)" aria-label="Ansicht vergr&ouml;&szlig;ern" title="Ansicht vergr&ouml;&szlig;ern">
+          <svg class="ic ic-14" aria-hidden="true"><use href="#i-plus"/></svg>
+        </button>
         <div class="ct-sep"></div>
-        <div class="ct-btn" onclick="fitZoom()" title="Anpassen">⊡</div>
+        <button type="button" class="ct-btn" onclick="fitZoom()" aria-label="Ansicht auf 100 Prozent" title="Ansicht auf 100 %">
+          <svg class="ic ic-14" aria-hidden="true"><use href="#i-fit"/></svg>
+        </button>
         <div class="ct-sep"></div>
-        <div class="ct-btn" id="sz-toggle-btn" onclick="toggleSafeZones()" title="Safe-Zonen ein/aus" style="font-size:9px;width:auto;padding:0 6px;gap:3px">
-          ⊞ Safe-Zonen
-        </div>
+        <button type="button" class="ct-btn" id="sz-toggle-btn" onclick="toggleSafeZones()"
+                aria-pressed="false" aria-label="Safe Zones ein- oder ausblenden" title="Safe Zones ein- oder ausblenden"
+                style="width:auto;padding:0 8px;gap:5px;font-size:9px;font-weight:700">
+          <svg class="ic ic-14" aria-hidden="true"><use href="#i-safezone"/></svg> Safe Zones
+        </button>
       </div>
 
       <div class="canvas-frame" id="canvas-frame" style="width:270px;height:480px;border-radius:4px">
@@ -341,44 +909,44 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div class="cl-foto" id="cl-foto"></div>
         <!-- L2 Farbe -->
         <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
-        <!-- L3 vhs-Logo, 1:1 aus der Originaldatei. kein-export: html2canvas
-             bildet dieses SVG nicht korrekt ab; es wird nachtraeglich als
-             Vektor in voller Exportaufloesung gezeichnet (zeichneVektor). -->
+        <!-- L3 vhs-Logo, 1:1 aus der Originaldatei. kein-export: der Renderer
+             ueberspringt dieses SVG; es wird nachtraeglich als Vektor in voller
+             Exportaufloesung gezeichnet (zeichneVektor). -->
         <div id="canvas-logo" class="kein-export">
           <img id="canvas-logo-img" src="/img/vhs-logo-negativ.svg"
-               alt="vhs Volkshochschule Spandau" style="display:block">
+               alt="vhs Volkshochschule Spandau" crossorigin="anonymous" style="display:block">
         </div>
-        <!-- L4 Text-Block (draggable) -->
-        <div id="text-block" class="selected">
-          <div id="tb-headline" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:15px;line-height:1.28;word-break:break-word;margin-bottom:8px"></div>
-          <div id="tb-sub" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.8);font-size:11px;line-height:1.5;word-break:break-word"></div>
-          <div id="tb-author" style="font-family:Arial,sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;text-decoration:underline;margin-top:8px"></div>
-          <div id="tb-role" style="font-family:Arial,sans-serif;font-weight:400;color:rgba(255,255,255,.75);font-size:9px;text-align:right;line-height:1.4;margin-top:1px"></div>
+        <!-- L4 Text-Block (verschiebbar, auch per Tastatur) -->
+        <div id="text-block" class="selected" tabindex="0" role="application"
+             aria-label="Textblock — mit den Pfeiltasten verschieben, mit Umschalt in gro&szlig;en Schritten">
+          <div id="tb-headline" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;font-size:15px;line-height:1.28;word-break:break-word;margin-bottom:8px"></div>
+          <div id="tb-sub" style="font-family:'DM Sans',sans-serif;font-weight:400;color:rgba(255,255,255,.8);font-size:11px;line-height:1.5;word-break:break-word"></div>
+          <div id="tb-author" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;text-decoration:underline;margin-top:8px"></div>
+          <div id="tb-role" style="font-family:'DM Sans',sans-serif;font-weight:400;color:rgba(255,255,255,.75);font-size:9px;text-align:right;line-height:1.4;margin-top:1px"></div>
         </div>
-        <!-- L5 Badge (draggable) -->
+        <!-- L5 Stoerer (verschiebbar) -->
         <div id="badge-block">
-          <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
+          <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
         </div>
-        <!-- L6 Footer -->
+        <!-- L6 Fusszeile -->
         <div id="footer-block">
           <div style="height:1px;background:rgba(255,255,255,.18);margin-bottom:5px"></div>
           <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
-            <div id="tb-footer" style="font-family:Arial,sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
+            <div id="tb-footer" style="font-family:'DM Sans',sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
           </div>
           <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
         </div>
         <!-- L6b KI-Kennzeichnung nach EU AI Act Art. 50 -->
         <div id="ki-block" aria-hidden="true">
-          <img id="ki-symbol" class="kein-export" src="" alt="">
+          <img id="ki-symbol" class="kein-export" src="" alt="" crossorigin="anonymous">
           <div id="ki-hinweis" style="display:none"></div>
         </div>
-        <!-- L7 Safe-Zone SVG -->
-        <!-- kein-export: Bearbeitungshilfen. Sie liegen im #canvas-frame und
-             wurden bisher von html2canvas mit ins PNG gerendert. -->
+        <!-- L7 Safe-Zone-Overlay -->
+        <!-- kein-export: Bearbeitungshilfe, wird vor dem Export ausgeblendet. -->
         <svg id="safe-zone-svg" class="kein-export" xmlns="http://www.w3.org/2000/svg"></svg>
-        <!-- L8 Overlay Badge -->
+        <!-- L8 Ebenen-Badge -->
         <div class="layer-badge kein-export" id="layer-badge">72% Blau</div>
-        <!-- Coordinate Readout -->
+        <!-- Koordinatenanzeige -->
         <div class="coord-readout kein-export" id="coord-readout" style="display:none">x: 0  y: 0</div>
 
       </div>
@@ -389,272 +957,10 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
     <div id="export-fehler" class="kein-export"></div>
   </div>
 
-  <!-- ══ RECHTES PANEL ══ -->
-  <div class="panel-r panel">
-
-    <div style="display:flex;border-bottom:1px solid var(--border)">
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.9);border-bottom:2px solid var(--gelb)" id="rtab-btn-0" onclick="setRTab(0)">Bild</div>
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-1" onclick="setRTab(1)">Text</div>
-      <div style="flex:1;padding:10px 4px;font-size:10px;font-weight:700;text-align:center;cursor:pointer;color:rgba(255,255,255,.4);border-bottom:2px solid transparent" id="rtab-btn-2" onclick="setRTab(2)">🚀 Freigabe</div>
-    </div>
-
-    <!-- TAB BILD -->
-    <div id="rtab-0">
-      <div class="p-section">
-        <div class="p-label">DVV-Farben (CI-konform)</div>
-        <div class="dvv-palette">
-          <div class="dvv-sw on" id="dvvsw-0" style="background:#00285A" title="DVV Primärblau" onclick="setOverlayColor(0,'#00285A','Blau')"></div>
-          <div class="dvv-sw" id="dvvsw-1" style="background:#AFC805" title="DVV Grün" onclick="setOverlayColor(1,'#AFC805','Grün')"></div>
-          <div class="dvv-sw" id="dvvsw-2" style="background:#E1000F" title="DVV Rot" onclick="setOverlayColor(2,'#E1000F','Rot')"></div>
-          <div class="dvv-sw" id="dvvsw-3" style="background:#64B9E6" title="Hellblau" onclick="setOverlayColor(3,'#64B9E6','Hellblau')"></div>
-          <div class="dvv-sw" id="dvvsw-4" style="background:#EB640F" title="DVV Orange" onclick="setOverlayColor(4,'#EB640F','Orange')"></div>
-          <div class="dvv-sw" id="dvvsw-5" style="background:#1A2943" title="Nachtblau" onclick="setOverlayColor(5,'#1A2943','Nacht')"></div>
-          <div class="dvv-sw" id="dvvsw-6" style="background:#5B2D8E" title="Lila" onclick="setOverlayColor(6,'#5B2D8E','Lila')"></div>
-          <div class="dvv-sw" id="dvvsw-7" style="background:#FAB90F" title="DVV Gelb" onclick="setOverlayColor(7,'#FAB90F','Gelb')"></div>
-          <div class="dvv-sw" id="dvvsw-8" style="background:#69829B" title="Blau 60%" onclick="setOverlayColor(8,'#69829B','Blau60')"></div>
-          <div class="dvv-sw" id="dvvsw-9" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" title="Blau 10%" onclick="setOverlayColor(9,'#E6EBF0','Blau10')"></div>
-        </div>
-        <div style="margin-top:7px;font-size:8px;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px">
-          <span style="width:7px;height:7px;border-radius:50%;background:var(--gruen);display:inline-block"></span>Nur DVV Corporate-Design-Farben
-        </div>
-      </div>
-
-      <div class="p-section">
-        <div class="p-label">Transparenz-Steuerung</div>
-        <div class="sl-row">
-          <span class="sl-lbl">Farbüberlagerung</span>
-          <div class="sl-track"><input type="range" min="0" max="100" value="72" step="1" id="sl-opacity" oninput="updateOpacity(this.value)"></div>
-          <span class="sl-val sv-blue" id="sv-opacity">72%</span>
-        </div>
-        <div class="sl-row">
-          <span class="sl-lbl">Foto-Helligkeit</span>
-          <div class="sl-track"><input type="range" min="20" max="130" value="75" step="1" id="sl-bright" oninput="updatePhotoFilter()"></div>
-          <span class="sl-val sv-gelb" id="sv-bright">75%</span>
-        </div>
-        <div class="sl-row">
-          <span class="sl-lbl">Foto-Sättigung</span>
-          <div class="sl-track"><input type="range" min="0" max="200" value="70" step="1" id="sl-sat" oninput="updatePhotoFilter()"></div>
-          <span class="sl-val sv-grn" id="sv-sat">70%</span>
-        </div>
-        <div class="sl-row">
-          <span class="sl-lbl">Foto-Kontrast</span>
-          <div class="sl-track"><input type="range" min="50" max="150" value="105" step="1" id="sl-contrast" oninput="updatePhotoFilter()"></div>
-          <span class="sl-val" style="color:rgba(255,255,255,.6)" id="sv-contrast">105%</span>
-        </div>
-        <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
-          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(25)">25%</button>
-          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid var(--gelb);background:rgba(250,185,15,.1);color:var(--gelb);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(72)">72% · Vigdís</button>
-          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(85)">85%</button>
-          <button style="padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);cursor:pointer;font-family:'DM Sans',sans-serif" onclick="applyPreset(100)">100%</button>
-        </div>
-      </div>
-
-      <div class="p-section">
-        <div class="p-label">Akzentlinie</div>
-        <div class="badge-swatches">
-          <div class="badge-sw on" id="linesw-0" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')"></div>
-          <div class="badge-sw" id="linesw-1" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')"></div>
-          <div class="badge-sw" id="linesw-2" style="background:#AFC805" onclick="setLineColor(2,'#AFC805')"></div>
-          <div class="badge-sw" id="linesw-3" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')"></div>
-          <div class="badge-sw" id="linesw-4" style="background:#fff" onclick="setLineColor(4,'#fff')"></div>
-          <div class="badge-sw" id="linesw-5" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')"></div>
-        </div>
-      </div>
-
-      <div class="p-section" id="ki-panel" style="background:rgba(100,185,230,.05);border-color:rgba(100,185,230,.18)">
-        <div class="p-label" style="color:var(--hellblau)">KI-Kennzeichnung (EU AI Act)</div>
-
-        <div class="ki-chips">
-          <div class="ki-chip on" id="ki-chip-" onclick="kiSetTyp('')">Keine<span class="ki-mini">ohne KI / Ausnahme</span></div>
-          <div class="ki-chip" id="ki-chip-ai" onclick="kiSetTyp('ai')">AI<span class="ki-mini">redaktionell gepr&uuml;ft</span></div>
-          <div class="ki-chip" id="ki-chip-ai-generated" onclick="kiSetTyp('ai-generated')">AI GENERATED<span class="ki-mini">vollst&auml;ndig von KI</span></div>
-          <div class="ki-chip" id="ki-chip-ai-modified" onclick="kiSetTyp('ai-modified')">AI MODIFIED<span class="ki-mini">mit KI ver&auml;ndert</span></div>
-        </div>
-
-        <div id="ki-optionen" style="display:none;margin-top:11px">
-          <div class="sl-row" style="margin-bottom:3px">
-            <span class="sl-lbl">Symbolh&ouml;he</span>
-            <div class="sl-track"><input type="range" min="3" max="8" value="6" step="0.1" id="sl-ki-groesse" oninput="kiSetGroesse(this.value)"></div>
-            <span class="sl-val sv-blue" id="sv-ki-groesse">6,0&nbsp;%</span>
-          </div>
-          <div style="display:flex;gap:4px;margin-bottom:3px">
-            <button class="ki-preset" data-wert="4.5" onclick="kiSetGroesse(4.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:inherit">dezent 4,5&nbsp;%</button>
-            <button class="ki-preset" data-wert="6" onclick="kiSetGroesse(6,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(250,185,15,.35);background:rgba(250,185,15,.1);color:rgba(255,255,255,.8);cursor:pointer;font-family:inherit">Standard 6&nbsp;%</button>
-            <button class="ki-preset" data-wert="7.5" onclick="kiSetGroesse(7.5,true)" style="flex:1;padding:3px 0;border-radius:4px;font-size:8px;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);cursor:pointer;font-family:inherit">deutlich 7,5&nbsp;%</button>
-          </div>
-          <div class="ki-note" id="ki-groesse-info" style="margin-top:4px"></div>
-
-          <div class="p-label" style="margin-top:12px">Position</div>
-          <div class="ki-seg">
-            <div class="on" id="ki-pos-fl" onclick="kiSetPos('fl')">Fu&szlig;zeile</div>
-            <div id="ki-pos-story" onclick="kiSetPos('story')">Story-sicher</div>
-            <div id="ki-pos-ol" onclick="kiSetPos('ol')">oben links</div>
-            <div id="ki-pos-ur" onclick="kiSetPos('ur')">unten rechts</div>
-          </div>
-
-          <div class="p-label" style="margin-top:12px">Farbvariante</div>
-          <div class="ki-seg">
-            <div class="on" id="ki-var-auto" onclick="kiSetVariante('auto')">automatisch</div>
-            <div id="ki-var-white" onclick="kiSetVariante('white')">wei&szlig;</div>
-            <div id="ki-var-black" onclick="kiSetVariante('black')">schwarz</div>
-          </div>
-          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:7px">
-            <input type="checkbox" id="ki-transparent" onchange="kiSetTransparent(this.checked)">Fl&auml;che 50&nbsp;% transparent (EU-Variante)
-          </label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,.6);cursor:pointer;margin-top:5px">
-            <input type="checkbox" id="ki-hinweis-vis" onchange="kiSetHinweis(this.checked)">Hinweissatz unter dem Symbol
-          </label>
-        </div>
-
-        <div class="ki-status" id="ki-status">Noch nicht entschieden &mdash; wird vor dem Export abgefragt.</div>
-        <div class="ki-note">
-          Pflicht nach Art.&nbsp;50 Abs.&nbsp;4 EU AI Act seit 2.&nbsp;August 2026.
-          Das Symbol wird ins Bild gerendert und bleibt beim Teilen und Herunterladen sichtbar.
-          Nur die Originaldateien der EU-Kommission, unver&auml;ndert in den Proportionen.
-        </div>
-      </div>
-
-      <div class="p-section">
-        <div class="p-label">Safe-Zonen (Meta-Standards)</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(255,255,255,.7);cursor:pointer">
-            <input type="checkbox" id="sz-toggle" onchange="toggleSafeZones()">Hilfslinien einblenden
-          </label>
-        </div>
-        <div class="sz-legend">
-          <div class="sz-item"><div class="sz-dot" style="background:rgba(250,185,15,.8)"></div>Außenrand · 5 % (allg. Sicherheit)</div>
-          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone oben · 14 % (Story UI)</div>
-          <div class="sz-item"><div class="sz-dot" style="background:rgba(100,185,230,.8)"></div>Interaktionszone unten · 20 % (Story UI)</div>
-          <div class="sz-item"><div class="sz-dot" style="background:rgba(175,200,5,.8);border:none"></div>Text-Safe-Zone · zentrierter Innenbereich</div>
-        </div>
-        <div style="margin-top:8px;font-size:8px;color:rgba(255,255,255,.3);line-height:1.6">
-          Meta-Richtwerte: Profilbild-Überlagerung oben links ~14%, Story-Interaktionsleiste unten ~20%, Feed-Bildunterschrift ~10%. Hilfslinien erscheinen nur im Editor, nicht im Export.
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB TEXT -->
-    <div id="rtab-1" style="display:none">
-      <div class="p-section">
-        <div class="p-label">Haupttext / Headline</div>
-        <textarea class="txt-field" id="tf-headline" rows="3" oninput="updateText()" placeholder="Hauptschlagzeile …"></textarea>
-        <div class="sl-row" style="margin-top:6px">
-          <span class="sl-lbl">Größe</span>
-          <div class="sl-track"><input type="range" min="6" max="36" value="15" step="1" id="sl-hlsize" oninput="updateText()"></div>
-          <span class="sl-val sv-blue" id="sv-hlsize">15px</span>
-        </div>
-      </div>
-      <div class="p-section">
-        <div class="p-label">Unterzeile / Subtext</div>
-        <textarea class="txt-field" id="tf-sub" rows="2" oninput="updateText()" placeholder="Ergänzender Text …"></textarea>
-        <div class="sl-row" style="margin-top:6px">
-          <span class="sl-lbl">Größe</span>
-          <div class="sl-track"><input type="range" min="5" max="22" value="11" step="1" id="sl-subsize" oninput="updateText()"></div>
-          <span class="sl-val sv-blue" id="sv-subsize">11px</span>
-        </div>
-      </div>
-      <div class="p-section" id="fulltext-preview-section" style="display:none">
-        <div class="p-label" style="color:var(--orange)">📋 Text aus Redaktion</div>
-        <textarea class="txt-field" id="tf-fulltext-preview" rows="6" readonly
-          style="font-size:9px;color:rgba(255,255,255,.7);line-height:1.6;cursor:default;resize:none"
-          placeholder="Volltext aus Schritt 4 …"></textarea>
-      </div>
-      <div class="p-section">
-        <div class="p-label">Textblock-Breite</div>
-        <div class="sl-row">
-          <span class="sl-lbl">Breite</span>
-          <div class="sl-track"><input type="range" min="50" max="100" value="88" step="1" id="sl-tbwidth" oninput="updateText()"></div>
-          <span class="sl-val sv-grn" id="sv-tbwidth">88%</span>
-        </div>
-      </div>
-      <div class="p-section">
-        <div class="p-label">Autorin / Quelle</div>
-        <input class="txt-field" id="tf-author" type="text" oninput="updateText()" placeholder="Name …" style="margin-bottom:6px">
-        <input class="txt-field" id="tf-role" type="text" oninput="updateText()" placeholder="Titel / Funktion …">
-      </div>
-      <div class="p-section">
-        <div class="p-label">Footer-Text</div>
-        <input class="txt-field" id="tf-footer" type="text" oninput="updateText()" value="vhs Spandau">
-      </div>
-      <div class="p-section">
-        <div class="p-label">Textfarbe</div>
-        <div class="badge-swatches">
-          <div class="badge-sw on" id="txtsw-0" style="background:#fff;border:1px solid rgba(255,255,255,.3)" onclick="setTextColor(0,'#fff')"></div>
-          <div class="badge-sw" id="txtsw-1" style="background:#00285A" onclick="setTextColor(1,'#00285A')"></div>
-          <div class="badge-sw" id="txtsw-2" style="background:#FAB90F" onclick="setTextColor(2,'#FAB90F')"></div>
-          <div class="badge-sw" id="txtsw-3" style="background:#E6EBF0;border:1px solid rgba(255,255,255,.2)" onclick="setTextColor(3,'#E6EBF0')"></div>
-        </div>
-      </div>
-      <div class="p-section">
-        <div class="p-label">Badge / Call-to-Action</div>
-        <input class="txt-field" id="tf-badge" type="text" oninput="updateText()" placeholder="z. B. Jetzt anmelden!" style="margin-bottom:6px">
-        <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:rgba(255,255,255,.6);cursor:pointer;margin-bottom:6px">
-          <input type="checkbox" id="badge-vis" onchange="updateText()"> Badge einblenden
-        </label>
-        <div class="badge-swatches">
-          <div class="badge-sw on" id="bgsw-0" style="background:#5B2D8E" onclick="setBadgeColor(0,'#5B2D8E')"></div>
-          <div class="badge-sw" id="bgsw-1" style="background:#E1000F" onclick="setBadgeColor(1,'#E1000F')"></div>
-          <div class="badge-sw" id="bgsw-2" style="background:#FAB90F" onclick="setBadgeColor(2,'#FAB90F')"></div>
-          <div class="badge-sw" id="bgsw-3" style="background:#AFC805" onclick="setBadgeColor(3,'#AFC805')"></div>
-          <div class="badge-sw" id="bgsw-4" style="background:#00285A" onclick="setBadgeColor(4,'#00285A')"></div>
-        </div>
-      </div>
-      <div class="p-section" style="background:rgba(250,185,15,.06);border-color:rgba(250,185,15,.15)">
-        <div class="p-label" style="color:var(--gelb)">Position Textblock</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:6px">Textblock auf dem Canvas direkt ziehen (Drag & Drop). Snap zu Safe-Zonen aktiv.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-          <div>
-            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">X px</div>
-            <input class="txt-field" id="pos-x" type="number" value="14" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
-          </div>
-          <div>
-            <div style="font-size:8px;color:rgba(255,255,255,.4);margin-bottom:2px">Y px</div>
-            <input class="txt-field" id="pos-y" type="number" value="200" style="font-size:10px;padding:4px 7px" oninput="setPosByInput()">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB EXPORT -->
-    <div id="rtab-2" style="display:none">
-
-      <!-- Primäre Aktion: PNG + Freigabe -->
-      <div class="p-section" style="background:rgba(250,185,15,.07);border:1px solid rgba(250,185,15,.2);border-radius:10px;margin-bottom:10px">
-        <div class="p-label" style="color:var(--gelb);font-size:11px">Grafik einreichen</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.45);line-height:1.6;margin-bottom:10px">
-          PNG wird erstellt und der Post landet direkt im Freigabe-Board.
-        </div>
-        <input class="txt-field" id="exp-anlass" type="text" placeholder="Anlass / Titel des Posts …" style="font-size:10px;margin-bottom:6px">
-        <select class="txt-field" id="exp-kanal" style="font-size:10px;margin-bottom:10px">
-          <option value="Instagram">📸 Instagram</option>
-          <option value="Facebook">👥 Facebook</option>
-          <option value="Instagram & Facebook">📸👥 Beide</option>
-        </select>
-        <input class="txt-field" id="exp-datum" type="date" style="font-size:10px;margin-bottom:10px">
-        <button class="exp-btn exp-main" onclick="exportUndFreigabe()" id="btn-freigabe-submit" style="font-size:12px;padding:12px;font-weight:800">
-          🚀 PNG erstellen &amp; zur Freigabe
-        </button>
-        <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
-      </div>
-
-      <!-- Sekundär: nur herunterladen -->
-      <div class="p-section">
-        <div class="p-label">Nur herunterladen</div>
-        <button class="exp-btn" onclick="exportPNG()" style="font-size:10px">⬇ PNG lokal speichern</button>
-        <div style="font-size:9px;color:rgba(255,255,255,.3);line-height:1.6;margin-top:6px">Ohne Einreichen — nur für eigene Ablage.</div>
-      </div>
-
-      <div class="p-section">
-        <div class="p-label">Auflösung</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8" id="exp-info">—</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);line-height:1.8;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)" id="exp-ki-info"></div>
-      </div>
-    </div>
-
-  </div>
 </div>
 
-<div class="toast" id="toast"><div class="t-dot">✓</div><span id="toast-msg"></span></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><svg class="ic ic-14 t-ic" aria-hidden="true"><use id="toast-ic" href="#i-haken"/></svg><span id="toast-msg"></span></div>
 
 <!-- Renderer. html-to-image rendert ueber foreignObject und damit durch die
      echte Layout-Engine des Browsers: CSS filter, box-shadow, object-fit und
@@ -951,6 +1257,7 @@ function renderKI(){
 }
 
 function kiStatus(){
+  kiChipSetzen();
   const st=document.getElementById('ki-status');
   if(st){
     if(!KI.entschieden){
@@ -990,11 +1297,8 @@ function kiStatus(){
 
 function kiSetTyp(typ){
   KI.typ=typ; KI.entschieden=true;
-  ['','ai','ai-generated','ai-modified'].forEach(t=>{
-    const el=document.getElementById('ki-chip-'+t);
-    if(el) el.classList.toggle('on',t===typ);
-  });
   renderKI();
+  aktualisiereZusammenfassungen();
 }
 
 function kiSetGroesse(v,ausPreset){
@@ -1016,40 +1320,34 @@ function kiSyncPresets(){
   });
 }
 
+function kiSegSetzen(praefix, werte, wert){
+  werte.forEach(x=>{
+    const el=document.getElementById(praefix+x);
+    if(!el) return;
+    el.classList.toggle('on', x===wert);
+    el.setAttribute('aria-checked', x===wert ? 'true' : 'false');
+  });
+}
 function kiSetPos(p){
   KI.pos=p;
-  ['fl','story','ol','ur'].forEach(x=>{
-    const el=document.getElementById('ki-pos-'+x);
-    if(el) el.classList.toggle('on',x===p);
-  });
+  kiSegSetzen('ki-pos-', ['fl','story','ol','ur'], p);
   renderKI();
+  pushZustand('Position des KI-Symbols');
 }
 
 function kiSetVariante(v){
   KI.variante=v;
-  ['auto','white','black'].forEach(x=>{
-    const el=document.getElementById('ki-var-'+x);
-    if(el) el.classList.toggle('on',x===v);
-  });
+  kiSegSetzen('ki-var-', ['auto','white','black'], v);
   renderKI();
+  pushZustand('Farbvariante des KI-Symbols');
 }
 
 function kiSetTransparent(b){ KI.transparent=!!b; renderKI(); }
 function kiSetHinweis(b){ KI.hinweis=!!b; renderKI(); }
 
 function kiSyncPanel(){
-  ['','ai','ai-generated','ai-modified'].forEach(t=>{
-    const el=document.getElementById('ki-chip-'+t);
-    if(el) el.classList.toggle('on',t===KI.typ);
-  });
-  ['fl','story','ol','ur'].forEach(x=>{
-    const el=document.getElementById('ki-pos-'+x);
-    if(el) el.classList.toggle('on',x===KI.pos);
-  });
-  ['auto','white','black'].forEach(x=>{
-    const el=document.getElementById('ki-var-'+x);
-    if(el) el.classList.toggle('on',x===KI.variante);
-  });
+  kiSegSetzen('ki-pos-', ['fl','story','ol','ur'], KI.pos);
+  kiSegSetzen('ki-var-', ['auto','white','black'], KI.variante);
   const sl=document.getElementById('sl-ki-groesse'); if(sl) sl.value=KI.groesse;
   const out=document.getElementById('sv-ki-groesse');
   if(out) out.innerHTML=KI.groesse.toFixed(1).replace('.',',')+'&nbsp;%';
@@ -1299,8 +1597,10 @@ async function pruefeExport(blob, f){
 function exportFehlerZeigen(text){
   const el=document.getElementById('export-fehler');
   if(!el){ console.error('[export]', text); return; }
-  el.innerHTML='<span class="ef-zu" onclick="exportFehlerVerbergen()">✕</span>'+
-               '❌ Export nicht verwendbar — '+escHtml(text);
+  el.innerHTML='<span class="ef-zu" onclick="exportFehlerVerbergen()" role="button" '+
+               'tabindex="0" aria-label="Meldung schlie\u00dfen" title="Schlie\u00dfen">'+
+               '<svg class="ic ic-14" aria-hidden="true"><use href="#i-schliessen"/></svg></span>'+
+               '<svg class="ic ic-14" aria-hidden="true"><use href="#i-fehler"/></svg> Export nicht verwendbar — '+escHtml(text);
   el.style.display='block';
 }
 function exportFehlerVerbergen(){
@@ -1421,36 +1721,42 @@ window.addEventListener('load', async () => {
     if (!isInIframe) {
       // Kanonische Nav nur im Standalone-Modus aufbauen
       const role = d.user.role;
+      // Symbol statt Emoji: erbt die Schriftfarbe und sieht auf jedem System gleich aus.
       const PAGES = [
-        { label:'📅 Redaktionsplan', url:'/kalender',          roles:['admin','redakteur','pbl'] },
-        { label:'📬 Kursvorschläge', url:'/?screen=pbl',       roles:['admin','pbl'] },
-        { label:'📚 Kursliste',       url:'/?screen=kurse',     roles:['admin','redakteur','pbl'] },
-        { label:'✏️ Redaktion',       url:'/?screen=redakteur', roles:['admin','redakteur'] },
-        { label:'🎨 Grafik-Studio',   url:'/editor',            roles:['admin','redakteur'] },
-        { label:'✅ Freigabe',         url:'/freigabe',          roles:['admin','redakteur'] },
-        { label:'📊 Dashboard',       url:'/?screen=direktion', roles:['admin','redakteur','direktion'] },
-        { label:'📈 Performance',     url:'/performance',       roles:['admin','redakteur','direktion'] },
-        { label:'⚙️ Admin',           url:'/?screen=admin',     roles:['admin'] },
+        { sym:'i-plan',        label:'Redaktionsplan', url:'/kalender',          roles:['admin','redakteur','pbl'] },
+        { sym:'i-post',        label:'Kursvorschläge', url:'/?screen=pbl',       roles:['admin','pbl'] },
+        { sym:'i-buch',        label:'Kursliste',       url:'/?screen=kurse',     roles:['admin','redakteur','pbl'] },
+        { sym:'i-stift',       label:'Redaktion',       url:'/?screen=redakteur', roles:['admin','redakteur'] },
+        { sym:'i-studio',      label:'Grafik-Studio',   url:'/editor',            roles:['admin','redakteur'] },
+        { sym:'i-freigabe',    label:'Freigabe',        url:'/freigabe',          roles:['admin','redakteur'] },
+        { sym:'i-performance', label:'Dashboard',       url:'/?screen=direktion', roles:['admin','redakteur','direktion'] },
+        { sym:'i-performance', label:'Performance',     url:'/performance',       roles:['admin','redakteur','direktion'] },
+        { sym:'i-zahnrad',     label:'Admin',           url:'/?screen=admin',     roles:['admin'] },
       ];
       const nav = PAGES
         .filter(p => p.roles.includes(role))
         .map(p => {
           const active = !p.url.startsWith('/?') && window.location.pathname === p.url;
-          return `<a href="${p.url}" class="ext-nav-tab${active?' active':''}">${p.label}</a>`;
+          return `<a href="${p.url}" class="ext-nav-tab${active?' active':''}">`+
+                 `<svg class="ic ic-14" aria-hidden="true"><use href="#${p.sym}"/></svg> ${p.label}</a>`;
         }).join('');
       document.getElementById('ext-nav-bar').innerHTML = nav +
-        `<span class="ext-nav-user">👤 ${d.user.name.split(' ')[0]}</span>` +
+        `<span class="ext-nav-user"><svg class="ic ic-14" aria-hidden="true"><use href="#i-person"/></svg> ${d.user.name.split(' ')[0]}</span>` +
         `<button class="ext-logout-btn" onclick="doLogout()">Abmelden</button>`;
     }
   } catch(e) { if (!isInIframe) window.location.href = '/'; return; }
 
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
-  baueFormatButtons();
+  baueFormatKacheln();
+  verdrahteBedienelemente();
   // Format zuerst: es bestimmt Rahmenmasse, Schriftgroessen und Positionen.
   // ?format= nimmt Key, Anzeigename und die Alt-Kennungen 9:16 / 1:1 / 16:9.
-  setFormat(qp.get('format') || FORMATS[0].key);
-  loadTemplate(0);
-  kiSyncPanel();   // Logo und KI-Kennzeichnung angleichen
+  verlaufSperre=true;
+  try{
+    setFormat(qp.get('format') || FORMATS[0].key);
+    loadTemplate(0);
+    kiSyncPanel();   // Logo und KI-Kennzeichnung angleichen
+  } finally { verlaufSperre=false; }
   initDrag();
 
   // URL-Payload anwenden (direkter Aufruf / aus Voransicht)
@@ -1467,10 +1773,18 @@ window.addEventListener('load', async () => {
     }
     applyRedaktionPayload();
     showStudioBanner(inAnlass, inKurs, inFull);
-    // Direkt zum Freigabe-Tab — Grafik erstellen ist der nächste Schritt
-    setTimeout(() => setRTab(2), 100);
+    // Direkt zum Abschnitt Einreichen — Grafik erstellen ist der naechste Schritt
+    setTimeout(() => oeffneAbschnitt(8), 100);
     window.history.replaceState({}, '', '/editor');
   }
+
+  // Ausgangspunkt des Verlaufs. Ohne diesen Eintrag gaebe es nichts,
+  // wohin der erste Klick auf Rueckgaengig zurueckfuehren koennte.
+  zeichneSafeWerte();
+  pruefeKanal();
+  aktualisiereZusammenfassungen();
+  verlauf=[]; zeiger=-1;
+  pushZustand('Ausgangszustand');
 });
 
 async function doLogout() {
@@ -1498,14 +1812,14 @@ function initDrag(){
 }
 
 function makeDraggable(el, onMove){
-  let startX,startY,startLeft,startTop,dragging=false;
+  let startX,startY,startLeft,startTop,dragging=false,bewegt=false;
   const frame=document.getElementById('canvas-frame');
 
   function getCanvasScale(){return zoomLevel/100;}
 
   function pointerDown(e){
     e.preventDefault();
-    dragging=true;
+    dragging=true; bewegt=false;
     el.classList.add('dragging');
     document.getElementById('coord-readout').style.display='block';
     const scale=getCanvasScale();
@@ -1542,6 +1856,7 @@ function makeDraggable(el, onMove){
     el.style.left=Math.round(nx)+'px';
     el.style.top=Math.round(ny)+'px';
     el.style.right='auto'; el.style.bottom='auto';
+    bewegt=true;
     onMove(Math.round(nx), Math.round(ny));
     kollisionMelden();
   }
@@ -1549,6 +1864,9 @@ function makeDraggable(el, onMove){
   function pointerUp(){
     dragging=false;
     el.classList.remove('dragging');
+    // Ein Ziehen ist EINE Handlung — ein Eintrag beim Loslassen, nicht je Pixel.
+    if(bewegt) pushZustand(el.id==='text-block' ? 'Textblock verschoben' : 'St\u00f6rer verschoben');
+    bewegt=false;
     setTimeout(()=>{ document.getElementById('coord-readout').style.display='none'; },1200);
     document.removeEventListener('mousemove',pointerMove);
     document.removeEventListener('mouseup',pointerUp);
@@ -1642,7 +1960,10 @@ function zeichneLegende(){
   // Feste Ebenen melden — sie lassen sich nicht verschieben, der Konflikt
   // gehoert aber trotzdem auf den Tisch.
   const fest=festeEbenenKonflikt(f);
-  if(fest.length) h+='<div class="sl-fest">⚠ '+fest.join('<br>⚠ ')+'</div>';
+  if(fest.length){
+    const w='<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg> ';
+    h+='<div class="sl-fest">'+w+fest.join('<br>'+w)+'</div>';
+  }
   el.innerHTML=h;
   el.style.display='block';
 }
@@ -1654,7 +1975,10 @@ function toggleSafeZones(){
   const btn=document.getElementById('sz-toggle-btn');
   svg.style.display=safeZonesVisible?'block':'none';
   if(cb) cb.checked=safeZonesVisible;
-  if(btn) btn.classList.toggle('on',safeZonesVisible);
+  if(btn){
+    btn.classList.toggle('on',safeZonesVisible);
+    btn.setAttribute('aria-pressed', safeZonesVisible ? 'true' : 'false');
+  }
   if(safeZonesVisible) drawSafeZones();
   zeichneLegende();
 }
@@ -1700,7 +2024,7 @@ function kollisionMelden(){
   const st=document.getElementById('safe-status');
   if(!st) return;
   if(meldungen.length){
-    st.innerHTML='⚠ '+meldungen.join(' · ')+
+    st.innerHTML='<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg> '+meldungen.join(' · ')+
       ' <span class="ss-mild">Export bleibt möglich.</span>';
     st.style.display='block';
   } else {
@@ -1780,13 +2104,8 @@ function kiPlatziere(blk, symbolHoehe){
 // ═══════════════════════════════════════════════════════════════
 // keepText=true → nur Farbe/Transparenz/Position laden, Text-Felder unangetastet lassen
 function loadTemplate(idx){
-  document.querySelectorAll('.tpl-card').forEach((c,i)=>{
-    c.classList.toggle('on',i===idx);
-    c.querySelectorAll('.tpl-active-badge').forEach(b=>b.remove());
-  });
-  const b2=document.createElement('div');
-  b2.className='tpl-active-badge';b2.textContent='Aktiv';
-  document.getElementById('tpl-'+idx).appendChild(b2);
+  aktVorlage=idx;
+  markiereVorlage(idx);
 
   const t=TEMPLATES[idx];
   setOverlayColorDirect(t.colorIdx,t.bg,
@@ -1844,6 +2163,8 @@ function loadTemplate(idx){
   if(safeZonesVisible) drawSafeZones();
   zeichneLegende();
   kollisionMelden();
+  aktualisiereZusammenfassungen();
+  pushZustand('Vorlage ' + (VORLAGEN_NAMEN[idx]||idx));
 }
 
 
@@ -1852,12 +2173,33 @@ function loadTemplate(idx){
 // ═══════════════════════════════════════════════════════════════
 function setOverlayColorDirect(idx,hex,name){
   activeColor=hex; activeColorName=name||hex;
-  document.querySelectorAll('.dvv-sw').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  overlayIdx=idx;
+  markiereAuswahl('.dvv-sw', idx);
   document.getElementById('cl-color').style.background=hex;
   updateBadgeLabel();
   renderKI();
 }
-function setOverlayColor(idx,hex,name){setOverlayColorDirect(idx,hex,name);}
+function setOverlayColor(idx,hex,name){
+  setOverlayColorDirect(idx,hex,name);
+  aktualisiereZusammenfassungen();
+  pushZustand('Farbfl\u00e4che ' + (name||hex));
+}
+
+// Auswahl in einer radiogroup setzen: Klasse fuer das Auge, aria-checked
+// fuer die Vorlesesoftware. Eine CSS-Klasse allein sagt nichts aus.
+function markiereAuswahl(auswahl, idx){
+  document.querySelectorAll(auswahl).forEach((el,i)=>{
+    el.classList.toggle('on', i===idx);
+    el.setAttribute('aria-checked', i===idx ? 'true' : 'false');
+  });
+}
+function markiereAuswahlNachWert(auswahl, werte, wert){
+  document.querySelectorAll(auswahl).forEach((el,i)=>{
+    const an = werte[i]===wert;
+    el.classList.toggle('on', an);
+    el.setAttribute('aria-checked', an ? 'true' : 'false');
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TRANSPARENZ
@@ -1975,57 +2317,43 @@ function updateText(){
 // ═══════════════════════════════════════════════════════════════
 // FARB-SWATCHES SYNC
 // ═══════════════════════════════════════════════════════════════
+const LINIEN_FARBEN=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
+const STOERER_FARBEN=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A'];
+const TEXT_FARBEN=['#fff','#00285A','#FAB90F','#E6EBF0'];
+
 function setLineColor(idx,col){
-  lineColor=col; syncLineSwatches(col); updateText();
+  lineColor=col; syncLineSwatches(col); updateText(); pushZustand('Akzentlinie');
 }
 function syncLineSwatches(col){
-  const cols=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
-  document.querySelectorAll('[id^="linesw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+  markiereAuswahlNachWert('[id^="linesw-"]', LINIEN_FARBEN, col);
 }
 function setBadgeColor(idx,col){
-  badgeColor=col;
-  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
-  updateText();
+  badgeColor=col; syncBadgeSwatches(col); updateText(); pushZustand('St\u00f6rerfarbe');
 }
 function syncBadgeSwatches(col){
-  const cols=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A'];
-  document.querySelectorAll('[id^="bgsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+  markiereAuswahlNachWert('[id^="bgsw-"]', STOERER_FARBEN, col);
 }
 function setTextColor(idx,col){
-  textColor=col;
-  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',i===idx));
-  updateText();
+  textColor=col; syncTextSwatches(col); updateText(); pushZustand('Textfarbe');
 }
 function syncTextSwatches(col){
-  const cols=['#fff','#00285A','#FAB90F','#E6EBF0'];
-  document.querySelectorAll('[id^="txtsw-"]').forEach((s,i)=>s.classList.toggle('on',cols[i]===col));
+  markiereAuswahlNachWert('[id^="txtsw-"]', TEXT_FARBEN, col);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // FORMAT
 // ═══════════════════════════════════════════════════════════════
-// Die Schaltflaechen entstehen aus FORMATS — kein Mass im Markup.
-function baueFormatButtons(){
-  const box=document.getElementById('format-btns');
-  if(!box) return;
-  box.innerHTML=FORMATS.map(f=>{
-    // Vorschausymbol im Seitenverhaeltnis des Formats, laengste Kante 18 px
-    const s=Math.min(18/f.w, 18/f.h);
-    const iw=Math.max(6,Math.round(f.w*s)), ih=Math.max(6,Math.round(f.h*s));
-    return '<div class="fmt-btn" id="fmt-'+f.key+'" onclick="setFormat(\''+f.key+'\')" '+
-           'title="'+f.label+' · '+f.w+'×'+f.h+'">'+
-           '<div class="fmt-icon" style="width:'+iw+'px;height:'+ih+'px"></div>'+
-           '<span class="fmt-name">'+f.kurz+'</span>'+
-           '<span class="fmt-dim">'+f.w+'×'+f.h+'</span></div>';
-  }).join('');
-}
-
 // Nimmt Key, Anzeigename, Alt-Kennung oder Index entgegen (siehe formatIndex).
-function setFormat(kennung){
+// ausKlick=true schreibt einen Verlaufseintrag.
+function setFormat(kennung, ausKlick){
   currentFormatIdx=formatIndex(kennung);
   const f=aktFormat(), d=anzeigeMasse(f);
 
-  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.toggle('on', b.id==='fmt-'+f.key));
+  document.querySelectorAll('.fmt-kachel').forEach(b=>{
+    const an = b.id==='fmt-'+f.key;
+    b.classList.toggle('on', an);
+    b.setAttribute('aria-checked', an ? 'true' : 'false');
+  });
 
   const frame=document.getElementById('canvas-frame');
   frame.style.width  = d.w+'px';
@@ -2050,7 +2378,11 @@ function setFormat(kennung){
   renderKI();
   if(safeZonesVisible) drawSafeZones();
   zeichneLegende();
+  zeichneSafeWerte();
   kollisionMelden();
+  pruefeKanal();
+  aktualisiereZusammenfassungen();
+  if(ausKlick) pushZustand('Format ' + f.kurz);
 }
 
 // Reglerwerte aus den relativen Schriftgroessen neu setzen
@@ -2099,14 +2431,8 @@ function fitZoom(){zoomLevel=100;zoom(0);}
 // ═══════════════════════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════════════════════
-function setRTab(n){
-  [0,1,2].forEach(i=>{
-    document.getElementById('rtab-'+i).style.display=i===n?'block':'none';
-    const btn=document.getElementById('rtab-btn-'+i);
-    btn.style.color=i===n?'rgba(255,255,255,.9)':'rgba(255,255,255,.4)';
-    btn.style.borderBottom=i===n?'2px solid var(--gelb)':'2px solid transparent';
-  });
-}
+// setRTab lebt jetzt im Abschnitts-Block weiter unten — die Reiter sind
+// durch die Abschnitte 04 und 08 ersetzt.
 
 // ═══════════════════════════════════════════════════════════════
 // FOTO
@@ -2116,12 +2442,10 @@ function handleFile(input){
   const reader=new FileReader();
   reader.onload=e=>{
     fotoDataUrl=e.target.result;
-    document.getElementById('cl-foto').style.backgroundImage=`url(${fotoDataUrl})`;
-    document.getElementById('foto-preview-img').src=fotoDataUrl;
-    document.getElementById('foto-vorschau').style.display='block';
-    document.getElementById('no-foto-hint').style.display='none';
-    document.getElementById('upload-zone').style.display='none';
-    showToast('📷 Foto geladen');
+    fotoAnzeigen();
+    aktualisiereZusammenfassungen();
+    pushZustand('Foto geladen');
+    showToast('Foto geladen','i-kamera');
   };
   reader.readAsDataURL(file); input.value='';
 }
@@ -2134,10 +2458,9 @@ function handleDrop(e){
 }
 function removeFoto(){
   fotoDataUrl=null;
-  document.getElementById('cl-foto').style.backgroundImage='';
-  document.getElementById('foto-vorschau').style.display='none';
-  document.getElementById('upload-zone').style.display='block';
-  document.getElementById('no-foto-hint').style.display='block';
+  fotoAnzeigen();
+  aktualisiereZusammenfassungen();
+  pushZustand('Foto entfernt');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2148,7 +2471,7 @@ async function exportPNG(){
   // niemand das Layout nochmal an.
   if(!await kiAbfrage()) return;
   exportFehlerVerbergen();
-  showToast('🖼 Wird erstellt …');
+  showToast('Wird erstellt …','i-bild');
   const f=aktFormat();
   const frame=document.getElementById('canvas-frame');
   const vor=exportVorbereiten();
@@ -2166,11 +2489,11 @@ async function exportPNG(){
     link.href=url;
     link.click();
     setTimeout(()=>URL.revokeObjectURL(url), 5000);
-    showToast('✅ PNG gespeichert — '+f.w+' × '+f.h+' px');
+    showToast('PNG gespeichert — '+f.w+' × '+f.h+' px','i-haken');
   }catch(err){
     console.error('[export]', err);
     exportFehlerZeigen(err.message||'unbekannter Fehler');
-    showToast('❌ Export fehlgeschlagen');
+    showToast('Export fehlgeschlagen','i-fehler');
   }finally{
     vor.zurueck();
   }
@@ -2205,8 +2528,8 @@ async function exportUndFreigabe() {
   } catch(err) {
     console.error('[export]', err);
     exportFehlerZeigen(err.message||'unbekannter Fehler');
-    showToast('❌ PNG-Export fehlgeschlagen');
-    if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+    showToast('PNG-Export fehlgeschlagen','i-fehler');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg class="ic ic-14" aria-hidden="true"><use href="#i-export"/></svg> PNG erstellen und zur Freigabe'; }
     return;
   } finally {
     vor.zurueck();
@@ -2241,15 +2564,15 @@ async function exportUndFreigabe() {
       body: JSON.stringify(post)
     });
     if (r.ok) {
-      showToast('✅ Grafik eingereicht — weiter zur Voransicht');
+      showToast('Grafik eingereicht — weiter zur Voransicht','i-haken');
       setTimeout(() => { window.location.href = '/voransicht'; }, 1200);
     } else {
-      showToast('⚠️ PNG ok, aber Einreichen fehlgeschlagen');
-      if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+      showToast('PNG erstellt, aber Einreichen fehlgeschlagen','i-warnung');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg class="ic ic-14" aria-hidden="true"><use href="#i-export"/></svg> PNG erstellen und zur Freigabe'; }
     }
   } catch {
-    showToast('⚠️ Server nicht erreichbar');
-    if (btn) { btn.disabled = false; btn.textContent = '🚀 PNG erstellen & zur Freigabe'; }
+    showToast('Server nicht erreichbar','i-warnung');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg class="ic ic-14" aria-hidden="true"><use href="#i-export"/></svg> PNG erstellen und zur Freigabe'; }
   }
 }
 
@@ -2258,7 +2581,7 @@ async function exportUndFreigabe() {
 // ═══════════════════════════════════════════════════════════════
 async function saveToRedaktionsplan(){
   const datum=document.getElementById('exp-datum').value;
-  if(!datum){showToast('⚠️ Bitte Datum wählen');return;}
+  if(!datum){showToast('Bitte Datum wählen','i-warnung');return;}
   if(!await kiAbfrage()) return;
   const post={
     id:'ed'+Date.now(), datum,uhrzeit:'17:00',
@@ -2270,22 +2593,492 @@ async function saveToRedaktionsplan(){
   };
   try{
     const r=await fetch('/api/posts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});
-    showToast(r.ok?'📅 Im Redaktionsplan gespeichert':'❌ Fehler beim Speichern');
-  }catch{showToast('❌ Server nicht erreichbar');}
+    showToast(r.ok?'Im Redaktionsplan gespeichert':'Fehler beim Speichern', r.ok?'i-plan':'i-fehler');
+  }catch{showToast('Server nicht erreichbar','i-fehler');}
 }
 
 // ═══════════════════════════════════════════════════════════════
 // RESET
 // ═══════════════════════════════════════════════════════════════
-function resetEditor(){
-  removeFoto();
-  // Neues Motiv, neue Entscheidung: die Kennzeichnung gehoert zum Inhalt
-  KI.typ=''; KI.entschieden=false;
-  exportFehlerVerbergen();
-  setFormat(FORMATS[0].key);
-  loadTemplate(0);
+async function resetEditor(){
+  const ja=await frage(
+    'Grafik-Studio zur\u00fccksetzen?',
+    'Foto, Texte, Farben, Format und die KI-Entscheidung gehen auf den '+
+    'Anfangszustand zur\u00fcck. Der Schritt landet im Verlauf und l\u00e4sst sich '+
+    'mit Strg+Z wieder aufheben.',
+    'Ja, zur\u00fccksetzen');
+  if(!ja) return;
+
+  // Der Reset selbst ist eine Handlung wie jede andere — deshalb wird er
+  // ohne Zwischeneintraege ausgefuehrt und am Ende EINMAL gemerkt.
+  verlaufSperre=true;
+  try{
+    fotoDataUrl=null; fotoAnzeigen();
+    KI.typ=''; KI.entschieden=false;
+    exportFehlerVerbergen();
+    setFormat(FORMATS[0].key);
+    loadTemplate(0);
+    kiSyncPanel();
+  } finally { verlaufSperre=false; }
+
+  aktualisiereZusammenfassungen();
+  pushZustand('Zur\u00fcckgesetzt');
+  oeffneAbschnitt(1);
+  showToast('Grafik-Studio zur\u00fcckgesetzt','i-reset');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ZUSTAND — eine Quelle statt verstreuter Variablen
+// ═══════════════════════════════════════════════════════════════
+// zustandLesen() und zustandAnwenden() sind ab hier die einzige Stelle, an
+// der definiert ist, WAS den Editorzustand ausmacht. Die Modulvariablen
+// (activeColor, lineColor, tbRel, KI …) bleiben die Arbeitskopie, aus der
+// die Renderfunktionen lesen — aber serialisiert und wiederhergestellt wird
+// ausschliesslich ueber dieses Paar. Nur dadurch ist der Verlauf trivial.
+let overlayIdx = 0;         // Index der gewaehlten DVV-Farbflaeche
+let aktVorlage = 0;         // Index der aktiven Vorlage
+const VORLAGEN_NAMEN = ['Zitat / Portrait','Vollfarbe','Recruiting','Frage'];
+
+function feldWert(id){ const el=document.getElementById(id); return el ? el.value : null; }
+function feldSetzen(id,v){
+  const el=document.getElementById(id);
+  if(el && v!==null && v!==undefined) el.value=v;
+}
+
+function zustandLesen(){
+  return {
+    format:  aktFormat().key,
+    vorlage: aktVorlage,
+    foto:    fotoDataUrl,
+    text: {
+      headline: feldWert('tf-headline'), sub: feldWert('tf-sub'),
+      autor:    feldWert('tf-author'),   rolle: feldWert('tf-role'),
+      fuss:     feldWert('tf-footer'),   stoerer: feldWert('tf-badge'),
+      stoererAn: !!(document.getElementById('badge-vis')||{}).checked,
+      volltext: feldWert('tf-fulltext-preview')
+    },
+    schrift: { hl: schriftRel.hl, sub: schriftRel.sub, breite: +feldWert('sl-tbwidth') },
+    farbe: {
+      flaecheIdx: overlayIdx, flaeche: activeColor, flaecheName: activeColorName,
+      deckkraft: +feldWert('sl-opacity'), helligkeit: +feldWert('sl-bright'),
+      saettigung: +feldWert('sl-sat'),    kontrast:   +feldWert('sl-contrast'),
+      linie: lineColor, stoerer: badgeColor, schrift: textColor
+    },
+    lage: {
+      text:    { x: tbRel.x, y: tbRel.y },
+      stoerer: badgeRel ? { x: badgeRel.x, y: badgeRel.y } : null
+    },
+    ki: { typ:KI.typ, groesse:KI.groesse, pos:KI.pos, variante:KI.variante,
+          transparent:KI.transparent, hinweis:KI.hinweis, entschieden:KI.entschieden },
+    einreichen: { anlass: feldWert('exp-anlass'), kanal: feldWert('exp-kanal'),
+                  datum: feldWert('exp-datum') }
+  };
+}
+
+function zustandAnwenden(z){
+  aktVorlage = z.vorlage;
+  markiereVorlage(aktVorlage);
+
+  fotoDataUrl = z.foto || null;
+  fotoAnzeigen();
+
+  feldSetzen('tf-headline', z.text.headline);
+  feldSetzen('tf-sub',      z.text.sub);
+  feldSetzen('tf-author',   z.text.autor);
+  feldSetzen('tf-role',     z.text.rolle);
+  feldSetzen('tf-footer',   z.text.fuss);
+  feldSetzen('tf-badge',    z.text.stoerer);
+  feldSetzen('tf-fulltext-preview', z.text.volltext);
+  const bv=document.getElementById('badge-vis');
+  if(bv) bv.checked = !!z.text.stoererAn;
+
+  schriftRel = { hl:z.schrift.hl, sub:z.schrift.sub };
+  feldSetzen('sl-tbwidth', z.schrift.breite);
+
+  overlayIdx = z.farbe.flaecheIdx;
+  setOverlayColorDirect(z.farbe.flaecheIdx, z.farbe.flaeche, z.farbe.flaecheName);
+  feldSetzen('sl-opacity',  z.farbe.deckkraft);
+  feldSetzen('sl-bright',   z.farbe.helligkeit);
+  feldSetzen('sl-sat',      z.farbe.saettigung);
+  feldSetzen('sl-contrast', z.farbe.kontrast);
+  lineColor  = z.farbe.linie;   syncLineSwatches(lineColor);
+  badgeColor = z.farbe.stoerer; syncBadgeSwatches(badgeColor);
+  textColor  = z.farbe.schrift; syncTextSwatches(textColor);
+
+  tbRel    = { x:z.lage.text.x, y:z.lage.text.y };
+  badgeRel = z.lage.stoerer ? { x:z.lage.stoerer.x, y:z.lage.stoerer.y } : null;
+
+  KI.typ=z.ki.typ; KI.groesse=z.ki.groesse; KI.pos=z.ki.pos;
+  KI.variante=z.ki.variante; KI.transparent=z.ki.transparent;
+  KI.hinweis=z.ki.hinweis; KI.entschieden=z.ki.entschieden;
+
+  feldSetzen('exp-anlass', z.einreichen.anlass);
+  feldSetzen('exp-kanal',  z.einreichen.kanal);
+  feldSetzen('exp-datum',  z.einreichen.datum);
+
+  // Format zuletzt: setFormat loest Schriftgroessen und Lage neu auf und
+  // zeichnet alles nach.
+  setFormat(z.format);
+  updateOpacity(z.farbe.deckkraft);
+  updatePhotoFilter();
   kiSyncPanel();
-  showToast('↺ Editor zurückgesetzt');
+  pruefeKanal();
+  aktualisiereZusammenfassungen();
+}
+
+// Foto-Anzeige aus dem Zustand herstellen (statt aus dem Ladevorgang)
+function fotoAnzeigen(){
+  const foto=document.getElementById('cl-foto');
+  const vor =document.getElementById('foto-vorschau');
+  const zone=document.getElementById('upload-zone');
+  const hint=document.getElementById('no-foto-hint');
+  if(fotoDataUrl){
+    foto.style.backgroundImage='url('+fotoDataUrl+')';
+    document.getElementById('foto-preview-img').src=fotoDataUrl;
+    vor.style.display='block'; zone.style.display='none'; hint.style.display='none';
+  } else {
+    foto.style.backgroundImage='';
+    vor.style.display='none'; zone.style.display='block'; hint.style.display='block';
+  }
+}
+
+function markiereVorlage(idx){
+  document.querySelectorAll('.tpl-card').forEach((c,i)=>{
+    c.classList.toggle('on', i===idx);
+    c.setAttribute('aria-checked', i===idx ? 'true' : 'false');
+    c.querySelectorAll('.tpl-active-badge').forEach(b=>b.remove());
+  });
+  const aktiv=document.getElementById('tpl-'+idx);
+  if(aktiv){
+    const b=document.createElement('div');
+    b.className='tpl-active-badge'; b.textContent='Aktiv';
+    aktiv.appendChild(b);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VERLAUF
+// ═══════════════════════════════════════════════════════════════
+// Ein Schnappschuss pro abgeschlossener Handlung, nicht pro Pixel: Regler
+// beim change-Ereignis, Textfelder beim Verlassen, Klickauswahl sofort,
+// Ziehen einmal beim Loslassen.
+const VERLAUF_TIEFE = 40;
+let verlauf = [];
+let zeiger  = -1;
+let verlaufSperre = false;      // waehrend zustandAnwenden nicht mitschreiben
+
+function pushZustand(bezeichnung){
+  if(verlaufSperre) return;
+  const daten = JSON.stringify(zustandLesen());
+  // Nichts veraendert? Dann auch kein Eintrag — sonst fuellt sich der
+  // Verlauf mit Schritten, die nichts bewirken.
+  if(zeiger >= 0 && verlauf[zeiger] && verlauf[zeiger].daten === daten) return;
+  if(zeiger < verlauf.length-1) verlauf.length = zeiger+1;
+  verlauf.push({ bezeichnung: bezeichnung || 'Änderung', daten });
+  if(verlauf.length > VERLAUF_TIEFE) verlauf.shift();
+  zeiger = verlauf.length-1;
+  verlaufKnoepfe();
+}
+
+function verlaufZurueck(){
+  if(zeiger <= 0) return;
+  zeiger--;
+  verlaufAnwenden();
+}
+function verlaufVor(){
+  if(zeiger >= verlauf.length-1) return;
+  zeiger++;
+  verlaufAnwenden();
+}
+function verlaufAnwenden(){
+  verlaufSperre = true;
+  try { zustandAnwenden(JSON.parse(verlauf[zeiger].daten)); }
+  finally { verlaufSperre = false; }
+  verlaufKnoepfe();
+}
+
+function verlaufKnoepfe(){
+  const bz  = document.getElementById('btn-zurueck');
+  const bv  = document.getElementById('btn-vor');
+  const txt = document.getElementById('verlauf-txt');
+  const kannZurueck = zeiger > 0;
+  const kannVor     = zeiger < verlauf.length-1;
+  if(bz) bz.disabled = !kannZurueck;
+  if(bv) bv.disabled = !kannVor;
+  // Der Nutzer soll sehen, WAS rueckgaengig gemacht wird.
+  if(txt) txt.textContent = kannZurueck ? 'zurück: ' + verlauf[zeiger].bezeichnung : '';
+}
+
+function istTextfeld(el){
+  if(!el) return false;
+  const t=(el.tagName||'').toLowerCase();
+  return t==='input' || t==='textarea' || t==='select' || el.isContentEditable;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ZUSAMMENFASSUNGEN in den Abschnittsköpfen
+// ═══════════════════════════════════════════════════════════════
+// Jeder Abschnitt zeigt seinen Zustand auch eingeklappt — sonst muesste man
+// alle acht aufklappen, um zu sehen, wo man steht.
+function aktualisiereZusammenfassungen(){
+  const s=(id,t)=>{ const el=document.getElementById(id); if(el) el.textContent=t; };
+  const f=aktFormat();
+  s('kurz-format',  f.w+' × '+f.h);
+  s('kurz-vorlage', VORLAGEN_NAMEN[aktVorlage] || '—');
+  s('kurz-foto',    fotoDataUrl ? 'Foto gesetzt' : 'kein Foto');
+  const hl=(feldWert('tf-headline')||'').trim();
+  s('kurz-text',    hl ? (hl.length>22 ? hl.slice(0,22)+'…' : hl) : 'kein Text');
+  s('kurz-farbe',   Math.round(feldWert('sl-opacity'))+' % Deckkraft');
+  const stoerer=(document.getElementById('badge-vis')||{}).checked;
+  s('kurz-fein',    stoerer ? 'Störer an' : 'Störer aus');
+  s('kurz-ki',      kiKurzfassung());
+  s('kurz-export',  feldWert('exp-kanal') || '—');
+}
+
+function kiKurzfassung(){
+  if(!KI.entschieden) return 'offen';
+  if(!KI.typ) return 'keine';
+  return { 'ai':'AI — redaktionell geprüft',
+           'ai-generated':'AI GENERATED',
+           'ai-modified':'AI MODIFIED' }[KI.typ] || KI.typ;
+}
+function kiChipSetzen(){
+  const c=document.getElementById('ki-chip-zustand');
+  if(!c) return;
+  c.className='ki-chip-zustand ' +
+    (!KI.entschieden ? 'kz-offen' : (KI.typ ? 'kz-gesetzt' : 'kz-keine'));
+  c.textContent=kiKurzfassung();
+}
+
+// Oeffnet denselben Pflichtdialog, den auch der Export erzwingt. Der Dialog
+// bleibt der einzige Ort, an dem die Kennzeichnung gewaehlt wird.
+async function kiEntscheiden(){
+  const vorher=KI.entschieden;
+  KI.entschieden=false;
+  const ok=await kiAbfrage();
+  if(!ok) KI.entschieden=vorher;          // Abbruch aendert nichts
+  kiSyncPanel();
+  aktualisiereZusammenfassungen();
+  if(ok) pushZustand('KI-Kennzeichnung');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORMATKACHELN, nach Plattform gruppiert
+// ═══════════════════════════════════════════════════════════════
+const PLATTFORMEN=[
+  { titel:'Instagram',          keys:['ig-portrait-34','ig-portrait-45','ig-square','ig-story'] },
+  { titel:'Facebook',           keys:['fb-feed','fb-link','fb-event'] },
+  { titel:'Web und Bildschirm', keys:['web-169'] },
+];
+function baueFormatKacheln(){
+  const box=document.getElementById('format-gruppen');
+  if(!box) return;
+  box.innerHTML=PLATTFORMEN.map(g=>{
+    const kacheln=g.keys.map(k=>{
+      const f=FORMATS[formatIndex(k)];
+      // Miniatur im ECHTEN Seitenverhaeltnis: 20 px hoch, Breite folgt daraus
+      const mb=Math.max(5, Math.round(20*f.w/f.h));
+      return '<button type="button" class="fmt-kachel" id="fmt-'+f.key+'" role="radio" '+
+             'aria-checked="false" onclick="setFormat(\''+f.key+'\',true)" '+
+             'title="'+f.label+' — '+f.w+' × '+f.h+' px">'+
+             '<span class="fmt-mini" style="width:'+mb+'px"></span>'+
+             '<span class="fmt-text"><span class="fmt-name">'+f.kurz+'</span>'+
+             '<span class="fmt-dim">'+f.w+' × '+f.h+'</span></span></button>';
+    }).join('');
+    return '<div class="fmt-gruppe"><div class="fmt-gruppe-titel">'+g.titel+'</div>'+
+           '<div class="fmt-liste" role="radiogroup" aria-label="Format '+g.titel+'">'+
+           kacheln+'</div></div>';
+  }).join('');
+}
+
+// Die Werteliste zeigt die Zonen des AKTUELLEN Formats aus der Registry.
+function zeichneSafeWerte(){
+  const box=document.getElementById('sz-werte');
+  if(!box) return;
+  const f=aktFormat();
+  const zeile=(mass,grund)=>
+    '<div class="sz-item" style="align-items:flex-start">'+
+    '<span class="sz-dot" style="background:'+SZ_KONTUR+';margin-top:5px"></span>'+
+    '<span><b style="color:rgba(255,255,255,.85)">'+mass+'</b> — '+grund+'</span></div>';
+  let h='';
+  if(f.safe.top>0)    h+=zeile('oben '+Math.round(f.safe.top)+' px',    f.gruende.oben);
+  if(f.safe.bottom>0) h+=zeile('unten '+Math.round(f.safe.bottom)+' px', f.gruende.unten);
+  if(f.safe.left>0||f.safe.right>0){
+    const gleich=Math.round(f.safe.left)===Math.round(f.safe.right);
+    h+=zeile(gleich ? 'seitlich '+Math.round(f.safe.left)+' px'
+                    : 'links '+Math.round(f.safe.left)+' / rechts '+Math.round(f.safe.right)+' px',
+             f.gruende.seiten);
+  }
+  (f.zonen||[]).forEach(z=>{ h+=zeile(z.name||'Sperrfläche', z.grund); });
+  box.innerHTML=h;
+  const hin=document.getElementById('sz-format-hinweis');
+  if(hin){
+    hin.textContent=f.hinweis||'';
+    hin.style.display=f.hinweis ? 'block' : 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLATTFORM gegen Format pruefen
+// ═══════════════════════════════════════════════════════════════
+// Warnt, blockiert nicht: es gibt Gruende, ein Storyformat auf Facebook zu
+// stellen. Aber still durchlaufen soll es nicht.
+const KANAL_FORMATE={
+  'Instagram':            ['ig-portrait-34','ig-portrait-45','ig-square','ig-story'],
+  'Facebook':             ['fb-feed','fb-link','fb-event','web-169'],
+  'Instagram & Facebook': ['ig-portrait-34','ig-portrait-45','ig-square']
+};
+function pruefeKanal(){
+  const el=document.getElementById('kanal-warnung');
+  if(!el) return true;
+  const kanal=feldWert('exp-kanal');
+  const erlaubt=KANAL_FORMATE[kanal];
+  const f=aktFormat();
+  if(!erlaubt || erlaubt.indexOf(f.key)>=0){ el.style.display='none'; return true; }
+  const vorschlag=erlaubt.map(k=>FORMATS[formatIndex(k)].kurz).join(', ');
+  el.innerHTML='<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg>'+
+    '<span><b>'+escHtml(f.label)+'</b> ist für '+escHtml(kanal)+' unüblich. '+
+    'Üblich wäre hier: '+escHtml(vorschlag)+'. Der Export läuft trotzdem.</span>';
+  el.style.display='flex';
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ABSCHNITTE
+// ═══════════════════════════════════════════════════════════════
+function oeffneAbschnitt(nr){
+  const el=document.getElementById('ab-'+String(nr).padStart(2,'0'));
+  if(!el) return;
+  el.open=true;                    // name="bedienfeld" schliesst die anderen selbst
+}
+// Alt-Aufrufe aus der Zeit der Reiter: 1 = Text, 2 = Einreichen
+function setRTab(n){ oeffneAbschnitt(n===1 ? 4 : (n===2 ? 8 : 5)); }
+
+// Enter und Leertaste auf Elementen, die keine echten Knoepfe sind
+function tasteAlsKlick(e){
+  if(e.key==='Enter' || e.key===' ' || e.key==='Spacebar'){
+    e.preventDefault();
+    e.currentTarget.click();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SICHERHEITSABFRAGE
+// ═══════════════════════════════════════════════════════════════
+// Eigener Dialog statt confirm(): das native Fenster blockiert die Seite und
+// sieht auf jedem System anders aus.
+let frageResolve=null;
+function frage(titel, text, jaText){
+  const bg=document.getElementById('frage-modal-bg');
+  if(!bg) return Promise.resolve(true);
+  document.getElementById('frage-titel').textContent=titel;
+  document.getElementById('frage-text').textContent=text;
+  document.getElementById('frage-ja').textContent=jaText||'Ja, weiter';
+  bg.classList.add('open');
+  document.getElementById('frage-nein').focus();
+  return new Promise(ok=>{ frageResolve=ok; });
+}
+function frageAntwort(ja){
+  document.getElementById('frage-modal-bg').classList.remove('open');
+  if(frageResolve){ frageResolve(ja); frageResolve=null; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TASTATUR
+// ═══════════════════════════════════════════════════════════════
+function tastenkuerzel(e){
+  // In Textfeldern macht der Browser sein eigenes Undo — dort nicht eingreifen.
+  if(istTextfeld(document.activeElement)) return;
+  if(!(e.ctrlKey || e.metaKey)) return;
+  const k=(e.key||'').toLowerCase();
+  if(k==='z' && !e.shiftKey){ e.preventDefault(); verlaufZurueck(); }
+  else if(k==='y' || (k==='z' && e.shiftKey)){ e.preventDefault(); verlaufVor(); }
+}
+
+// Der Textblock laesst sich auch ohne Maus setzen: 1 % je Pfeiltaste,
+// 5 % mit Umschalt. Die X/Y-Felder bleiben als zweiter Weg.
+let tastenTimer=null;
+function textblockTasten(e){
+  const richtung={ ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1] }[e.key];
+  if(!richtung) return;
+  e.preventDefault();
+  const schritt = e.shiftKey ? 0.05 : 0.01;
+  tbRel = { x: Math.max(0, Math.min(1, tbRel.x + richtung[0]*schritt)),
+            y: Math.max(0, Math.min(1, tbRel.y + richtung[1]*schritt)) };
+  positionenAnwenden();
+  kollisionMelden();
+  // Eine Folge von Tastendrucken ist EINE Handlung, nicht zwanzig.
+  clearTimeout(tastenTimer);
+  tastenTimer=setTimeout(()=>pushZustand('Textblock verschoben'), 600);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BEDIENELEMENTE VERDRAHTEN
+// ═══════════════════════════════════════════════════════════════
+// input = sofort sichtbar, change = ein Eintrag im Verlauf. Deshalb stehen
+// die Handler hier und nicht mehr als oninput im Markup.
+const REGLER=[
+  { id:'sl-opacity',    name:'Deckkraft',                live:()=>updateOpacity(feldWert('sl-opacity')) },
+  { id:'sl-bright',     name:'Foto-Helligkeit',          live:updatePhotoFilter },
+  { id:'sl-sat',        name:'Foto-Sättigung',           live:updatePhotoFilter },
+  { id:'sl-contrast',   name:'Foto-Kontrast',            live:updatePhotoFilter },
+  { id:'sl-hlsize',     name:'Schriftgröße Headline',    live:updateText },
+  { id:'sl-subsize',    name:'Schriftgröße Unterzeile',  live:updateText },
+  { id:'sl-tbwidth',    name:'Textblock-Breite',         live:updateText },
+  { id:'sl-ki-groesse', name:'Symbolhöhe',               live:()=>kiSetGroesse(feldWert('sl-ki-groesse')) },
+];
+const TEXTFELDER=[
+  { id:'tf-headline', name:'Headline' },
+  { id:'tf-sub',      name:'Unterzeile' },
+  { id:'tf-author',   name:'Autorin' },
+  { id:'tf-role',     name:'Titel / Funktion' },
+  { id:'tf-footer',   name:'Fußzeile' },
+  { id:'tf-badge',    name:'Störertext' },
+];
+
+function verdrahteBedienelemente(){
+  REGLER.forEach(r=>{
+    const el=document.getElementById(r.id);
+    if(!el) return;
+    el.addEventListener('input',  ()=>{ r.live(); aktualisiereZusammenfassungen(); });
+    el.addEventListener('change', ()=>pushZustand(r.name));
+  });
+  TEXTFELDER.forEach(t=>{
+    const el=document.getElementById(t.id);
+    if(!el) return;
+    el.addEventListener('input',  ()=>{ updateText(); aktualisiereZusammenfassungen(); });
+    el.addEventListener('change', ()=>pushZustand(t.name));
+  });
+  const bv=document.getElementById('badge-vis');
+  if(bv) bv.addEventListener('change', ()=>{
+    updateText(); aktualisiereZusammenfassungen(); pushZustand('Störer ein/aus');
+  });
+  ['pos-x','pos-y'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input',  setPosByInput);
+    el.addEventListener('change', ()=>pushZustand('Textblock-Position'));
+  });
+  const kt=document.getElementById('ki-transparent');
+  if(kt) kt.addEventListener('change', e=>{
+    kiSetTransparent(e.target.checked); pushZustand('KI-Symbol transparent');
+  });
+  const kh=document.getElementById('ki-hinweis-vis');
+  if(kh) kh.addEventListener('change', e=>{
+    kiSetHinweis(e.target.checked); pushZustand('KI-Hinweissatz');
+  });
+  ['exp-anlass','exp-datum'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('change', ()=>{ aktualisiereZusammenfassungen(); pushZustand('Angaben zum Post'); });
+  });
+  const kanal=document.getElementById('exp-kanal');
+  if(kanal) kanal.addEventListener('change', ()=>{
+    pruefeKanal(); aktualisiereZusammenfassungen(); pushZustand('Plattform');
+  });
+  const tb=document.getElementById('text-block');
+  if(tb) tb.addEventListener('keydown', textblockTasten);
+  document.addEventListener('keydown', tastenkuerzel);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2310,7 +3103,7 @@ function showStudioBanner(anlass, kurs, fulltext) {
     box-shadow:0 4px 20px rgba(0,0,0,.4);
   `;
   banner.innerHTML = `
-    <div style="font-size:22px;flex-shrink:0">🎨</div>
+    <div style="flex-shrink:0;color:var(--gelb)"><svg class="ic ic-26" aria-hidden="true"><use href="#i-studio"/></svg></div>
     <div style="flex:1;min-width:0">
       <div style="font-size:11px;font-weight:700;color:#FAB90F;margin-bottom:1px">Schritt 5 · Grafik-Studio</div>
       <div style="font-size:10px;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -2320,7 +3113,7 @@ function showStudioBanner(anlass, kurs, fulltext) {
     <button onclick="document.getElementById('studio-banner').remove()"
       style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:5px;
              color:rgba(255,255,255,.6);font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit;flex-shrink:0">
-      ✕
+      <svg class="ic ic-14" aria-hidden="true"><use href="#i-schliessen"/></svg>
     </button>
   `;
   area.style.position = 'relative';
@@ -2335,7 +3128,7 @@ function showStudioBanner(anlass, kurs, fulltext) {
 
   // Freigabe-CTA in Export-Tab einblenden
   injectFreigabeCTA(anlass);
-  showToast('🎨 Text aus Redaktion geladen · Schritt 5 aktiv');
+  showToast('Text aus Redaktion geladen · Schritt 5 aktiv','i-redaktion');
 }
 
 function injectFreigabeCTA(anlass) {
@@ -2345,13 +3138,30 @@ function injectFreigabeCTA(anlass) {
   // Direkt zum Freigabe-Tab springen
   setRTab(2);
 }
-function showToast(msg){
+let toastTimer=null;
+function showToast(msg, symbol){
   const t=document.getElementById('toast');
   document.getElementById('toast-msg').textContent=msg;
+  const u=document.getElementById('toast-ic');
+  if(u) u.setAttribute('href','#'+(symbol||'i-haken'));
+  t.classList.toggle('toast-fehler', symbol==='i-fehler' || symbol==='i-warnung');
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
+<!-- ══ SICHERHEITSABFRAGE ══ -->
+<div id="frage-modal-bg" role="dialog" aria-modal="true" aria-labelledby="frage-titel">
+  <div id="frage-modal">
+    <h3 id="frage-titel">—</h3>
+    <p id="frage-text">—</p>
+    <div class="frage-knoepfe">
+      <button type="button" class="vor-btn" id="frage-nein" onclick="frageAntwort(false)">Abbrechen</button>
+      <button type="button" class="vor-btn stark" id="frage-ja" onclick="frageAntwort(true)">Ja, weiter</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PFLICHTABFRAGE KI-KENNZEICHNUNG ══ -->
 <div id="ki-modal-bg">
   <div id="ki-modal">
