@@ -1108,7 +1108,15 @@ const server = http.createServer(async (req, res) => {
   const umleitungStatisch = seitenWeiterleitung(direkteDatei, sess, url);
   if (umleitungStatisch) { res.writeHead(302, { Location: umleitungStatisch }); return res.end(); }
 
-  let fp = path.join(__dirname, "public", url === "/" || !url.includes(".") ? "index.html" : url);
+  // Nichts ausserhalb von public/ ausliefern. Ohne diese Schranke lieferte
+  // ein GET /../.env die Zugangsdaten aus: path.join loest ".." mit auf, und
+  // der Browser reicht ein woertliches ".." unveraendert durch.
+  const WURZEL = path.resolve(__dirname, "public");
+  let fp = path.resolve(path.join(WURZEL, url === "/" || !url.includes(".") ? "index.html" : url));
+  if (fp !== WURZEL && !fp.startsWith(WURZEL + path.sep)) {
+    res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+    return res.end("403 — ausserhalb des oeffentlichen Verzeichnisses");
+  }
   fs.readFile(fp, (err, c) => {
     if (err) {
       const fallback = path.join(__dirname, "public", "index.html");
