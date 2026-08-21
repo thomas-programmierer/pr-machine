@@ -16,14 +16,63 @@ const PORT     = process.env.PORT || 3000;
 const API_KEY  = process.env.ANTHROPIC_API_KEY || "";
 const SESSIONS_FILE = path.join(__dirname, 'sessions.json');
 let SESSIONS = {};
-try {
-  const raw = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+let SESSIONS_GEAENDERT = false;   // seit dem letzten Sichern veraendert?
+
+// Sitzungen beim Start wieder einlesen. Ohne das wirft jedes Deployment alle
+// Angemeldeten hinaus — im Betrieb ist ein Neustart Routine, kein Einzelfall.
+// Ein Lesefehler wird gemeldet, nicht verschluckt: "keine Sitzungen da" und
+// "Datei kaputt" sehen sonst gleich aus.
+(function ladeSessions() {
+  let roh;
+  try {
+    roh = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT')
+      console.log("  \u2139\uFE0F   sessions.json existiert noch nicht \u2014 Start ohne gespeicherte Sitzungen");
+    else
+      console.error("  \u26A0\uFE0F   sessions.json nicht lesbar:", e.name + ':', e.message,
+                    "\u2014 Start ohne gespeicherte Sitzungen");
+    return;
+  }
   const now = Date.now();
-  Object.entries(raw).forEach(([k,v]) => { if (v.expires > now) SESSIONS[k] = v; });
-} catch {}
+  let uebernommen = 0, verworfen = 0;
+  Object.entries(roh || {}).forEach(([k, v]) => {
+    if (v && v.expires > now) { SESSIONS[k] = v; uebernommen++; } else verworfen++;
+  });
+  console.log(`  \u2139\uFE0F   Sitzungen wiederhergestellt: ${uebernommen}` +
+              (verworfen ? `, abgelaufen verworfen: ${verworfen}` : ''));
+})();
+
+// Erst in eine Nebendatei schreiben, dann umbenennen: ein Absturz mitten im
+// Schreiben hinterlaesst sonst eine halbe Datei, und beim naechsten Start
+// waeren alle Sitzungen weg.
 function saveSessions() {
-  try { fs.writeFileSync(SESSIONS_FILE, JSON.stringify(SESSIONS), 'utf8'); } catch {} 
+  const tmp = SESSIONS_FILE + '.tmp';
+  try {
+    fs.writeFileSync(tmp, JSON.stringify(SESSIONS), 'utf8');
+    fs.renameSync(tmp, SESSIONS_FILE);
+    SESSIONS_GEAENDERT = false;
+  } catch (e) {
+    // Nie still verschlucken. Ein Schreibfehler, den niemand sieht, ist die
+    // Vorstufe dazu, dass beim naechsten Neustart alle hinausfliegen.
+    console.error("  \u26A0\uFE0F   sessions.json nicht schreibbar:", e.name + ':', e.message);
+    try { fs.unlinkSync(tmp); } catch {}
+  }
 }
+
+// Regelmaessig sichern, nicht nur beim Anlegen. Geschrieben wird nur, wenn
+// sich etwas geaendert hat — sonst laeuft die Platte fuer nichts.
+const SICHERUNG_TAKT = 60 * 1000;
+setInterval(() => { if (SESSIONS_GEAENDERT) saveSessions(); }, SICHERUNG_TAKT).unref();
+
+// Beim geordneten Beenden noch einmal sichern, damit der letzte Stand steht.
+['SIGINT', 'SIGTERM'].forEach(signal => {
+  process.on(signal, () => {
+    if (SESSIONS_GEAENDERT) saveSessions();
+    console.log(`\n  \u2139\uFE0F   ${signal} \u2014 Sitzungen gesichert, beende.`);
+    process.exit(0);
+  });
+});
 
 const USERS_FILE   = path.join(__dirname, "users.json");
 const POSTS_FILE   = path.join(__dirname, "data", "posts.json");
@@ -63,7 +112,10 @@ const MIME = {
 // ── Sessions ──────────────────────────────────────────────────────────────────
 function createSession(user) {
   const token = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  // Laufzeit bleibt bei 8 Stunden. Das Problem war die Persistenz, nicht die
+  // Dauer — eine laengere Laufzeit wuerde es nur verdecken.
   SESSIONS[token] = { user, expires: Date.now() + 8*60*60*1000 };
+  SESSIONS_GEAENDERT = true;
   saveSessions();
   return token;
 }
@@ -75,7 +127,16 @@ function getToken(req) {
 function getSession(token) {
   if (!token) return null;
   const s = SESSIONS[token];
-  if (!s || s.expires < Date.now()) { delete SESSIONS[token]; saveSessions(); return null; }
+  // Unbekanntes Token: es gibt nichts zu loeschen. Frueher wurde hier
+  // trotzdem gespeichert — jedes veraltete Cookie irgendeines Browsers hat
+  // damit die ganze Datei mit dem Speicherstand ueberschrieben.
+  if (!s) return null;
+  if (s.expires < Date.now()) {
+    delete SESSIONS[token];
+    SESSIONS_GEAENDERT = true;
+    saveSessions();
+    return null;
+  }
   return s;
 }
 
@@ -497,7 +558,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url === "/api/logout") {
     const t = getToken(req);
-    if (t) { delete SESSIONS[t]; saveSessions(); }
+    if (t && SESSIONS[t]) { delete SESSIONS[t]; SESSIONS_GEAENDERT = true; saveSessions(); }
     return jsonRes(res, 200, { ok:true },
       { "Set-Cookie":"session=; HttpOnly; Max-Age=0" });
   }

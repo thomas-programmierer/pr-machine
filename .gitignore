@@ -1,6 +1,8 @@
 downloads/
 uploads/
 sessions.json
+# Zwischendatei des atomaren Schreibens (siehe saveSessions in server.js)
+sessions.json.tmp
 passwords_override.json
 .env
 node_modules/
