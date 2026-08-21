@@ -172,8 +172,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
   <!-- Logo 1:1 aus der Originaldatei des Marketingportals. Hier stand bis zum
        19.08.2026 ein typografischer Nachbau aus Arial-Text und Kreisen. -->
   <div class="tb-logo">
-    <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-         style="height:26px;width:auto;display:block">
+    <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+    <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+         style="height:19.9px;width:auto;display:block">
   </div>
   <div class="tb-tag">⑥ Freigabe</div>
   <div class="tb-right">
@@ -322,10 +323,8 @@ async function init() {
   } catch { redirectLogin(); }
 }
 
-function redirectLogin() {
-  document.getElementById('login-required').style.display = 'flex';
-  setTimeout(() => { window.location.href = '/?screen=freigabe'; }, 2000);
-}
+// Delegiert an die gemeinsame Behandlung, damit alle Seiten gleich reagieren.
+function redirectLogin() { sitzungBeendet(); }
 async function doLogout() {
   await fetch('/api/logout', { method:'POST', credentials:'include' });
   window.location.href = '/';
@@ -616,6 +615,29 @@ function kiChip(p) {
 }
 
 // Klartextzeile fuer das Detailfenster
+// Absenderkennung nach Redaktionsbeschluss vom 21.08.2026.
+// Altbestand ohne Wert wird als Standard 'logo' gelesen — so waren die
+// Motive damals aufgebaut.
+const MARKEN_LABEL = {
+  'logo':      'Logo (zweizeilig)',
+  'fuss':      '"vhs Spandau" mit Programmbereichslinie',
+  'bildmarke': 'Bildmarke (Farbkreise)',
+  'keine':     'keine Absenderkennung'
+};
+const PB_LABEL = {
+  'PB1':'Politik & Gesellschaft', 'PB2':'Kultur & Kreativ', 'PB3':'Gesundheit',
+  'PB4':'Deutsch & Integration',  'PB5':'Fremdsprachen',    'PB6':'Beruf & IT',
+  'PB7':'Grundbildung'
+};
+function markenZeile(p) {
+  const w = p.absenderkennung || 'logo';
+  const t = MARKEN_LABEL[w] || w;
+  if (w !== 'fuss') return esc(t);
+  const pb = p.programmbereich || '';
+  return esc(t) + (pb ? ' \u2014 <b>' + esc(pb) + ' ' + esc(PB_LABEL[pb] || '') + '</b>'
+                      : ' <span style="color:#EB640F">\u2014 Programmbereich fehlt</span>');
+}
+
 function kiZeile(p) {
   const w = kiWert(p);
   if (!w) return '<span style="color:#EB640F">noch nicht entschieden</span>';
@@ -645,6 +667,7 @@ function openDetail(id) {
         ${p.kurs ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Kurs:</span> ${esc(p.kurs)}</div>` : ''}
         ${p.freigegeben_von ? `<div style="grid-column:1/-1"><span style="color:var(--blau60)">Freigegeben von:</span> ${esc(p.freigegeben_von)}</div>` : ''}
         <div style="grid-column:1/-1"><span style="color:var(--blau60)">KI-Kennzeichnung:</span> ${kiZeile(p)}</div>
+        <div style="grid-column:1/-1"><span style="color:var(--blau60)">Absenderkennung:</span> ${markenZeile(p)}</div>
       </div>
     </div>
     ${p.text ? `<div><div class="ml">Post-Text</div><div class="modal-text">${esc(p.text)}</div></div>` : ''}
@@ -745,6 +768,37 @@ async function einreichungLoeschen(id) {
 
 setInterval(ladePosts, 30000);
 window.addEventListener('load', init);
+</script>
+<!-- Einheitliche Behandlung einer beendeten Sitzung. Frueher reagierte jede
+     Seite anders: editor leitete sofort um, freigabe und voransicht zeigten
+     einen Hinweis, kalender, kurse und performance blieben stumm leer stehen.
+     Jetzt ueberall dasselbe: sichtbarer Hinweis, dann zurueck zur Anmeldung —
+     mit Rueckweg auf diese Seite. -->
+<script>
+function hinweisBanner(text, farbe){
+  let el = document.getElementById('sitzung-hinweis');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sitzung-hinweis';
+    el.setAttribute('role','alert');
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 18px;'
+      + "font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;"
+      + 'text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)';
+    document.body.appendChild(el);
+  }
+  el.style.background = farbe || '#EB640F';
+  el.textContent = text;
+  return el;
+}
+let sitzungLaeuftAb = false;
+function sitzungBeendet(){
+  if (sitzungLaeuftAb) return;          // nicht mehrfach ausloesen
+  sitzungLaeuftAb = true;
+  hinweisBanner('Die Sitzung ist abgelaufen. Weiter zur Anmeldung \u2026');
+  setTimeout(function(){
+    location.href = '/?weiter=' + encodeURIComponent(location.pathname + location.search);
+  }, 2200);
+}
 </script>
 </body>
 </html>

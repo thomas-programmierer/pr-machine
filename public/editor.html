@@ -140,6 +140,49 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 #canvas-logo{position:absolute;top:12px;right:12px;pointer-events:none;z-index:9}
 #canvas-logo img{display:block}
 
+/* ── ABSENDERKENNUNG — genau eine je Motiv ── */
+#marke-bild{position:absolute;z-index:9;pointer-events:none;display:none}
+#marke-bild img{display:block}
+#marke-fuss{position:absolute;z-index:9;pointer-events:none;display:none;text-align:right}
+#marke-fuss-text{font-family:'DM Sans',sans-serif;font-weight:700;line-height:1.05;
+  white-space:nowrap;letter-spacing:.1px}
+/* Zweiteilige Linie: heller Vorlauf, Luecke, Programmbereichsfarbe.
+   Rechtsbuendig zur Kernflaeche, deshalb flex-end. */
+#marke-fuss-linie{display:flex;justify-content:flex-end;align-items:flex-start;margin-top:.32em}
+#marke-fuss-linie span{display:block;border-radius:0}
+
+/* Kontrast der Kennung gegen den Untergrund — steht dauerhaft da */
+.marke-kontrast{margin-top:8px;font-size:9px;line-height:1.6}
+.marke-kontrast .mk-zeile{display:flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.55)}
+.marke-kontrast .mk-punkt{width:11px;height:11px;border-radius:3px;flex-shrink:0;
+  border:1px solid rgba(255,255,255,.3)}
+.marke-kontrast .mk-soll{color:rgba(255,255,255,.32)}
+.marke-kontrast .mk-knapp{color:var(--orange);font-weight:700}
+.marke-kontrast .mk-warn{margin-top:5px;color:var(--orange);font-weight:700;
+  line-height:1.55}
+
+/* Auswahl der Absenderkennung */
+.marke-liste{display:flex;flex-direction:column;gap:4px}
+.marke-btn{display:flex;flex-direction:column;gap:1px;align-items:flex-start;
+  padding:7px 9px;border-radius:6px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);cursor:pointer;transition:border-color .15s,background .15s;
+  font-family:inherit;color:inherit;text-align:left;width:100%}
+.marke-btn:hover{border-color:rgba(250,185,15,.5)}
+.marke-btn[aria-checked="true"]{border-color:var(--gelb);background:rgba(250,185,15,.09)}
+.marke-name{font-size:10px;font-weight:700;color:rgba(255,255,255,.88)}
+.marke-sub{font-size:8px;color:rgba(255,255,255,.42);line-height:1.4}
+
+.pb-liste{display:flex;flex-direction:column;gap:3px}
+.pb-btn{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:5px;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;
+  transition:border-color .15s,background .15s;font-family:inherit;color:inherit;
+  text-align:left;width:100%}
+.pb-btn:hover{border-color:rgba(250,185,15,.5)}
+.pb-btn[aria-checked="true"]{border-color:var(--gelb);background:rgba(250,185,15,.09)}
+.pb-punkt{width:22px;height:5px;border-radius:0;flex-shrink:0}
+.pb-name{font-size:9px;font-weight:600;color:rgba(255,255,255,.8)}
+
 /* ── KI-KENNZEICHNUNG nach EU AI Act Art. 50 Abs. 4 ── */
 #ki-block{position:absolute;z-index:9;pointer-events:none;display:none;
   flex-direction:column;gap:2px}
@@ -226,6 +269,13 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 .t-ic{color:var(--gruen)}
 .toast-fehler{border-color:var(--rot)}
 .toast-fehler .t-ic{color:var(--rot)}
+
+/* ══ HINWEIS ZUR ENTWURFSSICHERUNG ══ */
+#entwurf-hinweis{position:absolute;left:50%;transform:translateX(-50%);top:56px;z-index:29;
+  display:none;background:var(--orange);color:#fff;border-radius:8px;padding:9px 13px;
+  font-size:10px;font-weight:700;line-height:1.55;max-width:78%;
+  font-family:'DM Sans',sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5)}
+#entwurf-hinweis .eh-zu{float:right;margin-left:12px;cursor:pointer;opacity:.85}
 
 /* ══ SYMBOLSATZ ══
    Erbt die Schriftfarbe, laeuft dadurch auch auf #00285A. */
@@ -387,8 +437,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
        freigestellt). Kein Nachbau, keine Ersatzmarke. Die Hoehe steuert,
        die Breite folgt aus dem Original. -->
   <div class="tb-logo">
-    <img src="/img/vhs-logo-negativ.svg" alt="vhs Volkshochschule Spandau"
-         style="height:26px;width:auto;display:block">
+    <!-- Hoehe bezieht sich auf das Zeichen: die neue Datei ist randfrei, die fruehere trug 23 % transparenten Rand. -->
+    <img src="/img/vhs-logo-spandau-negativ.svg" alt="vhs Volkshochschule Spandau"
+         style="height:19.9px;width:auto;display:block">
   </div>
   <span class="tb-title">Grafik-Studio</span>
   <span class="tb-tag" id="format-tag">&mdash;</span>
@@ -476,7 +527,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
             <div class="tpl-card on" id="tpl-0" role="radio" aria-checked="true" tabindex="0"
                  aria-label="Vorlage Zitat / Portrait" style="background:#00285A"
                  onclick="loadTemplate(0)" onkeydown="tasteAlsKlick(event)">
-              <div style="position:absolute;top:4px;right:4px"><img src="/img/vhs-logo-negativ.svg" alt="" style="height:6px;width:auto;display:block;opacity:.9"></div>
+              <div style="position:absolute;top:4px;right:4px"><img src="/img/vhs-logo-spandau-negativ.svg" alt="" style="height:4.6px;width:auto;display:block;opacity:.9"></div>
               <div style="margin-top:20px;font-size:6.5px;font-weight:700;color:#fff;line-height:1.25">Zitat / Portrait</div>
               <div class="tpl-active-badge">Aktiv</div>
             </div>
@@ -599,11 +650,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
         </div>
 
         <div class="ab-block">
-          <label class="p-label" for="tf-footer">Fu&szlig;zeile</label>
-          <input class="txt-field" id="tf-footer" type="text" value="vhs Spandau">
-        </div>
-
-        <div class="ab-block">
           <div class="p-label" id="lbl-textfarbe">Textfarbe</div>
           <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-textfarbe">
             <div class="badge-sw on" id="txtsw-0" role="radio" aria-checked="true" tabindex="0"
@@ -702,7 +748,27 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
       <div class="ab-inhalt">
 
         <div class="ab-block">
-          <div class="p-label" id="lbl-linie">Akzentlinie in der Fu&szlig;zeile</div>
+          <div class="p-label" id="lbl-marke">Absenderkennung</div>
+          <p class="ab-hinweis" style="margin-top:0">
+            Genau eine je Motiv. Das EU-KI-Symbol z&auml;hlt nicht dazu und
+            steht zus&auml;tzlich.
+          </p>
+          <div class="marke-liste" id="marken-wahl" role="radiogroup" aria-labelledby="lbl-marke"></div>
+          <div class="marke-kontrast" id="marke-kontrast" aria-live="polite"></div>
+        </div>
+
+        <div class="ab-block" id="pb-gruppe" style="display:none">
+          <div class="p-label" id="lbl-pb">Programmbereich</div>
+          <div class="pb-liste" id="pb-wahl" role="radiogroup" aria-labelledby="lbl-pb"></div>
+          <p class="ab-hinweis">
+            F&auml;rbt den rechten Teil der Linie. Deutsch &amp; Integration und
+            Fremdsprachen teilen sich das Violett &mdash; beim DVV f&auml;llt beides
+            unter &bdquo;Sprachen&ldquo;.
+          </p>
+        </div>
+
+        <div class="ab-block">
+          <div class="p-label" id="lbl-linie">Akzentlinie im Motiv</div>
           <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-linie">
             <div class="badge-sw on" id="linesw-0" role="radio" aria-checked="true" tabindex="0" aria-label="Akzentlinie DVV-Gelb" title="DVV-Gelb" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
             <div class="badge-sw" id="linesw-1" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Orange" title="Orange" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')" onkeydown="tasteAlsKlick(event)"></div>
@@ -726,6 +792,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
             <div class="badge-sw" id="bgsw-2" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Gelb" title="Gelb" style="background:#FAB90F" onclick="setBadgeColor(2,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
             <div class="badge-sw" id="bgsw-3" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Gr&uuml;n" title="Gr&uuml;n" style="background:#AFC805" onclick="setBadgeColor(3,'#AFC805')" onkeydown="tasteAlsKlick(event)"></div>
             <div class="badge-sw" id="bgsw-4" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Blau" title="Blau" style="background:#00285A" onclick="setBadgeColor(4,'#00285A')" onkeydown="tasteAlsKlick(event)"></div>
+            <div class="badge-sw" id="bgsw-5" role="radio" aria-checked="false" tabindex="0" aria-label="St&ouml;rer Programmbereichs-Violett" title="Programmbereichs-Violett" style="background:#7D5AA5" onclick="setBadgeColor(5,'#7D5AA5')" onkeydown="tasteAlsKlick(event)"></div>
           </div>
         </div>
 
@@ -909,12 +976,20 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
         <div class="cl-foto" id="cl-foto"></div>
         <!-- L2 Farbe -->
         <div class="cl-color" id="cl-color" style="background:#00285A;opacity:.72"></div>
-        <!-- L3 vhs-Logo, 1:1 aus der Originaldatei. kein-export: der Renderer
-             ueberspringt dieses SVG; es wird nachtraeglich als Vektor in voller
-             Exportaufloesung gezeichnet (zeichneVektor). -->
-        <div id="canvas-logo" class="kein-export">
-          <img id="canvas-logo-img" src="/img/vhs-logo-negativ.svg"
-               alt="vhs Volkshochschule Spandau" crossorigin="anonymous" style="display:block">
+        <!-- L3 Absenderkennung — genau EINE je Motiv (Beschluss 21.08.2026).
+             Variante logo/bildmarke: Bilddatei, 1:1 aus dem Original.
+             kein-export: der Renderer ueberspringt sie, zeichneVektor traegt
+             sie in voller Exportaufloesung nach. -->
+        <div id="marke-bild" class="kein-export" aria-hidden="true">
+          <img id="canvas-logo-img" src="" alt="" crossorigin="anonymous" style="display:block">
+        </div>
+        <!-- Variante fuss: Schriftzug ueber zweiteiliger Programmbereichslinie.
+             Reiner DOM-Inhalt, den der Renderer selbst abbildet. -->
+        <div id="marke-fuss" aria-hidden="true">
+          <div id="marke-fuss-text">vhs Spandau</div>
+          <div id="marke-fuss-linie">
+            <span id="linie-hell"></span><span id="linie-farbe"></span>
+          </div>
         </div>
         <!-- L4 Text-Block (verschiebbar, auch per Tastatur) -->
         <div id="text-block" class="selected" tabindex="0" role="application"
@@ -928,13 +1003,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
         <div id="badge-block">
           <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
         </div>
-        <!-- L6 Fusszeile -->
+        <!-- L6 Akzentlinie. Der frueher hier stehende Schriftzug "vhs Spandau"
+             ist entfallen: er war eine zweite Absendernennung neben dem Logo
+             und damit genau die Doppelnennung, die der Beschluss abstellt.
+             Die Linie bleibt als Gestaltungselement, sie ist keine Kennung. -->
         <div id="footer-block">
-          <div style="height:1px;background:rgba(255,255,255,.18);margin-bottom:5px"></div>
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
-            <div id="tb-footer" style="font-family:'DM Sans',sans-serif;font-size:9px;color:rgba(255,255,255,.6)">vhs Spandau</div>
-          </div>
-          <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px;margin-top:3px"></div>
+          <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px"></div>
         </div>
         <!-- L6b KI-Kennzeichnung nach EU AI Act Art. 50 -->
         <div id="ki-block" aria-hidden="true">
@@ -955,6 +1029,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     <div id="safe-legend" class="kein-export"></div>
     <div id="safe-status" class="kein-export"></div>
     <div id="export-fehler" class="kein-export"></div>
+    <div id="entwurf-hinweis" class="kein-export"></div>
   </div>
 
 </div>
@@ -1146,26 +1221,18 @@ function schneidet(a,b,tol){
 // ist, ergibt dieser Bezug in jedem Format denselben Anteil an der kurzen
 // Bildkante — unabhaengig davon, wie gross der Rahmen auf dem Bildschirm
 // gerade ist.
+// Bezugskante fuer die KI-Symbolgroesse: KI_BEZUG Exportpixel, umgerechnet in
+// Anzeigepixel. Frueher war es die kurze Kante des jeweiligen Formats —
+// dadurch schrumpfte das Symbol bei flachen Formaten. Mit fester Bezugskante
+// ergibt der Standardwert 6 % in jedem Format dieselben 65 px.
 function kiKurzeKante(){
-  const rahmen=document.getElementById('canvas-frame');
-  if(rahmen && rahmen.offsetWidth) return Math.min(rahmen.offsetWidth, rahmen.offsetHeight);
-  const d=anzeigeMasse(aktFormat());
-  return Math.min(d.w,d.h);
+  return KI_BEZUG * anzeigeFaktor(aktFormat());
 }
 
-// vhs-Logo: Originaldatei, Zuschnitt 47 100 385 78 -> Verhaeltnis 4,9359 : 1.
-// Die Breite wird daraus berechnet, nie gesetzt — sonst waere die Marke
-// verzerrt. 6,5 % der kurzen Kante entsprechen 70 px Hoehe im Export.
-const LOGO_RATIO   = 4.9359;
-const LOGO_ANTEIL  = 6.5;
-
-function renderLogo(){
-  const img=document.getElementById('canvas-logo-img');
-  if(!img) return;
-  const H=kiKurzeKante()*LOGO_ANTEIL/100;
-  img.style.height=H.toFixed(2)+'px';
-  img.style.width=(H*LOGO_RATIO).toFixed(2)+'px';
-}
+// Die Absenderkennung wird von renderMarke gesetzt (Abschnitt
+// ABSENDERKENNUNG weiter unten). renderLogo bleibt als Name bestehen, damit
+// die vorhandenen Aufrufstellen unveraendert weiterlaufen.
+function renderLogo(){ renderMarke(); }
 
 // ═══════════════════════════════════════════════════════════════
 // KI-KENNZEICHNUNG — EU AI Act Art. 50 Abs. 4, verbindlich seit 02.08.2026
@@ -1616,29 +1683,35 @@ const TEMPLATES=[
    headline:'Ich wollte immer die Welt sehen. Wenn mich jemand fragte, was ich mal werden möchte, antwortete ich: Kapitänin auf einem Schiff.',
    hlsize:15,sub:'',subsize:11,tbWidth:88,
    author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
-   footer:'vhs Spandau',badge:'',badgeVis:false,
+   badge:'',badgeVis:false,
    lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
-   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
+   marke:'logo',pb:'PB1',
+   ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:140},
   {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
-   author:'',role:'',footer:'vhs Spandau',badge:'',badgeVis:false,
+   author:'',role:'',badge:'',badgeVis:false,
    lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
-   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
+   marke:'bildmarke',pb:'PB1',
+   ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:160},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Baskisch vom Sofa \u2013 mit Dir als Coach.',hlsize:19,
    sub:'Starte ab September 2026 als Online-Kursleitung an der VHS Spandau.',subsize:12,tbWidth:88,
-   author:'',role:'',footer:'vhs Fremdsprachen',badge:'Wir suchen Dich!',badgeVis:true,
-   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
-   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
+   author:'',role:'',badge:'Wir suchen Dich!',badgeVis:true,
+   // Programmbereichs-Violett #7D5AA5 statt des frueheren #5B2D8E — das war
+   // ein Fehler im Bestand; die Vorlage gehoert zu Fremdsprachen (PB5).
+   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#7D5AA5',colorIdx:0,
+   marke:'fuss',pb:'PB5',
+   ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:120},
   {bg:'#00285A',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
    sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
-   author:'',role:'',footer:'vhs Politik | Gesellschaft | Umwelt',badge:'',badgeVis:false,
+   author:'',role:'',badge:'',badgeVis:false,
    lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
-   ki:{typ:'',groesse:6,pos:'fl',variante:'auto',transparent:false,hinweis:false},
+   marke:'fuss',pb:'PB1',
+   ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:130},
 ];
 
@@ -1702,6 +1775,10 @@ window.addEventListener('load', async () => {
     if (nav)    nav.style.display    = 'none';
   }
 
+  // Einen gesicherten Entwurf VOR allem anderen lesen: der erste
+  // Verlaufseintrag wuerde ihn sonst mit dem frischen Stand ueberschreiben.
+  const entwurfPaket = entwurfLesen();
+
   // URL-Parameter (Fallback für direkten /editor?… Aufruf)
   const qp       = new URLSearchParams(window.location.search);
   const inHL     = qp.get('hl')       || '';
@@ -1716,7 +1793,7 @@ window.addEventListener('load', async () => {
   // Auth
   try {
     const r = await fetch('/api/me', { credentials: 'include' });
-    if (!r.ok) { if (!isInIframe) window.location.href = '/'; return; }
+    if (!r.ok) { if (!isInIframe) sitzungBeendet(); return; }
     const d = await r.json();
     if (!isInIframe) {
       // Kanonische Nav nur im Standalone-Modus aufbauen
@@ -1744,10 +1821,12 @@ window.addEventListener('load', async () => {
         `<span class="ext-nav-user"><svg class="ic ic-14" aria-hidden="true"><use href="#i-person"/></svg> ${d.user.name.split(' ')[0]}</span>` +
         `<button class="ext-logout-btn" onclick="doLogout()">Abmelden</button>`;
     }
-  } catch(e) { if (!isInIframe) window.location.href = '/'; return; }
+  } catch(e) { if (!isInIframe) sitzungBeendet(); return; }
 
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
   baueFormatKacheln();
+  baueMarkenwahl();
+  markenVorladen();
   verdrahteBedienelemente();
   // Format zuerst: es bestimmt Rahmenmasse, Schriftgroessen und Positionen.
   // ?format= nimmt Key, Anzeigename und die Alt-Kennungen 9:16 / 1:1 / 16:9.
@@ -1782,9 +1861,16 @@ window.addEventListener('load', async () => {
   // wohin der erste Klick auf Rueckgaengig zurueckfuehren koennte.
   zeichneSafeWerte();
   pruefeKanal();
+  markenwahlSetzen();
+  fotoMittelNeu();
+  renderMarke();
   aktualisiereZusammenfassungen();
   verlauf=[]; zeiger=-1;
   pushZustand('Ausgangszustand');
+
+  // Der frische Stand dient als Vergleich: nur was davon abweicht, ist ein
+  // Entwurf, der eine Rueckfrage wert ist.
+  await entwurfAnbieten(entwurfPaket, verlauf[0].daten);
 });
 
 async function doLogout() {
@@ -2035,7 +2121,8 @@ function kollisionMelden(){
 // gemeldet, nicht bewegt — die Platzierung der Marke ist eine
 // Designentscheidung und gehoert nicht in eine Automatik.
 const FESTE_EBENEN=[{id:'canvas-logo-img',name:'vhs-Logo'},
-                    {id:'tb-footer',name:'Fußzeile'},
+                    {id:'marke-bild',name:'Absenderkennung'},
+                    {id:'marke-fuss',name:'Absenderkennung'},
                     {id:'ki-block',name:'KI-Symbol'}];
 function festeEbenenKonflikt(f){
   const aus=[];
@@ -2077,18 +2164,24 @@ function kiPlatziere(blk, symbolHoehe){
 
   const ecken={
     ol:    {x:links,      y:oben},
+    or:    {x:rechts-bw,  y:oben},
     fl:    {x:links,      y:unten-bh},
     story: {x:links,      y:unten-bh},
     ur:    {x:rechts-bw,  y:unten-bh}
   };
-  let p=ecken[KI.pos]||ecken.fl;
-
-  // Sperrflaechen des Formats beruecksichtigen: in der Story liegt unten
-  // rechts die Aktionsleiste, dort wird nach unten links ausgewichen.
+  // Sperrflaechen des Formats und die Absenderkennung beruecksichtigen: in
+  // der Story liegt unten rechts die Aktionsleiste, bei der Variante "fuss"
+  // steht dort der Schriftzug. Das Symbol weicht aus, statt zu ueberdecken.
   const k=exportFaktor(f);
-  const belegt=(f.zonen||[]).some(z=>schneidet(
-    {x:p.x*k, y:p.y*k, w:bw*k, h:bh*k}, z));
-  if(belegt) p=ecken.fl;
+  const hindernisse=(f.zonen||[]).slice();
+  const marke=markeRechteck();
+  if(marke) hindernisse.push(marke);
+  const frei = e => !hindernisse.some(z => schneidet(
+    {x:e.x*k, y:e.y*k, w:bw*k, h:bh*k}, z, -KOLLISION_TOLERANZ));
+
+  // Wunschecke zuerst, dann in fester Reihenfolge ausweichen.
+  const reihe=[KI.pos, 'ur', 'fl', 'ol', 'or'].filter((v,i,a)=>ecken[v] && a.indexOf(v)===i);
+  let p = reihe.map(v=>ecken[v]).find(frei) || ecken[KI.pos] || ecken.fl;
 
   const px=Math.max(links, Math.min(rechts-bw, p.x));
   const py=Math.max(oben,  Math.min(unten-bh,  p.y));
@@ -2122,7 +2215,6 @@ function loadTemplate(idx){
   document.getElementById('tf-sub').value=t.sub;
   document.getElementById('tf-author').value=t.author;
   document.getElementById('tf-role').value=t.role;
-  document.getElementById('tf-footer').value=t.footer;
   document.getElementById('tf-badge').value=t.badge;
   document.getElementById('badge-vis').checked=t.badgeVis;
   // Die Schriftgroessen der Vorlage beziehen sich auf die Rahmenhoehe 480
@@ -2132,6 +2224,8 @@ function loadTemplate(idx){
   document.getElementById('sl-tbwidth').value=t.tbWidth||88;
 
   lineColor=t.lineColor; badgeColor=t.badgeColor; textColor=t.textColor;
+  markeKey=t.marke||'logo'; pbKey=t.pb||'PB1';
+  markenwahlSetzen();
   syncLineSwatches(t.lineColor); syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
 
   // Textblock platzieren. Die Vorlagenwerte stammen aus dem Story-Rahmen
@@ -2177,6 +2271,7 @@ function setOverlayColorDirect(idx,hex,name){
   markiereAuswahl('.dvv-sw', idx);
   document.getElementById('cl-color').style.background=hex;
   updateBadgeLabel();
+  renderMarke();
   renderKI();
 }
 function setOverlayColor(idx,hex,name){
@@ -2209,6 +2304,7 @@ function updateOpacity(v){
   document.getElementById('cl-color').style.opacity=v/100;
   document.getElementById('sv-opacity').textContent=v+'%';
   updateBadgeLabel();
+  renderMarke();
   renderKI();
 }
 function updateBadgeLabel(){
@@ -2224,6 +2320,8 @@ function updatePhotoFilter(){
   document.getElementById('sv-sat').textContent=s+'%';
   document.getElementById('sv-contrast').textContent=c+'%';
   document.getElementById('cl-foto').style.filter=`brightness(${b}%) saturate(${s}%) contrast(${c}%)`;
+  fotoMittelNeu();     // Filter aendern den Mittelwert unter der Kennung
+  renderMarke();
   renderKI();
 }
 
@@ -2235,7 +2333,6 @@ function updateText(){
   const sub=document.getElementById('tf-sub').value;
   const author=document.getElementById('tf-author').value;
   const role=document.getElementById('tf-role').value;
-  const footer=document.getElementById('tf-footer').value;
   const badge=document.getElementById('tf-badge').value;
   const badgeOn=document.getElementById('badge-vis').checked;
   const hlsize=Math.round(document.getElementById('sl-hlsize').value);
@@ -2275,9 +2372,7 @@ function updateText(){
   document.getElementById('tb-role').style.color=tc75;
   document.getElementById('tb-role').style.display=role?'block':'none';
 
-  // Footer
-  document.getElementById('tb-footer').textContent=footer;
-  document.getElementById('tb-footer').style.color=tc75;
+  // Akzentlinie (keine Absenderkennung, nur Gestaltung)
   document.getElementById('footer-line').style.background=lineColor;
 
   // Badge
@@ -2318,7 +2413,9 @@ function updateText(){
 // FARB-SWATCHES SYNC
 // ═══════════════════════════════════════════════════════════════
 const LINIEN_FARBEN=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
-const STOERER_FARBEN=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A'];
+// #7D5AA5 ist neu dazugekommen: das Programmbereichs-Violett aus dem
+// DVV-Piktogramm 02_Sprache. Es ersetzt nichts, es kommt hinzu.
+const STOERER_FARBEN=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A','#7D5AA5'];
 const TEXT_FARBEN=['#fff','#00285A','#FAB90F','#E6EBF0'];
 
 function setLineColor(idx,col){
@@ -2471,6 +2568,14 @@ async function exportPNG(){
   // niemand das Layout nochmal an.
   if(!await kiAbfrage()) return;
   exportFehlerVerbergen();
+  // Riegel: Kennung, Linie und KI-Symbol muessen in der Kernflaeche liegen
+  // und duerfen einander nicht ueberlappen.
+  const maengel=pruefeKennungen();
+  if(maengel.length){
+    exportFehlerZeigen(maengel.join(' '));
+    showToast('Export abgebrochen','i-fehler');
+    return;
+  }
   showToast('Wird erstellt …','i-bild');
   const f=aktFormat();
   const frame=document.getElementById('canvas-frame');
@@ -2489,6 +2594,8 @@ async function exportPNG(){
     link.href=url;
     link.click();
     setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    // Fertig exportiert: der Zwischenstand wird nicht mehr gebraucht.
+    entwurfVerwerfen();
     showToast('PNG gespeichert — '+f.w+' × '+f.h+' px','i-haken');
   }catch(err){
     console.error('[export]', err);
@@ -2502,6 +2609,12 @@ async function exportPNG(){
 async function exportUndFreigabe() {
   if(!await kiAbfrage()) return;
   exportFehlerVerbergen();
+  const maengel=pruefeKennungen();
+  if(maengel.length){
+    exportFehlerZeigen(maengel.join(' '));
+    showToast('Export abgebrochen','i-fehler');
+    return;
+  }
   const btn = document.getElementById('btn-freigabe-submit');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ PNG wird erstellt …'; }
 
@@ -2555,6 +2668,9 @@ async function exportUndFreigabe() {
     autorId: payload.autorId || '',
     eingereicht: true,
     kiKennzeichnung: kiFuerPost(),
+    // Absenderkennung nach Beschluss vom 21.08.2026
+    absenderkennung: markeKey,
+    programmbereich: markeKey==='fuss' ? pbKey : '',
   };
 
   try {
@@ -2564,6 +2680,7 @@ async function exportUndFreigabe() {
       body: JSON.stringify(post)
     });
     if (r.ok) {
+      entwurfVerwerfen();     // eingereicht, der Zwischenstand ist erledigt
       showToast('Grafik eingereicht — weiter zur Voransicht','i-haken');
       setTimeout(() => { window.location.href = '/voransicht'; }, 1200);
     } else {
@@ -2628,6 +2745,627 @@ async function resetEditor(){
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ABSENDERKENNUNG — Redaktionsbeschluss vom 21.08.2026
+// ═══════════════════════════════════════════════════════════════
+// Kernregel: pro Motiv steht GENAU EINE Absenderkennung im Bild. Die vier
+// Varianten schliessen einander aus — deshalb blendet renderMarke() erst
+// alles aus und dann genau eine Variante ein.
+// Das EU-KI-Symbol zaehlt NICHT als Kennung: es erfuellt eine andere Pflicht
+// (Art. 50 AI Act) und steht zusaetzlich.
+// Alle Kennungen sitzen innerhalb der Kernflaeche aus FORMATS.safe.
+
+const LUFT = 30;             // Exportpixel Abstand zur Kernflaechenkante
+
+// Groessen in Exportpixeln, konstant ueber alle Formate. Die HOEHE steuert,
+// die Breite folgt aus der Originaldatei — deshalb steht an den Bilddateien
+// width:auto und kein gerechneter Wert.
+const MARKE_HOEHE   = 70;    // Logo und Bildmarke
+const FUSS_SCHRIFT  = 46;    // "vhs Spandau"
+const LINIE_STAERKE = 5;     // Programmbereichslinie
+// Bezugskante fuer die KI-Symbolgroesse. Frueher war das die kurze Kante des
+// jeweiligen Formats — dadurch schrumpfte das Symbol bei flachen Formaten.
+// Mit fester Bezugskante ergibt der Standardwert 6 % in JEDEM Format 65 px.
+const KI_BEZUG = 1080;
+
+// REGEL FUER ALLE BILDMARKEN: vor der Verwendung auf den Bildinhalt
+// beschneiden. Transparenter Rand in der Quelldatei macht jede Groessenregel
+// wirkungslos — wer die ganze Datei auf 70 px skaliert, bekommt ein zu
+// kleines, verschobenes Zeichen, ohne dass etwas fehlerhaft aussieht.
+// Wo eine Datei nicht beschnitten vorliegt, steht ihre Inhaltsbox hier:
+//   inhalt = Lage und Groesse des sichtbaren Zeichens als Anteil der Datei.
+//   verhaeltnis = Breite zu Hoehe der DATEI (nicht des Inhalts).
+// Beide Werte einmal gemessen und hier festgehalten; renderMarke rechnet
+// daraus die Skalierung und den Versatz.
+const INHALT_VOLL = { x:0, y:0, w:1, h:1 };   // Datei ist bereits beschnitten
+
+const MARKEN=[
+  { key:'logo', kurz:'Logo', label:'Logo (Standard)',
+    beschreibung:'offizielles Logo, zweizeilig',
+    datei:{
+      // Beschnittene Fassung: 1858 x 310 px, nur transparenter Rand entfernt.
+      hell:  { pfad:'/img/vhs-logo-spandau-positiv.png',
+               verhaeltnis:5.9935, inhalt:INHALT_VOLL },
+      // Aus der DVV-Vorlage vhs_logo_negativ-editierbar-horizontal_RGB.eps,
+      // Ortsname eingesetzt, Text in Kurven umgewandelt, viewBox auf den
+      // Inhalt beschnitten: 38 Pfade, keine Schrift, kein eingebettetes
+      // Raster — damit schriftunabhaengig wie die Positivfassung.
+      // Die beiden Verhaeltnisse unterscheiden sich um 0,15 %; Ursache ist die
+      // Aufloesung der Quellen (Positiv aus einem 3475 px breiten PNG, Negativ
+      // aus einem Vektor). Jede Datei behaelt ihren gemessenen Wert.
+      dunkel:{ pfad:'/img/vhs-logo-spandau-negativ.svg',
+               verhaeltnis:6.0025, inhalt:INHALT_VOLL }
+    } },
+
+  { key:'fuss', kurz:'Fußzeile', label:'"vhs Spandau" mit Programmbereichslinie',
+    beschreibung:'Schriftzug über zweiteiliger Linie' },
+
+  { key:'bildmarke', kurz:'Bildmarke', label:'Bildmarke',
+    beschreibung:'nur die Farbkreise',
+    datei:{
+      // Aus <g id="Signet"> der offiziellen Logo-SVG freigestellt, viewBox
+      // exakt auf die Aussenmasse der Gruppe — daher ohne Rand.
+      hell:  { pfad:'/img/vhs-signet-positiv.svg', verhaeltnis:1.00687, inhalt:INHALT_VOLL },
+      dunkel:{ pfad:'/img/vhs-signet-negativ.svg', verhaeltnis:1.00587, inhalt:INHALT_VOLL }
+    } },
+
+  { key:'keine', kurz:'keine', label:'keine Absenderkennung',
+    beschreibung:'Motiv ohne Absender' }
+];
+
+// Quelle: die offiziellen DVV-Piktogramme aus dem Logopaket,
+// LOGO VHS Spandau\Logo Paket\vhs_Piktogramm-0*_positiv_RGB.png
+// (1000 x 1000 px, 21.03.2023). Jeder Wert einmal aus der Datei ausgelesen
+// und hier festgehalten. Die frueher genutzte Uebersichtsgrafik
+// Programmbereiche.webp ist komprimiert und lieferte abweichende Werte —
+// sie ist nicht mehr massgeblich.
+//
+// Die Piktogramme sind ausschliesslich Farbquelle. Ihre Zeichen kommen
+// nicht ins Motiv.
+//
+// Zuordnung Programmbereich -> Piktogramm:
+//   PB1 <- 05_Gesellschaft   PB2 <- 04_Kultur     PB3 <- 03_Gesundheit
+//   PB4 <- 02_Sprache        PB5 <- 02_Sprache    PB6 <- 01_Beruf
+//   PB7 <- 06_Grundbildung
+// PB4 teilt sich das Violett mit PB5: beim DVV faellt beides unter "Sprachen",
+// es gibt dort nur ein Piktogramm.
+// (07_Schulabschluesse, #F7A746, hat in dieser Liste keinen Platz.)
+//
+// ACHTUNG fuer kuenftige Pruefroutinen: PB2 (#E1000F) und PB7 (#FAB90F) sind
+// identisch mit den CI-Farben Rot und Gelb. Das ist gewollt, kein Konflikt.
+const PB=[
+  { key:'PB1', name:'Politik & Gesellschaft', farbe:'#EB640F' },
+  { key:'PB2', name:'Kultur & Kreativ',       farbe:'#E1000F' },
+  { key:'PB3', name:'Gesundheit',             farbe:'#AFC805' },
+  { key:'PB4', name:'Deutsch & Integration',  farbe:'#7D5AA5' },
+  { key:'PB5', name:'Fremdsprachen',          farbe:'#7D5AA5' },
+  { key:'PB6', name:'Beruf & IT',             farbe:'#64B9E6' },
+  { key:'PB7', name:'Grundbildung',           farbe:'#FAB90F' }
+];
+
+// Zweiteilige Linie, nachgemessen bei 1080 x 1350. Die Laengen sind Anteile
+// der BILDBREITE, die Staerke ist konstant.
+//   heller Vorlauf   6,0 %
+//   Luecke           0,46 %
+//   Programmbereich 12,2 %      -> hell : farbig = 1 : 2,03
+// Anmerkung: die drei Anteile ergeben zusammen 18,66 %. Der Beschluss nennt
+// 18,5 % Gesamtlaenge. Gerechnet wird aus den Einzelwerten, damit Vorlauf,
+// Luecke und Farbe exakt im beschlossenen Verhaeltnis zueinander stehen.
+const LINIE={ hell:0.060, luecke:0.0046, farbe:0.122 };
+
+let markeKey='logo';
+let pbKey='PB1';
+
+function markeIndex(k){
+  const i=MARKEN.findIndex(m=>m.key===k);
+  return i>=0 ? i : 0;                       // Altbestand ohne Wert -> 'logo'
+}
+function aktMarke(){ return MARKEN[markeIndex(markeKey)]; }
+function pbIndex(k){
+  const i=PB.findIndex(p=>p.key===k);
+  return i>=0 ? i : 0;
+}
+function aktPB(){ return PB[pbIndex(pbKey)]; }
+
+// ── Leuchtdichte und Kontrast nach WCAG ───────────────────────────────
+// Die frueher genutzte einfache Helligkeit rechnete auf den Rohwerten und
+// ignorierte die Gammakodierung. Sie lieferte an der Grenze willkuerliche
+// Ergebnisse: #69829B lag 0,004 von der Schwelle entfernt. Jetzt wird die
+// Relativleuchtdichte gerechnet und daraus das Kontrastverhaeltnis —
+// dieselbe Groesse, die WCAG fuer grafische Elemente mit 3:1 fordert.
+function hexZuRgb(hex){
+  const h=String(hex||'#000').replace('#','');
+  const v=h.length===3 ? h.split('').map(c=>c+c).join('') : h;
+  return { r:parseInt(v.slice(0,2),16), g:parseInt(v.slice(2,4),16), b:parseInt(v.slice(4,6),16) };
+}
+function rgbZuHex(r,g,b){
+  const t=v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0');
+  return ('#'+t(r)+t(g)+t(b)).toUpperCase();
+}
+function kanalLinear(v){
+  const c=v/255;
+  return c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+}
+function leuchtdichte(hex){
+  const c=hexZuRgb(hex);
+  return 0.2126*kanalLinear(c.r) + 0.7152*kanalLinear(c.g) + 0.0722*kanalLinear(c.b);
+}
+function kontrast(a,b){
+  const la=leuchtdichte(a), lb=leuchtdichte(b);
+  return (Math.max(la,lb)+0.05) / (Math.min(la,lb)+0.05);
+}
+// Fuer den hellen Vorlauf der Programmbereichslinie: liest sich Weiss oder
+// Schwarz besser auf diesem Grund?
+function istDunkel(hex){ return kontrast(hex,'#FFFFFF') >= kontrast(hex,'#000000'); }
+
+// ── Farbabstand nach CIEDE2000 ────────────────────────────────────────
+// WCAG-Kontrast misst ausschliesslich Helligkeit. Die Kreise der Bildmarke
+// unterscheiden sich vom Untergrund aber ueberwiegend im FARBTON: ein roter
+// Kreis auf orangem Grund hat fast dieselbe Leuchtdichte und ist trotzdem
+// sofort sichtbar. Das 3:1-Kriterium stammt aus der Lesbarkeit von Text und
+// ist fuer 70 px grosse Vollkreise das falsche Werkzeug — genau deshalb nimmt
+// WCAG 2.1 SC 1.4.11 Logos aus.
+// Weg: sRGB -> linear -> XYZ (D65) -> CIELab -> dE2000.
+// Gegen die 34 Pruefpaare aus Sharma, Wu & Dalal (2005) verifiziert,
+// groesste Abweichung 0,00005.
+const D65 = { x:0.95047, y:1.00000, z:1.08883 };
+
+function hexZuLab(hex){
+  const c=hexZuRgb(hex);
+  const r=kanalLinear(c.r), g=kanalLinear(c.g), b=kanalLinear(c.b);
+  const X=0.4124564*r + 0.3575761*g + 0.1804375*b;
+  const Y=0.2126729*r + 0.7151522*g + 0.0721750*b;
+  const Z=0.0193339*r + 0.1191920*g + 0.9503041*b;
+  const f=t => t > 216/24389 ? Math.cbrt(t) : (841/108)*t + 4/29;
+  const fx=f(X/D65.x), fy=f(Y/D65.y), fz=f(Z/D65.z);
+  return { L:116*fy - 16, a:500*(fx-fy), b:200*(fy-fz) };
+}
+
+function de2000(p, q){
+  const grad=Math.PI/180;
+  const C1=Math.hypot(p.a,p.b), C2=Math.hypot(q.a,q.b);
+  const Cb=(C1+C2)/2;
+  const Cb7=Math.pow(Cb,7);
+  const G=0.5*(1 - Math.sqrt(Cb7/(Cb7 + Math.pow(25,7))));
+  const a1=(1+G)*p.a, a2=(1+G)*q.a;
+  const C1p=Math.hypot(a1,p.b), C2p=Math.hypot(a2,q.b);
+  const winkel=(a,b)=>{
+    if(a===0 && b===0) return 0;
+    const h=Math.atan2(b,a)/grad;
+    return h<0 ? h+360 : h;
+  };
+  const h1=winkel(a1,p.b), h2=winkel(a2,q.b);
+
+  const dL=q.L-p.L;
+  const dC=C2p-C1p;
+  let dh=0;
+  if(C1p*C2p !== 0){
+    dh=h2-h1;
+    if(dh>180) dh-=360; else if(dh<-180) dh+=360;
+  }
+  const dH=2*Math.sqrt(C1p*C2p)*Math.sin(dh*grad/2);
+
+  const Lb=(p.L+q.L)/2;
+  const Cbp=(C1p+C2p)/2;
+  let hb;
+  if(C1p*C2p === 0){
+    hb=h1+h2;
+  } else {
+    const sum=h1+h2;
+    hb = Math.abs(h1-h2) > 180 ? (sum < 360 ? (sum+360)/2 : (sum-360)/2) : sum/2;
+  }
+
+  const T = 1 - 0.17*Math.cos((hb-30)*grad)
+              + 0.24*Math.cos((2*hb)*grad)
+              + 0.32*Math.cos((3*hb+6)*grad)
+              - 0.20*Math.cos((4*hb-63)*grad);
+  const dTheta = 30*Math.exp(-Math.pow((hb-275)/25, 2));
+  const Cbp7 = Math.pow(Cbp,7);
+  const RC = 2*Math.sqrt(Cbp7/(Cbp7 + Math.pow(25,7)));
+  const SL = 1 + (0.015*Math.pow(Lb-50,2))/Math.sqrt(20 + Math.pow(Lb-50,2));
+  const SC = 1 + 0.045*Cbp;
+  const SH = 1 + 0.015*Cbp*T;
+  const RT = -Math.sin(2*dTheta*grad)*RC;
+
+  return Math.sqrt(Math.pow(dL/SL,2) + Math.pow(dC/SC,2) + Math.pow(dH/SH,2)
+                   + RT*(dC/SC)*(dH/SH));
+}
+
+function farbabstand(a,b){ return de2000(hexZuLab(a), hexZuLab(b)); }
+
+// ── Untergrund an der Kennungsstelle ──────────────────────────────────
+// Das ist die Farbflaeche mit ihrer Deckkraft ueber dem Foto. Liegt kein Foto
+// darunter, wird ueber Weiss gemischt: das exportierte PNG traegt dort
+// Transparenz und landet ueblicherweise auf hellem Grund.
+let fotoBild=null, fotoMittel=null;
+function fotoMittelRechnen(){
+  if(!fotoBild || !fotoBild.naturalWidth){ fotoMittel=null; return; }
+  const c=document.createElement('canvas'); c.width=16; c.height=16;
+  const g=c.getContext('2d');
+  // Dieselben Filter wie im Motiv — Canvas2D versteht dieselbe Schreibweise.
+  const ebene=document.getElementById('cl-foto');
+  g.filter=(ebene && ebene.style.filter) || 'none';
+  g.drawImage(fotoBild,0,0,16,16);
+  const d=g.getImageData(0,0,16,16).data;
+  let r=0,gr=0,b=0,z=0;
+  for(let i=0;i<d.length;i+=4){ r+=d[i]; gr+=d[i+1]; b+=d[i+2]; z++; }
+  fotoMittel={ r:Math.round(r/z), g:Math.round(gr/z), b:Math.round(b/z) };
+}
+function fotoMittelNeu(){
+  if(!fotoDataUrl){ fotoBild=null; fotoMittel=null; return; }
+  if(!fotoBild || fotoBild.src!==fotoDataUrl){
+    fotoBild=new Image();
+    fotoBild.onload=()=>{ fotoMittelRechnen(); renderMarke(); };
+    fotoBild.src=fotoDataUrl;
+    return;
+  }
+  fotoMittelRechnen();
+}
+function grundfarbe(){
+  const op=(parseFloat(feldWert('sl-opacity'))||100)/100;
+  const unten = fotoMittel || { r:255, g:255, b:255 };
+  const oben = hexZuRgb(activeColor);
+  return rgbZuHex(oben.r*op + unten.r*(1-op),
+                  oben.g*op + unten.g*(1-op),
+                  oben.b*op + unten.b*(1-op));
+}
+
+// ── Bewertung der Kennungsvarianten ───────────────────────────────────
+// Massgeblich ist der SCHWAECHSTE Bestandteil. Beim Schriftzug ist das die
+// Zeile "Volkshochschule": ein Mittelton, der auf mittelhellem Grund stirbt,
+// waehrend "vhs" und "Spandau" noch lesbar sind. Werte aus den Dateien
+// ausgelesen, nicht geschaetzt.
+const LOGO_TEXT = {
+  dunkel: ['#FFFFFF','#A6B6C5'],   // vhs-logo-spandau-negativ.svg
+  hell:   ['#04295A','#69829B']    // vhs-logo-spandau-positiv.png
+};
+// Flaechenanteile der Kreise, aus der Vektordatei bestimmt: das Signet in
+// 1600 px gerendert und die Pixel je Farbe gezaehlt. Das erfasst die
+// SICHTBARE Flaeche und damit auch die Ueberlappungen, die in der Marke
+// eigene Mischfarben bilden (#285082, #8C0A23, #E19100 bzw. ihre
+// Negativ-Entsprechungen). Gegengeprueft bei 900 und 2400 px, groesste
+// Abweichung 0,0004. Auf Summe 1 normiert, die ~0,2 % Kantenglaettung sind
+// anteilig verteilt. Die Werte aendern sich nie — die Marke ist fest.
+const SIGNET_FLAECHE = {
+  hell: {   // vhs-signet-positiv.svg
+    '#FAB90F':0.3022, '#E1000F':0.2554, '#00285A':0.2136, '#1E73AF':0.0906,
+    '#64B9E6':0.0570, '#EB640F':0.0403, '#285082':0.0173, '#8C0A23':0.0161,
+    '#E19100':0.0075
+  },
+  dunkel: { // vhs-signet-negativ.svg
+    '#FAB90F':0.3019, '#E1000F':0.2555, '#D9DFE6':0.2021, '#1E73AF':0.0905,
+    '#64B9E6':0.0569, '#EB690F':0.0403, '#83C9F0':0.0173, '#D29AA8':0.0162,
+    '#F2F4F7':0.0116, '#FFE270':0.0075
+  }
+};
+
+// Zwei Masse, weil zwei verschiedene Dinge beurteilt werden.
+//
+// SCHRIFTZUG: Leuchtdichte-Kontrast, Richtwert 3,0. Das ist Text, jedes Wort
+// ist zur Identifikation noetig, und WCAG ist hier das richtige Mass.
+//
+// BILDMARKE: Farbabstand dE2000, Schwelle 11, gewichtet nach Flaeche.
+// Begruendung: WCAG 2.1 SC 1.4.11 nimmt Logos ausdruecklich aus, weil ihre
+// Farben verbindlich vorgegeben sind — hier vom DVV. Der Kontrastwert ist
+// damit ohnehin kein Pflichtkriterium. Er ist hier zusaetzlich das falsche
+// Mass: er misst nur Helligkeit, waehrend sich die Kreise ueberwiegend im
+// Farbton vom Untergrund abheben. Und aus derselben Quelle: bei mehrfarbigen
+// Grafiken muessen nur die zur Identifikation noetigen Teile das Kriterium
+// erreichen, nicht alle. Deshalb Flaechenanteil statt schwaechstem Kreis.
+const KENNUNG_MINDEST   = 3.0;    // Schriftzug, Leuchtdichte-Kontrast
+const BILDMARKE_ABSTAND = 11;     // Bildmarke, Farbabstand dE2000 je Kreis
+const BILDMARKE_ERKENNBAR = 0.50; // Anteil der Flaeche, der sich abheben muss
+
+function bildmarkeAnteil(grund, fassung){
+  const tabelle=SIGNET_FLAECHE[fassung];
+  let anteil=0;
+  for(const hex in tabelle){
+    if(farbabstand(grund,hex) >= BILDMARKE_ABSTAND) anteil += tabelle[hex];
+  }
+  return anteil;
+}
+
+function markenBewertung(){
+  const grund=grundfarbe();
+  const kDunkel=Math.min.apply(null, LOGO_TEXT.dunkel.map(c=>kontrast(grund,c)));
+  const kHell  =Math.min.apply(null, LOGO_TEXT.hell  .map(c=>kontrast(grund,c)));
+  const fassung = kDunkel >= kHell ? 'dunkel' : 'hell';
+  const bester  = Math.max(kDunkel, kHell);
+  // Bildmarke: erkennbare Flaeche statt schwaechstem Kreis
+  const bildAnteil = bildmarkeAnteil(grund, fassung);
+  return { grund, kDunkel, kHell, fassung, bester, bildAnteil,
+           ausweichen: bester < KENNUNG_MINDEST,
+           bildmarkeSchwach: bildAnteil < BILDMARKE_ERKENNBAR };
+}
+
+// Welche Kennung tatsaechlich im Motiv steht. Weicht vom gewaehlten
+// markeKey ab, wenn der Schriftzug auf diesem Untergrund untergeht.
+function angezeigteMarke(){
+  const gewaehlt=aktMarke();
+  if(gewaehlt.key!=='logo') return gewaehlt;
+  return markenBewertung().ausweichen ? MARKEN[markeIndex('bildmarke')] : gewaehlt;
+}
+
+// Der helle Anteil der Linie ist KEINE zweite Bedeutungsfarbe, sondern ein
+// neutraler Vorlauf: auf dunklem Grund eine aufgehellte, auf hellem Grund
+// eine abgedunkelte Fassung des Untergrunds. Deshalb wird er aus activeColor
+// gerechnet und nicht aus der Palette genommen.
+function vorlaufFarbe(){
+  const c=hexZuRgb(activeColor);
+  const auf = istDunkel(grundfarbe());
+  const f = auf ? 0.45 : -0.35;
+  const misch = v => Math.round(f > 0 ? v + (255-v)*f : v*(1+f));
+  return 'rgb('+misch(c.r)+','+misch(c.g)+','+misch(c.b)+')';
+}
+
+// ── Darstellung ───────────────────────────────────────────────────────
+function renderMarke(){
+  const f=aktFormat();
+  const k=anzeigeFaktor(f);
+  const sa=safeAnzeige(f);
+  const luft=LUFT*k;
+  const box  = document.getElementById('marke-bild');
+  const bild = document.getElementById('canvas-logo-img');
+  const fuss = document.getElementById('marke-fuss');
+  if(!box || !bild || !fuss) return;
+
+  // Erst alles aus — die Kernregel steht so auch im Code.
+  box.style.display='none';  box.setAttribute('aria-hidden','true');
+  fuss.style.display='none'; fuss.setAttribute('aria-hidden','true');
+
+  // Gewaehlt ist markeKey, gezeigt wird angezeigteMarke(): bei zu schwachem
+  // Untergrund tritt fuer "logo" die Bildmarke ein. Die Auswahl im Bedienfeld
+  // bleibt davon unberuehrt, und am Post wird weiterhin markeKey gespeichert.
+  const b=markenBewertung();
+  const m=angezeigteMarke();
+
+  if(m.key==='logo' || m.key==='bildmarke'){
+    const q = m.datei[b.fassung];
+    if(bild.getAttribute('src')!==q.pfad) bild.setAttribute('src',q.pfad);
+    bild.alt = m.key==='logo' ? 'vhs Volkshochschule Spandau'
+                              : 'vhs Bildmarke';
+
+    // Die Hoehe des ZEICHENS steuert, nicht die der Datei. Traegt die Datei
+    // transparenten Rand, wird sie entsprechend groesser skaliert und um den
+    // Rand zurueckversetzt, damit das Zeichen genau an der Sollposition sitzt.
+    let zielH = MARKE_HOEHE;
+    const inhaltVerhaeltnis = q.verhaeltnis * q.inhalt.w / q.inhalt.h;
+    // Passkontrolle: das Zeichen muss mit Luft auf beiden Seiten in die
+    // Kernflaeche passen. Sonst wird die Hoehe proportional reduziert,
+    // niemals abgeschnitten.
+    const platz = (f.w - f.safe.left - f.safe.right) - 2*LUFT;
+    if(zielH * inhaltVerhaeltnis > platz){
+      zielH = platz / inhaltVerhaeltnis;
+      console.warn('[marke] '+m.key+' auf '+Math.round(zielH)+
+        ' px Hoehe reduziert — '+f.key+' bietet nur '+Math.round(platz)+' px Breite.');
+    }
+    const dateiH = zielH / q.inhalt.h;              // Hoehe der ganzen Datei
+    const dateiB = dateiH * q.verhaeltnis;          // Breite folgt aus dem Original
+    bild.style.height=(dateiH*k).toFixed(2)+'px';
+    bild.style.width =(dateiB*k).toFixed(2)+'px';
+    box.style.left=Math.round((sa.left+luft) - q.inhalt.x*dateiB*k)+'px';
+    box.style.top =Math.round((sa.top +luft) - q.inhalt.y*dateiH*k)+'px';
+    box.style.display='block';
+    box.setAttribute('aria-hidden','false');
+
+  } else if(m.key==='fuss'){
+    bild.removeAttribute('src');
+    const p=aktPB();
+    const t   = document.getElementById('marke-fuss-text');
+    const hell= document.getElementById('linie-hell');
+    const farb= document.getElementById('linie-farbe');
+    t.style.fontSize=(FUSS_SCHRIFT*k).toFixed(2)+'px';
+    t.style.color=textColor;
+    hell.style.width =(LINIE.hell  * f.w * k).toFixed(2)+'px';
+    hell.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
+    hell.style.background=vorlaufFarbe();
+    farb.style.width =(LINIE.farbe * f.w * k).toFixed(2)+'px';
+    farb.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
+    farb.style.marginLeft=(LINIE.luecke * f.w * k).toFixed(2)+'px';
+    farb.style.background=p.farbe;
+    // Rechtsbuendig zur Kernflaeche, Unterkante auf safe.b + LUFT
+    fuss.style.right =Math.round(sa.right +luft)+'px';
+    fuss.style.bottom=Math.round(sa.bottom+luft)+'px';
+    fuss.style.display='block';
+    fuss.setAttribute('aria-hidden','false');
+
+  } else {
+    bild.removeAttribute('src');
+  }
+
+  kontrastAnzeigen(b);
+  renderKI();   // die Kennung bestimmt mit, wohin das KI-Symbol ausweicht
+}
+
+// ── Anzeige im Bedienfeld ─────────────────────────────────────────────
+// Der Wert steht dauerhaft da, nicht nur im Warnfall: wer den Deckkraftregler
+// bewegt, soll sehen, wann es kippt.
+function kontrastAnzeigen(b){
+  const el=document.getElementById('marke-kontrast');
+  if(!el) return;
+  b = b || markenBewertung();
+  const zahl = w => w.toFixed(1).replace('.',',');
+  // Die Fassung (positiv/negativ) gilt nur fuer die Bildvarianten. Bei
+  // Fusszeile und "keine" waere die Angabe irrefuehrend.
+  const mitBild = (markeKey==='logo' || markeKey==='bildmarke');
+  const fassungName = b.fassung==='dunkel' ? 'Negativfassung' : 'Positivfassung';
+  let h='<div class="mk-zeile"><span class="mk-punkt" style="background:'+b.grund+'"></span>'+
+        'Untergrund '+b.grund+(mitBild ? ' &middot; '+fassungName : '')+'</div>';
+
+  const prozent = a => Math.round(a*100)+'&nbsp;%';
+
+  if(markeKey==='logo' && b.ausweichen){
+    h+='<div class="mk-warn">Auf diesem Untergrund erreicht der Schriftzug nur '+
+       zahl(b.bester)+'&nbsp;:&nbsp;1. Es wird die Bildmarke gesetzt.</div>';
+    h+='<div class="mk-zeile'+(b.bildmarkeSchwach?' mk-knapp':'')+'">Bildmarke erkennbar: '+
+       prozent(b.bildAnteil)+' der Fl\u00e4che</div>';
+  } else if(markeKey==='bildmarke'){
+    h+='<div class="mk-zeile'+(b.bildmarkeSchwach?' mk-knapp':'')+'">Bildmarke erkennbar: '+
+       prozent(b.bildAnteil)+' der Fl\u00e4che</div>';
+  } else if(markeKey==='logo'){
+    h+='<div class="mk-zeile'+(b.bester<KENNUNG_MINDEST?' mk-knapp':'')+'">Kontrast '+
+       zahl(b.bester)+'&nbsp;:&nbsp;1 <span class="mk-soll">(Richtwert 3,0)</span></div>';
+  }
+  // Die Warnung richtet sich an die Farbwahl, nicht an die Marke: deren
+  // Farben sind vorgegeben und von der Anforderung ausgenommen.
+  if(mitBild && b.bildmarkeSchwach && (markeKey==='bildmarke' || b.ausweichen)){
+    h+='<div class="mk-warn">Auf diesem Untergrund geht die Bildmarke weitgehend '+
+       'unter. Eine andere Farbfl\u00e4che oder eine geringere Deckkraft schafft '+
+       'Abhilfe.</div>';
+  }
+  el.innerHTML=h;
+}
+
+// Rechteck der sichtbaren Kennung in Exportpixeln, oder null.
+// Bei Bilddateien zaehlt der Bildinhalt, nicht die Dateiflaeche — sonst
+// wuerde transparenter Rand als Kennung mitgemessen.
+function markeRechteck(){
+  const m=angezeigteMarke();
+  if(m.key==='keine') return null;
+  if(m.key==='fuss'){
+    const el=document.getElementById('marke-fuss');
+    if(!sichtbar(el)) return null;
+    const r=elementRechteck(el);
+    r.name='Fußzeile mit Programmbereichslinie';
+    return r;
+  }
+  const box=document.getElementById('marke-bild');
+  if(!box) return null;
+  const bild=document.getElementById('canvas-logo-img');
+  if(!bild || getComputedStyle(box).display==='none') return null;
+  const q=m.datei[markenBewertung().fassung];
+  const k=exportFaktor(aktFormat());
+  // Aussenmasse der Datei in Exportpixeln, daraus die Inhaltsbox
+  const dateiB=parseFloat(bild.style.width)||0;
+  const dateiH=parseFloat(bild.style.height)||0;
+  if(!dateiB || !dateiH) return null;
+  let x=0, y=0, node=box, frame=document.getElementById('canvas-frame');
+  while(node && node!==frame){ x+=node.offsetLeft; y+=node.offsetTop; node=node.offsetParent; }
+  const x0=Math.round((x + q.inhalt.x*dateiB)*k);
+  const y0=Math.round((y + q.inhalt.y*dateiH)*k);
+  return { x:x0, y:y0,
+           w:Math.round((x + (q.inhalt.x+q.inhalt.w)*dateiB)*k) - x0,
+           h:Math.round((y + (q.inhalt.y+q.inhalt.h)*dateiH)*k) - y0,
+           name: m.key==='logo' ? 'vhs-Logo' : 'Bildmarke' };
+}
+
+// ── Bedienelement ─────────────────────────────────────────────────────
+// Die Markendateien einmal vorladen. Der Export misst zwar rechnerisch
+// (Inhaltsbox mal Dateimasse) und haengt nicht am Ladezustand, aber ein
+// bereits dekodiertes Bild spart beim ersten Export sichtbar Zeit.
+function markenVorladen(){
+  MARKEN.forEach(m=>{
+    if(!m.datei) return;
+    ['hell','dunkel'].forEach(v=>{
+      const bild=new Image();
+      bild.crossOrigin='anonymous';
+      bild.src=m.datei[v].pfad;
+    });
+  });
+}
+
+function baueMarkenwahl(){
+  const box=document.getElementById('marken-wahl');
+  if(!box) return;
+  box.innerHTML=MARKEN.map(m=>
+    '<button type="button" class="marke-btn" id="wahl-marke-'+m.key+'" role="radio" '+
+    'aria-checked="false" onclick="setMarke(\'' + m.key + '\')" '+
+    'title="'+m.label+'">'+
+    '<span class="marke-name">'+m.kurz+'</span>'+
+    '<span class="marke-sub">'+m.beschreibung+'</span></button>'
+  ).join('');
+
+  const pbBox=document.getElementById('pb-wahl');
+  if(!pbBox) return;
+  pbBox.innerHTML=PB.map(p=>
+    '<button type="button" class="pb-btn" id="wahl-pb-'+p.key+'" role="radio" '+
+    'aria-checked="false" onclick="setPB(\'' + p.key + '\')" '+
+    'title="'+p.key+' '+p.name+' — '+p.farbe+'">'+
+    '<span class="pb-punkt" style="background:'+p.farbe+'"></span>'+
+    '<span class="pb-name">'+p.name+'</span></button>'
+  ).join('');
+}
+
+function markenwahlSetzen(){
+  MARKEN.forEach(m=>{
+    const el=document.getElementById('wahl-marke-'+m.key);
+    if(!el) return;
+    const an = m.key===markeKey;
+    el.classList.toggle('on', an);
+    el.setAttribute('aria-checked', an ? 'true' : 'false');
+  });
+  PB.forEach(p=>{
+    const el=document.getElementById('wahl-pb-'+p.key);
+    if(!el) return;
+    const an = p.key===pbKey;
+    el.classList.toggle('on', an);
+    el.setAttribute('aria-checked', an ? 'true' : 'false');
+  });
+  // Die Programmbereichswahl gilt nur fuer die Fußzeilen-Variante.
+  const gruppe=document.getElementById('pb-gruppe');
+  if(gruppe) gruppe.style.display = markeKey==='fuss' ? 'block' : 'none';
+}
+
+function setMarke(key){
+  markeKey=MARKEN[markeIndex(key)].key;
+  markenwahlSetzen();
+  renderMarke();
+  aktualisiereZusammenfassungen();
+  kollisionMelden();
+  pushZustand('Absenderkennung');
+}
+function setPB(key){
+  pbKey=PB[pbIndex(key)].key;
+  markenwahlSetzen();
+  renderMarke();
+  aktualisiereZusammenfassungen();
+  pushZustand('Programmbereich');
+}
+
+function markeKurzfassung(){
+  const m=aktMarke();
+  if(m.key!=='fuss') return m.kurz;
+  return m.kurz+' · '+aktPB().name;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRUEFUNG VOR DEM EXPORT
+// ═══════════════════════════════════════════════════════════════
+// Anders als die Kollisionswarnung beim Ziehen ist das hier ein Riegel:
+// Kennung, Linie und KI-Symbol muessen vollstaendig in der Kernflaeche
+// liegen und duerfen einander nicht ueberlappen. Gerechnet wird ganzzahlig
+// in Exportpixeln.
+function pruefeKennungen(){
+  const f=aktFormat();
+  const kern={ x:Math.round(f.safe.left), y:Math.round(f.safe.top),
+               w:Math.round(f.w-f.safe.left-f.safe.right),
+               h:Math.round(f.h-f.safe.top-f.safe.bottom) };
+  const teile=[];
+  const marke=markeRechteck();
+  if(marke) teile.push(marke);
+  const ki=document.getElementById('ki-block');
+  if(KI.typ && sichtbar(ki)){
+    const r=elementRechteck(ki); r.name='EU-KI-Symbol'; teile.push(r);
+  }
+
+  const probleme=[];
+  teile.forEach(t=>{
+    const raus=[];
+    if(t.x < kern.x)               raus.push((kern.x-t.x)+' px über den linken Rand');
+    if(t.y < kern.y)               raus.push((kern.y-t.y)+' px über den oberen Rand');
+    if(t.x+t.w > kern.x+kern.w)    raus.push((t.x+t.w-kern.x-kern.w)+' px über den rechten Rand');
+    if(t.y+t.h > kern.y+kern.h)    raus.push((t.y+t.h-kern.y-kern.h)+' px über den unteren Rand');
+    if(raus.length) probleme.push(t.name+' ragt '+raus.join(' und ')+' der Kernfläche hinaus.');
+  });
+  for(let i=0;i<teile.length;i++){
+    for(let j=i+1;j<teile.length;j++){
+      if(schneidet(teile[i], teile[j]))
+        probleme.push(teile[i].name+' und '+teile[j].name+' überlappen einander.');
+    }
+  }
+  return probleme;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // ZUSTAND — eine Quelle statt verstreuter Variablen
 // ═══════════════════════════════════════════════════════════════
 // zustandLesen() und zustandAnwenden() sind ab hier die einzige Stelle, an
@@ -2653,7 +3391,7 @@ function zustandLesen(){
     text: {
       headline: feldWert('tf-headline'), sub: feldWert('tf-sub'),
       autor:    feldWert('tf-author'),   rolle: feldWert('tf-role'),
-      fuss:     feldWert('tf-footer'),   stoerer: feldWert('tf-badge'),
+      stoerer:  feldWert('tf-badge'),
       stoererAn: !!(document.getElementById('badge-vis')||{}).checked,
       volltext: feldWert('tf-fulltext-preview')
     },
@@ -2664,6 +3402,7 @@ function zustandLesen(){
       saettigung: +feldWert('sl-sat'),    kontrast:   +feldWert('sl-contrast'),
       linie: lineColor, stoerer: badgeColor, schrift: textColor
     },
+    marke: { variante: markeKey, programmbereich: pbKey },
     lage: {
       text:    { x: tbRel.x, y: tbRel.y },
       stoerer: badgeRel ? { x: badgeRel.x, y: badgeRel.y } : null
@@ -2686,7 +3425,6 @@ function zustandAnwenden(z){
   feldSetzen('tf-sub',      z.text.sub);
   feldSetzen('tf-author',   z.text.autor);
   feldSetzen('tf-role',     z.text.rolle);
-  feldSetzen('tf-footer',   z.text.fuss);
   feldSetzen('tf-badge',    z.text.stoerer);
   feldSetzen('tf-fulltext-preview', z.text.volltext);
   const bv=document.getElementById('badge-vis');
@@ -2705,6 +3443,10 @@ function zustandAnwenden(z){
   badgeColor = z.farbe.stoerer; syncBadgeSwatches(badgeColor);
   textColor  = z.farbe.schrift; syncTextSwatches(textColor);
 
+  markeKey = (z.marke && z.marke.variante) || 'logo';
+  pbKey    = (z.marke && z.marke.programmbereich) || 'PB1';
+  markenwahlSetzen();
+
   tbRel    = { x:z.lage.text.x, y:z.lage.text.y };
   badgeRel = z.lage.stoerer ? { x:z.lage.stoerer.x, y:z.lage.stoerer.y } : null;
 
@@ -2721,6 +3463,7 @@ function zustandAnwenden(z){
   setFormat(z.format);
   updateOpacity(z.farbe.deckkraft);
   updatePhotoFilter();
+  renderMarke();
   kiSyncPanel();
   pruefeKanal();
   aktualisiereZusammenfassungen();
@@ -2740,6 +3483,7 @@ function fotoAnzeigen(){
     foto.style.backgroundImage='';
     vor.style.display='none'; zone.style.display='block'; hint.style.display='block';
   }
+  fotoMittelNeu();
 }
 
 function markiereVorlage(idx){
@@ -2754,6 +3498,114 @@ function markiereVorlage(idx){
     b.className='tpl-active-badge'; b.textContent='Aktiv';
     aktiv.appendChild(b);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENTWURFSSICHERUNG
+// ═══════════════════════════════════════════════════════════════
+// Ein Seitenwechsel, ein Neuladen oder ein Serverneustart darf angefangene
+// Arbeit nicht vernichten. Gesichert wird in sessionStorage: das ueberlebt
+// beides, bleibt aber an den Tab gebunden und raeumt sich beim Schliessen
+// von selbst auf — ein halbfertiger Entwurf soll nicht ewig herumliegen.
+//
+// Die Fassungsnummer steht im Paket. Aendert sich das Zustandsschema, wird
+// ein alter Stand verworfen statt eingespielt: ein Entwurf, der beim
+// Wiederherstellen zerbricht, waere schlimmer als gar keiner.
+const ENTWURF_SCHLUESSEL = 'vhs-grafik-studio-entwurf';
+const ENTWURF_VERSION    = 1;
+
+function entwurfSichern(){
+  try{
+    const z = zustandLesen();
+    // Das Foto liegt als Data-URL vor und ist schnell mehrere Megabyte gross.
+    // sessionStorage fasst je nach Browser rund 5 MB — ein einziges Foto
+    // sprengt das und wuerde die Sicherung des ganzen Entwurfs verhindern.
+    // Deshalb wird nur vermerkt, DASS eines gesetzt war.
+    const hatteFoto = !!z.foto;
+    z.foto = null;
+    sessionStorage.setItem(ENTWURF_SCHLUESSEL, JSON.stringify({
+      version: ENTWURF_VERSION, zeit: Date.now(), fotoFehlt: hatteFoto, zustand: z
+    }));
+  }catch(e){
+    // Niemals still verschlucken: ein Schreibfehler, den keiner sieht, ist
+    // genau die Vorstufe zum naechsten Datenverlust.
+    console.warn('[entwurf] Sichern fehlgeschlagen:', e.name, e.message);
+    entwurfHinweis('Der Entwurf l\u00e4sst sich nicht zwischenspeichern (' + e.name +
+      '). Ein Seitenwechsel w\u00fcrde ihn verlieren.');
+  }
+}
+
+function entwurfVerwerfen(){
+  try{ sessionStorage.removeItem(ENTWURF_SCHLUESSEL); }
+  catch(e){ console.warn('[entwurf] Verwerfen fehlgeschlagen:', e.name, e.message); }
+}
+
+function entwurfLesen(){
+  let roh;
+  try{ roh = sessionStorage.getItem(ENTWURF_SCHLUESSEL); }
+  catch(e){ console.warn('[entwurf] Lesen fehlgeschlagen:', e.name, e.message); return null; }
+  if(!roh) return null;
+  let paket;
+  try{ paket = JSON.parse(roh); }
+  catch(e){
+    console.warn('[entwurf] Stand unlesbar, wird verworfen:', e.message);
+    entwurfVerwerfen(); return null;
+  }
+  if(!paket || paket.version !== ENTWURF_VERSION || !paket.zustand){
+    console.warn('[entwurf] Fassung', paket && paket.version, 'passt nicht zu',
+                 ENTWURF_VERSION, '\u2014 Stand wird verworfen');
+    entwurfVerwerfen(); return null;
+  }
+  return paket;
+}
+
+// Beim Laden nicht stillschweigend einspielen: stilles Wiederherstellen
+// ueberrascht genauso wie stiller Verlust.
+async function entwurfAnbieten(paket, frischerStand){
+  if(!paket) return false;
+  // Unterscheidet sich der Stand ueberhaupt von der frisch geladenen Vorlage?
+  // Wenn nicht, gibt es nichts zu retten und nichts zu fragen.
+  try{
+    const frisch = JSON.parse(frischerStand);
+    frisch.foto = null;
+    if(JSON.stringify(frisch) === JSON.stringify(paket.zustand)){
+      entwurfVerwerfen(); return false;
+    }
+  }catch(e){ /* im Zweifel fragen */ }
+
+  const zeit = new Date(paket.zeit).toLocaleTimeString('de-DE',
+                 { hour:'2-digit', minute:'2-digit' });
+  const weiter = await frage(
+    'Unfertiger Entwurf gefunden',
+    'Ein unfertiger Entwurf von ' + zeit + '\u00a0Uhr liegt vor. ' +
+    'Weitermachen oder verwerfen?',
+    'Weitermachen', 'Verwerfen');
+  if(!weiter){ entwurfVerwerfen(); return false; }
+
+  verlaufSperre = true;
+  try { zustandAnwenden(paket.zustand); }
+  finally { verlaufSperre = false; }
+  verlauf = []; zeiger = -1;
+  pushZustand('Entwurf fortgesetzt');
+
+  if(paket.fotoFehlt){
+    entwurfHinweis('Der Entwurf ist zur\u00fcck. Nur das Hintergrundfoto liess sich ' +
+      'nicht mitsichern \u2014 bitte erneut ausw\u00e4hlen.');
+  } else {
+    showToast('Entwurf fortgesetzt','i-haken');
+  }
+  return true;
+}
+
+function entwurfHinweis(text){
+  const el=document.getElementById('entwurf-hinweis');
+  if(!el){ console.warn('[entwurf]', text); return; }
+  el.innerHTML='<span class="eh-zu" role="button" tabindex="0" title="Schlie\u00dfen" '+
+    'aria-label="Hinweis schlie\u00dfen" onclick="this.parentNode.style.display=\'none\'" '+
+    'onkeydown="tasteAlsKlick(event)">'+
+    '<svg class="ic ic-14" aria-hidden="true"><use href="#i-schliessen"/></svg></span>'+
+    '<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg> '+escHtml(text);
+  el.style.display='block';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2778,6 +3630,8 @@ function pushZustand(bezeichnung){
   if(verlauf.length > VERLAUF_TIEFE) verlauf.shift();
   zeiger = verlauf.length-1;
   verlaufKnoepfe();
+  // Jede Handlung, die im Verlauf landet, landet auch in der Sicherung.
+  entwurfSichern();
 }
 
 function verlaufZurueck(){
@@ -2829,8 +3683,7 @@ function aktualisiereZusammenfassungen(){
   const hl=(feldWert('tf-headline')||'').trim();
   s('kurz-text',    hl ? (hl.length>22 ? hl.slice(0,22)+'…' : hl) : 'kein Text');
   s('kurz-farbe',   Math.round(feldWert('sl-opacity'))+' % Deckkraft');
-  const stoerer=(document.getElementById('badge-vis')||{}).checked;
-  s('kurz-fein',    stoerer ? 'Störer an' : 'Störer aus');
+  s('kurz-fein',    markeKurzfassung());
   s('kurz-ki',      kiKurzfassung());
   s('kurz-export',  feldWert('exp-kanal') || '—');
 }
@@ -2968,12 +3821,13 @@ function tasteAlsKlick(e){
 // Eigener Dialog statt confirm(): das native Fenster blockiert die Seite und
 // sieht auf jedem System anders aus.
 let frageResolve=null;
-function frage(titel, text, jaText){
+function frage(titel, text, jaText, neinText){
   const bg=document.getElementById('frage-modal-bg');
   if(!bg) return Promise.resolve(true);
   document.getElementById('frage-titel').textContent=titel;
   document.getElementById('frage-text').textContent=text;
   document.getElementById('frage-ja').textContent=jaText||'Ja, weiter';
+  document.getElementById('frage-nein').textContent=neinText||'Abbrechen';
   bg.classList.add('open');
   document.getElementById('frage-nein').focus();
   return new Promise(ok=>{ frageResolve=ok; });
@@ -3032,7 +3886,6 @@ const TEXTFELDER=[
   { id:'tf-sub',      name:'Unterzeile' },
   { id:'tf-author',   name:'Autorin' },
   { id:'tf-role',     name:'Titel / Funktion' },
-  { id:'tf-footer',   name:'Fußzeile' },
   { id:'tf-badge',    name:'Störertext' },
 ];
 
@@ -3207,5 +4060,36 @@ function showToast(msg, symbol){
     </div>
   </div>
 </div>
+<!-- Einheitliche Behandlung einer beendeten Sitzung. Frueher reagierte jede
+     Seite anders: editor leitete sofort um, freigabe und voransicht zeigten
+     einen Hinweis, kalender, kurse und performance blieben stumm leer stehen.
+     Jetzt ueberall dasselbe: sichtbarer Hinweis, dann zurueck zur Anmeldung —
+     mit Rueckweg auf diese Seite. -->
+<script>
+function hinweisBanner(text, farbe){
+  let el = document.getElementById('sitzung-hinweis');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sitzung-hinweis';
+    el.setAttribute('role','alert');
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:12px 18px;'
+      + "font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:#fff;"
+      + 'text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.35)';
+    document.body.appendChild(el);
+  }
+  el.style.background = farbe || '#EB640F';
+  el.textContent = text;
+  return el;
+}
+let sitzungLaeuftAb = false;
+function sitzungBeendet(){
+  if (sitzungLaeuftAb) return;          // nicht mehrfach ausloesen
+  sitzungLaeuftAb = true;
+  hinweisBanner('Die Sitzung ist abgelaufen. Weiter zur Anmeldung \u2026');
+  setTimeout(function(){
+    location.href = '/?weiter=' + encodeURIComponent(location.pathname + location.search);
+  }, 2200);
+}
+</script>
 </body>
 </html>

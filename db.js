@@ -167,7 +167,11 @@ function rowToPost(r) {
     autorId:        r.autor_id,
     bild:           r.bild || null,
     pb:             r.pb || null,
-    kiKennzeichnung: r.ki_kennzeichnung || ''
+    kiKennzeichnung: r.ki_kennzeichnung || '',
+    // Absenderkennung nach Redaktionsbeschluss vom 21.08.2026:
+    // genau eine Kennung je Motiv. '' = Altbestand, wird als 'logo' gelesen.
+    absenderkennung: r.absenderkennung || '',
+    programmbereich: r.programmbereich || ''
   };
 }
 
@@ -181,8 +185,8 @@ async function addPost(p) {
     `INSERT INTO posts
        (datum, uhrzeit, kanal, anlass, text, tags, status, ziel,
         freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id, bild, pb,
-        ki_kennzeichnung)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+        ki_kennzeichnung, absenderkennung, programmbereich)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
      RETURNING *`,
     [ p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
       p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
@@ -190,7 +194,9 @@ async function addPost(p) {
       p.paid || 'nein', p.url || null,
       p.erstellt || new Date().toISOString(), p.autor || null, p.autorId || p.autor_id || null,
       p.bild || null, p.pb || null,
-      p.kiKennzeichnung || p.ki_kennzeichnung || '' ]
+      p.kiKennzeichnung || p.ki_kennzeichnung || '',
+      p.absenderkennung || '',
+      p.programmbereich || '' ]
   );
   return rowToPost(res.rows[0]);
 }
@@ -201,7 +207,9 @@ async function updatePost(id, p) {
        datum=$2, uhrzeit=$3, kanal=$4, anlass=$5, text=$6, tags=$7,
        status=$8, ziel=$9, freigabe=$10, freigegeben_von=$11,
        paid=$12, url=$13, autor=$14, autor_id=$15,
-       ki_kennzeichnung=COALESCE($16, ki_kennzeichnung)
+       ki_kennzeichnung=COALESCE($16, ki_kennzeichnung),
+       absenderkennung=COALESCE($17, absenderkennung),
+       programmbereich=COALESCE($18, programmbereich)
      WHERE id=$1
      RETURNING *`,
     [ id, p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
@@ -210,7 +218,9 @@ async function updatePost(id, p) {
       p.paid || 'nein', p.url || null, p.autor || null, p.autorId || p.autor_id || null,
       // undefined laesst den Bestand stehen, '' setzt bewusst zurueck
       (p.kiKennzeichnung !== undefined ? p.kiKennzeichnung
-        : (p.ki_kennzeichnung !== undefined ? p.ki_kennzeichnung : null)) ]
+        : (p.ki_kennzeichnung !== undefined ? p.ki_kennzeichnung : null)),
+      (p.absenderkennung !== undefined ? p.absenderkennung : null),
+      (p.programmbereich !== undefined ? p.programmbereich : null) ]
   );
   return res.rows[0] ? rowToPost(res.rows[0]) : null;
 }
@@ -289,6 +299,16 @@ async function ensureTables() {
   // '' = noch nicht entschieden | 'keine' | 'ai' | 'ai-generated' | 'ai-modified'
   await pool.query(`
     ALTER TABLE posts ADD COLUMN IF NOT EXISTS ki_kennzeichnung TEXT
+  `);
+  // Absenderkennung nach Redaktionsbeschluss vom 21.08.2026.
+  // '' = Altbestand ohne Wert; das Frontend liest ihn als 'logo'.
+  // absenderkennung: 'logo' | 'fuss' | 'bildmarke' | 'keine'
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS absenderkennung TEXT
+  `);
+  // programmbereich: 'PB1'..'PB7', nur bei absenderkennung='fuss' belegt
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS programmbereich TEXT
   `);
 }
 
