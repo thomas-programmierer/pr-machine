@@ -145,7 +145,7 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 #marke-bild img{display:block}
 #marke-fuss{position:absolute;z-index:9;pointer-events:none;display:none;text-align:right}
 #marke-fuss-text{font-family:'DM Sans',sans-serif;font-weight:700;line-height:1.05;
-  white-space:nowrap;letter-spacing:.1px}
+  white-space:nowrap;letter-spacing:.1px;display:inline-block}
 /* Zweiteilige Linie: heller Vorlauf, Luecke, Programmbereichsfarbe.
    Rechtsbuendig zur Kernflaeche, deshalb flex-end. */
 #marke-fuss-linie{display:flex;justify-content:flex-end;align-items:flex-start;margin-top:.32em}
@@ -238,8 +238,6 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 .kim-opt .kim-d{font-size:9px;color:rgba(255,255,255,.5);line-height:1.55;margin-top:2px}
 #layer-badge{position:absolute;top:8px;left:8px;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;background:rgba(250,185,15,.9);color:var(--blau);pointer-events:none;z-index:11;font-family:'DM Sans',sans-serif}
 
-/* FOOTER fixed-bottom */
-#footer-block{position:absolute;bottom:0;left:0;right:0;z-index:8;pointer-events:none;padding:0 14px 10px}
 
 /* COORD READOUT */
 .coord-readout{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,.4);background:rgba(0,0,0,.5);padding:2px 8px;border-radius:4px;pointer-events:none;font-family:monospace;z-index:20;white-space:nowrap}
@@ -600,6 +598,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
             <svg class="ic ic-14" aria-hidden="true"><use href="#i-schliessen"/></svg>
           </button>
         </div>
+        <div id="foto-skala-wrap" style="display:none;margin-top:10px">
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-fotozoom">Bildgr&ouml;&szlig;e</label>
+            <div class="sl-track"><input type="range" min="100" max="300" value="100" step="1" id="sl-fotozoom"></div>
+            <span class="sl-val sv-blue" id="sv-fotozoom">100%</span>
+          </div>
+          <p class="ab-hinweis" style="margin-top:4px">Vergr&ouml;&szlig;ert das Foto aus der Mitte heraus, der Rahmen schneidet ab. 100&nbsp;% f&uuml;llt die Fl&auml;che formatf&uuml;llend.</p>
+        </div>
         <p class="ab-hinweis" id="no-foto-hint" style="text-align:center">Kein Foto — die Flaeche bleibt einfarbig.</p>
       </div>
     </details>
@@ -643,7 +649,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
         </div>
 
         <div class="ab-block">
-          <label class="p-label" for="tf-author">Autorin / Quelle</label>
+          <label class="p-label" for="tf-author">Autor*in / Quelle</label>
           <input class="txt-field" id="tf-author" type="text" placeholder="Name …" style="margin-bottom:6px">
           <label class="p-label" for="tf-role">Titel / Funktion</label>
           <input class="txt-field" id="tf-role" type="text" placeholder="Titel / Funktion …">
@@ -761,22 +767,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
           <div class="p-label" id="lbl-pb">Programmbereich</div>
           <div class="pb-liste" id="pb-wahl" role="radiogroup" aria-labelledby="lbl-pb"></div>
           <p class="ab-hinweis">
-            F&auml;rbt den rechten Teil der Linie. Deutsch &amp; Integration und
+            Steht als Bezeichner &uuml;ber der Linie und f&auml;rbt deren rechten
+            Teil. Deutsch &amp; Integration und
             Fremdsprachen teilen sich das Violett &mdash; beim DVV f&auml;llt beides
             unter &bdquo;Sprachen&ldquo;.
           </p>
-        </div>
-
-        <div class="ab-block">
-          <div class="p-label" id="lbl-linie">Akzentlinie im Motiv</div>
-          <div class="badge-swatches" role="radiogroup" aria-labelledby="lbl-linie">
-            <div class="badge-sw on" id="linesw-0" role="radio" aria-checked="true" tabindex="0" aria-label="Akzentlinie DVV-Gelb" title="DVV-Gelb" style="background:#FAB90F" onclick="setLineColor(0,'#FAB90F')" onkeydown="tasteAlsKlick(event)"></div>
-            <div class="badge-sw" id="linesw-1" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Orange" title="Orange" style="background:#EB640F" onclick="setLineColor(1,'#EB640F')" onkeydown="tasteAlsKlick(event)"></div>
-            <div class="badge-sw" id="linesw-2" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Gr&uuml;n" title="Gr&uuml;n" style="background:#AFC805" onclick="setLineColor(2,'#AFC805')" onkeydown="tasteAlsKlick(event)"></div>
-            <div class="badge-sw" id="linesw-3" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Hellblau" title="Hellblau" style="background:#64B9E6" onclick="setLineColor(3,'#64B9E6')" onkeydown="tasteAlsKlick(event)"></div>
-            <div class="badge-sw" id="linesw-4" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Wei&szlig;" title="Wei&szlig;" style="background:#fff" onclick="setLineColor(4,'#fff')" onkeydown="tasteAlsKlick(event)"></div>
-            <div class="badge-sw" id="linesw-5" role="radio" aria-checked="false" tabindex="0" aria-label="Akzentlinie Rot" title="Rot" style="background:#E1000F" onclick="setLineColor(5,'#E1000F')" onkeydown="tasteAlsKlick(event)"></div>
-          </div>
         </div>
 
         <div class="ab-block">
@@ -797,6 +792,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
         </div>
 
         <div class="ab-block">
+          <div class="sl-row">
+            <label class="sl-lbl" for="sl-stoerer">St&ouml;rergr&ouml;&szlig;e</label>
+            <div class="sl-track"><input type="range" min="50" max="220" value="100" step="1" id="sl-stoerer"></div>
+            <span class="sl-val sv-gelb" id="sv-stoerer">100%</span>
+          </div>
           <div class="sl-row">
             <label class="sl-lbl" for="sl-tbwidth">Textblock-Breite</label>
             <div class="sl-track"><input type="range" min="50" max="100" value="88" step="1" id="sl-tbwidth"></div>
@@ -996,20 +996,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
              aria-label="Textblock — mit den Pfeiltasten verschieben, mit Umschalt in gro&szlig;en Schritten">
           <div id="tb-headline" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;font-size:15px;line-height:1.28;word-break:break-word;margin-bottom:8px"></div>
           <div id="tb-sub" style="font-family:'DM Sans',sans-serif;font-weight:400;color:rgba(255,255,255,.8);font-size:11px;line-height:1.5;word-break:break-word"></div>
-          <div id="tb-author" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;text-decoration:underline;margin-top:8px"></div>
+          <div id="tb-author" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;font-size:11px;text-align:right;margin-top:8px"></div>
           <div id="tb-role" style="font-family:'DM Sans',sans-serif;font-weight:400;color:rgba(255,255,255,.75);font-size:9px;text-align:right;line-height:1.4;margin-top:1px"></div>
         </div>
         <!-- L5 Stoerer (verschiebbar) -->
         <div id="badge-block">
           <div id="badge-inner" style="border-radius:50%;background:#5B2D8E;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;text-align:center;line-height:1.2;width:70px;height:70px;font-size:9px"></div>
         </div>
-        <!-- L6 Akzentlinie. Der frueher hier stehende Schriftzug "vhs Spandau"
-             ist entfallen: er war eine zweite Absendernennung neben dem Logo
-             und damit genau die Doppelnennung, die der Beschluss abstellt.
-             Die Linie bleibt als Gestaltungselement, sie ist keine Kennung. -->
-        <div id="footer-block">
-          <div id="footer-line" style="margin-left:auto;width:44px;height:2px;background:#FAB90F;border-radius:1px"></div>
-        </div>
+        <!-- L6 entfaellt seit dem 25.08.2026. Die frueher hier stehende
+             Akzentlinie ist ersatzlos gestrichen; die einzige Linie im Motiv
+             ist die Programmbereichslinie der Fusszeile. -->
         <!-- L6b KI-Kennzeichnung nach EU AI Act Art. 50 -->
         <div id="ki-block" aria-hidden="true">
           <img id="ki-symbol" class="kein-export" src="" alt="" crossorigin="anonymous">
@@ -1049,8 +1045,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 // STATE
 // ═══════════════════════════════════════════════════════════════
 let activeColor='#00285A', activeColorName='Blau';
-let lineColor='#FAB90F', badgeColor='#5B2D8E', textColor='#fff';
-let fotoDataUrl=null, zoomLevel=100;
+let badgeColor='#5B2D8E', textColor='#fff';
+let fotoDataUrl=null, zoomLevel=100, fotoZoom=100;
 let currentFormatIdx=0;
 let safeZonesVisible=false;
 
@@ -1072,7 +1068,8 @@ let schriftSperre=false;                 // waehrend des Formatwechsels nicht ne
 const VORLAGEN_BASIS={w:270,h:480};
 // Standardplatzierung des Stoerers, ebenfalls aus dem Story-Rahmen
 // (frueher right:14px / bottom:60px).
-const BADGE_STANDARD={rechts:14/270, unten:60/480};
+// BADGE_STANDARD ist am 25.08.2026 entfallen: der Stoerer bezieht seinen
+// Standardplatz jetzt auf die Kernflaeche, siehe stoererStandardSetzen().
 
 // ═════════════════════════════════════════════════════════════
 // FORMAT-REGISTRY — die einzige Quelle fuer Groessen und Safe Zones
@@ -1682,16 +1679,16 @@ const TEMPLATES=[
   {bg:'#00285A',opacity:72,bright:75,sat:70,contrast:105,
    headline:'Ich wollte immer die Welt sehen. Wenn mich jemand fragte, was ich mal werden möchte, antwortete ich: Kapitänin auf einem Schiff.',
    hlsize:15,sub:'',subsize:11,tbWidth:88,
-   author:'Vigdís Finnbogadóttir',role:'Präsidentin Island (1980\u20131996)\nerstes demokratisch gewähltes weibliches Staatsoberhaupt der Welt',
+   author:'',role:'',
    badge:'',badgeVis:false,
-   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
    marke:'logo',pb:'PB1',
    ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:140},
   {bg:'#AFC805',opacity:100,bright:100,sat:100,contrast:100,
    headline:'Sommer 2026',hlsize:22,sub:'Hier badest du nicht nur in der Havel \u2014 auch im Wissen.\nSommerflat f\u00fcr Kopf und Herz.',subsize:13,tbWidth:88,
    author:'',role:'',badge:'',badgeVis:false,
-   lineColor:'#AFC805',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
+   textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:1,
    marke:'bildmarke',pb:'PB1',
    ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:160},
@@ -1701,7 +1698,7 @@ const TEMPLATES=[
    author:'',role:'',badge:'Wir suchen Dich!',badgeVis:true,
    // Programmbereichs-Violett #7D5AA5 statt des frueheren #5B2D8E — das war
    // ein Fehler im Bestand; die Vorlage gehoert zu Fremdsprachen (PB5).
-   lineColor:'#FAB90F',textColor:'#fff',badgeColor:'#7D5AA5',colorIdx:0,
+   textColor:'#fff',badgeColor:'#7D5AA5',colorIdx:0,
    marke:'fuss',pb:'PB5',
    ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:120},
@@ -1709,7 +1706,7 @@ const TEMPLATES=[
    headline:'Wie stellst Du Dir die Wasserzukunft in Berlin vor',hlsize:18,
    sub:'\u2013 knapp, gerecht und f\u00fcr alle genug?',subsize:14,tbWidth:88,
    author:'',role:'',badge:'',badgeVis:false,
-   lineColor:'#EB640F',textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
+   textColor:'#fff',badgeColor:'#5B2D8E',colorIdx:0,
    marke:'fuss',pb:'PB1',
    ki:{typ:'',groesse:6,pos:'ur',variante:'auto',transparent:false,hinweis:false},
    tbX:14,tbY:130},
@@ -1828,6 +1825,10 @@ window.addEventListener('load', async () => {
   baueMarkenwahl();
   markenVorladen();
   verdrahteBedienelemente();
+  // Die Fusszeilenlinie richtet sich nach der GEMESSENEN Textbreite. Solange
+  // DM Sans noch nicht steht, misst der Browser die Ersatzschrift — deshalb
+  // einmal nachziehen, sobald die Schrift geladen ist.
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>renderMarke());
   // Format zuerst: es bestimmt Rahmenmasse, Schriftgroessen und Positionen.
   // ?format= nimmt Key, Anzeigename und die Alt-Kennungen 9:16 / 1:1 / 16:9.
   verlaufSperre=true;
@@ -2223,10 +2224,10 @@ function loadTemplate(idx){
   schriftAnwenden(document.getElementById('canvas-frame').offsetHeight||VORLAGEN_BASIS.h);
   document.getElementById('sl-tbwidth').value=t.tbWidth||88;
 
-  lineColor=t.lineColor; badgeColor=t.badgeColor; textColor=t.textColor;
+  badgeColor=t.badgeColor; textColor=t.textColor;
   markeKey=t.marke||'logo'; pbKey=t.pb||'PB1';
   markenwahlSetzen();
-  syncLineSwatches(t.lineColor); syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
+  syncBadgeSwatches(t.badgeColor); syncTextSwatches(t.textColor);
 
   // Textblock platzieren. Die Vorlagenwerte stammen aus dem Story-Rahmen
   // 270 x 480 und werden in relative Positionen umgerechnet, damit sie in
@@ -2325,6 +2326,43 @@ function updatePhotoFilter(){
   renderKI();
 }
 
+// Standardplatz des Stoerers: rechts, und senkrecht MITTIG zwischen der
+// Unterkante des Textblocks und der Oberkante der Fusszeile (Beschluss
+// 25.08.2026 — vorher klebte er am unteren Rand und stiess an die Fusszeile).
+// Steht keine Fusszeile im Motiv, gilt die untere Kernflaechenkante als Bezug.
+// Sobald der Stoerer von Hand bewegt wurde, zaehlt badgeRel und diese
+// Funktion haelt sich heraus.
+function stoererStandardSetzen(bszVor){
+  if(badgeRel) return;
+  const bb=document.getElementById('badge-block');
+  const bi=document.getElementById('badge-inner');
+  const frame=document.getElementById('canvas-frame');
+  if(!bb || !bi || !frame) return;
+  if(getComputedStyle(bb).display==='none') return;
+  const bsz = bszVor || bi.offsetWidth;
+  if(!bsz) return;
+  const bfw=frame.offsetWidth, bfh=frame.offsetHeight;
+  const f=aktFormat(), k=anzeigeFaktor(f);
+  const sa=safeAnzeige(f), luft=LUFT*k;
+  const tb  =document.getElementById('text-block');
+  const fuss=document.getElementById('marke-fuss');
+  const oben  = tb ? tb.offsetTop + tb.offsetHeight : 0;
+  const unten = (fuss && getComputedStyle(fuss).display!=='none')
+              ? fuss.offsetTop
+              : bfh - (sa.bottom + luft);
+  let top = (oben + unten)/2 - bsz/2;
+  // Nie in den Textblock hinein und nie in die Fusszeile. Reicht der Platz
+  // nicht, steht der Stoerer direkt unter dem Text und die Kollisionswarnung
+  // meldet es — lieber sichtbar eng als heimlich verschoben.
+  top = Math.max(oben, Math.min(top, unten - bsz));
+  // Seitlich derselbe Bezug wie bei Logo und Fusszeile: rechte Kante der
+  // KERNFLAECHE plus LUFT. Der frueher feste Prozentwert der Bildbreite war
+  // schmaler als die Safe Zone — der Kreis ragte in jedem Format hinein.
+  bb.style.left=Math.round(bfw - (sa.right + luft) - bsz)+'px';
+  bb.style.top =Math.round(top)+'px';
+  bb.style.right='auto'; bb.style.bottom='auto';
+}
+
 // ═══════════════════════════════════════════════════════════════
 // TEXT UPDATE (DOM direkt, kein innerHTML rebuild)
 // ═══════════════════════════════════════════════════════════════
@@ -2342,6 +2380,8 @@ function updateText(){
   document.getElementById('sv-hlsize').textContent=hlsize+'px';
   document.getElementById('sv-subsize').textContent=subsize+'px';
   document.getElementById('sv-tbwidth').textContent=tbw+'%';
+  const svst=document.getElementById('sv-stoerer');
+  if(svst) svst.textContent=Math.round(parseFloat((document.getElementById('sl-stoerer')||{}).value)||100)+'%';
 
   const tc=textColor;
   const tc75=tc==='#fff'?'rgba(255,255,255,.78)':'rgba(0,40,90,.7)';
@@ -2372,9 +2412,6 @@ function updateText(){
   document.getElementById('tb-role').style.color=tc75;
   document.getElementById('tb-role').style.display=role?'block':'none';
 
-  // Akzentlinie (keine Absenderkennung, nur Gestaltung)
-  document.getElementById('footer-line').style.background=lineColor;
-
   // Badge
   const bb=document.getElementById('badge-block');
   const bi=document.getElementById('badge-inner');
@@ -2382,7 +2419,10 @@ function updateText(){
     bb.style.display='block';
     bi.textContent=badge;
     bi.style.background=badgeColor;
-    const bsz=Math.round(hlsize*3.8);
+    // Der Kreis folgt der Headline-Schriftgroesse, der Regler skaliert
+    // dieses Mass. 100 % = das bisherige Verhaeltnis.
+    const stf=(parseFloat((document.getElementById('sl-stoerer')||{}).value)||100)/100;
+    const bsz=Math.max(12, Math.round(hlsize*3.8*stf));
     bi.style.width=bsz+'px'; bi.style.height=bsz+'px';
     bi.style.fontSize=Math.round(hlsize*.6)+'px';
     // Platzierung immer relativ zur Rahmenkante. Solange der Stoerer nicht
@@ -2392,8 +2432,7 @@ function updateText(){
       bb.style.left=Math.round(badgeRel.x*bfw)+'px';
       bb.style.top =Math.round(badgeRel.y*bfh)+'px';
     } else {
-      bb.style.left=Math.round(bfw-bfw*BADGE_STANDARD.rechts-bsz)+'px';
-      bb.style.top =Math.round(bfh-bfh*BADGE_STANDARD.unten -bsz)+'px';
+      stoererStandardSetzen(bsz);
     }
     bb.style.right='auto'; bb.style.bottom='auto';
   } else {
@@ -2412,18 +2451,14 @@ function updateText(){
 // ═══════════════════════════════════════════════════════════════
 // FARB-SWATCHES SYNC
 // ═══════════════════════════════════════════════════════════════
-const LINIEN_FARBEN=['#FAB90F','#EB640F','#AFC805','#64B9E6','#fff','#E1000F'];
+// Die Akzentlinie und ihre Farbwahl sind am 25.08.2026 gestrichen worden.
+// Farbe traegt im Motiv nur noch die Programmbereichslinie der Fusszeile,
+// und die folgt der Programmbereichswahl — ein Bedienelement statt zwei.
 // #7D5AA5 ist neu dazugekommen: das Programmbereichs-Violett aus dem
 // DVV-Piktogramm 02_Sprache. Es ersetzt nichts, es kommt hinzu.
 const STOERER_FARBEN=['#5B2D8E','#E1000F','#FAB90F','#AFC805','#00285A','#7D5AA5'];
 const TEXT_FARBEN=['#fff','#00285A','#FAB90F','#E6EBF0'];
 
-function setLineColor(idx,col){
-  lineColor=col; syncLineSwatches(col); updateText(); pushZustand('Akzentlinie');
-}
-function syncLineSwatches(col){
-  markiereAuswahlNachWert('[id^="linesw-"]', LINIEN_FARBEN, col);
-}
 function setBadgeColor(idx,col){
   badgeColor=col; syncBadgeSwatches(col); updateText(); pushZustand('St\u00f6rerfarbe');
 }
@@ -2555,6 +2590,8 @@ function handleDrop(e){
 }
 function removeFoto(){
   fotoDataUrl=null;
+  fotoZoom=100;
+  feldSetzen('sl-fotozoom',100);
   fotoAnzeigen();
   aktualisiereZusammenfassungen();
   pushZustand('Foto entfernt');
@@ -2730,7 +2767,7 @@ async function resetEditor(){
   // ohne Zwischeneintraege ausgefuehrt und am Ende EINMAL gemerkt.
   verlaufSperre=true;
   try{
-    fotoDataUrl=null; fotoAnzeigen();
+    fotoDataUrl=null; fotoZoom=100; feldSetzen('sl-fotozoom',100); fotoAnzeigen();
     KI.typ=''; KI.entschieden=false;
     exportFehlerVerbergen();
     setFormat(FORMATS[0].key);
@@ -2760,8 +2797,17 @@ const LUFT = 30;             // Exportpixel Abstand zur Kernflaechenkante
 // die Breite folgt aus der Originaldatei — deshalb steht an den Bilddateien
 // width:auto und kein gerechneter Wert.
 const MARKE_HOEHE   = 70;    // Logo und Bildmarke
-const FUSS_SCHRIFT  = 46;    // "vhs Spandau"
+// Der Bezeichner des Programmbereichs steht klein und grau ueber der Linie.
+// 24 Exportpixel entsprechen bei 1080 px Motivbreite rund 9 pt.
+const PB_SCHRIFT    = 24;    // Bezeichner des Programmbereichs
 const LINIE_STAERKE = 5;     // Programmbereichslinie
+// Um so viele Exportpixel ragt der helle Vorlauf links ueber den Bezeichner
+// hinaus. Die Gesamtlaenge der Linie folgt damit der Textbreite.
+// 25.08.2026 von 10 auf 30 erhoeht — die Linie soll weiter ausladen.
+const LINIE_UEBERSTAND = 30;
+// Grautoene des Bezeichners, je nach Untergrund. Bewusst neutral grau und
+// nicht in Textfarbe: der Programmbereich ordnet ein, er ruft nicht.
+const PB_GRAU = { dunkel:'#C8CDD3', hell:'#6E7781' };
 // Bezugskante fuer die KI-Symbolgroesse. Frueher war das die kurze Kante des
 // jeweiligen Formats — dadurch schrumpfte das Symbol bei flachen Formaten.
 // Mit fester Bezugskante ergibt der Standardwert 6 % in JEDEM Format 65 px.
@@ -2796,8 +2842,12 @@ const MARKEN=[
                verhaeltnis:6.0025, inhalt:INHALT_VOLL }
     } },
 
-  { key:'fuss', kurz:'Fußzeile', label:'"vhs Spandau" mit Programmbereichslinie',
-    beschreibung:'Schriftzug über zweiteiliger Linie' },
+  // Seit dem 25.08.2026: die Fusszeile nennt den PROGRAMMBEREICH, nicht mehr
+  // "vhs Spandau". Damit die Kernregel gewahrt bleibt — genau eine
+  // Absenderkennung je Motiv, und zwar eine erkennbare — traegt diese
+  // Variante das offizielle Logo zusaetzlich im Kopfbereich.
+  { key:'fuss', kurz:'Fußzeile mit Logo', label:'Logo im Kopf, Programmbereich in der Fußzeile',
+    beschreibung:'Logo + Programmbereichslinie' },
 
   { key:'bildmarke', kurz:'Bildmarke', label:'Bildmarke',
     beschreibung:'nur die Farbkreise',
@@ -2850,7 +2900,9 @@ const PB=[
 // Anmerkung: die drei Anteile ergeben zusammen 18,66 %. Der Beschluss nennt
 // 18,5 % Gesamtlaenge. Gerechnet wird aus den Einzelwerten, damit Vorlauf,
 // Luecke und Farbe exakt im beschlossenen Verhaeltnis zueinander stehen.
-const LINIE={ hell:0.060, luecke:0.0046, farbe:0.122 };
+// 25.08.2026: Die Luecke zwischen Vorlauf und Programmbereichsfarbe ist
+// gestrichen — der helle Anteil schliesst buendig an die Farbe an.
+const LINIE={ hell:0.060, luecke:0, farbe:0.122 };
 
 let markeKey='logo';
 let pbKey='PB1';
@@ -3118,11 +3170,14 @@ function renderMarke(){
   const b=markenBewertung();
   const m=angezeigteMarke();
 
-  if(m.key==='logo' || m.key==='bildmarke'){
-    const q = m.datei[b.fassung];
+  // Bilddatei der Kennung setzen. Gilt fuer "Logo" und "Bildmarke" und
+  // zusaetzlich fuer "Fußzeile mit Logo", wo das Logo neben der
+  // Programmbereichslinie steht.
+  function bildkennungSetzen(mb){
+    const q = mb.datei[b.fassung];
     if(bild.getAttribute('src')!==q.pfad) bild.setAttribute('src',q.pfad);
-    bild.alt = m.key==='logo' ? 'vhs Volkshochschule Spandau'
-                              : 'vhs Bildmarke';
+    bild.alt = mb.key==='logo' ? 'vhs Volkshochschule Spandau'
+                               : 'vhs Bildmarke';
 
     // Die Hoehe des ZEICHENS steuert, nicht die der Datei. Traegt die Datei
     // transparenten Rand, wird sie entsprechend groesser skaliert und um den
@@ -3135,7 +3190,7 @@ function renderMarke(){
     const platz = (f.w - f.safe.left - f.safe.right) - 2*LUFT;
     if(zielH * inhaltVerhaeltnis > platz){
       zielH = platz / inhaltVerhaeltnis;
-      console.warn('[marke] '+m.key+' auf '+Math.round(zielH)+
+      console.warn('[marke] '+mb.key+' auf '+Math.round(zielH)+
         ' px Hoehe reduziert — '+f.key+' bietet nur '+Math.round(platz)+' px Breite.');
     }
     const dateiH = zielH / q.inhalt.h;              // Hoehe der ganzen Datei
@@ -3146,33 +3201,55 @@ function renderMarke(){
     box.style.top =Math.round((sa.top +luft) - q.inhalt.y*dateiH*k)+'px';
     box.style.display='block';
     box.setAttribute('aria-hidden','false');
+  }
+
+  if(m.key==='logo' || m.key==='bildmarke'){
+    bildkennungSetzen(m);
 
   } else if(m.key==='fuss'){
-    bild.removeAttribute('src');
+    // Das Logo steht zusaetzlich im Kopfbereich — auf zu schwachem
+    // Untergrund tritt wie sonst auch die Bildmarke an seine Stelle.
+    bildkennungSetzen(MARKEN[markeIndex(b.ausweichen ? 'bildmarke' : 'logo')]);
+
     const p=aktPB();
     const t   = document.getElementById('marke-fuss-text');
     const hell= document.getElementById('linie-hell');
     const farb= document.getElementById('linie-farbe');
-    t.style.fontSize=(FUSS_SCHRIFT*k).toFixed(2)+'px';
-    t.style.color=textColor;
-    hell.style.width =(LINIE.hell  * f.w * k).toFixed(2)+'px';
-    hell.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
-    hell.style.background=vorlaufFarbe();
-    farb.style.width =(LINIE.farbe * f.w * k).toFixed(2)+'px';
-    farb.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
-    farb.style.marginLeft=(LINIE.luecke * f.w * k).toFixed(2)+'px';
-    farb.style.background=p.farbe;
-    // Rechtsbuendig zur Kernflaeche, Unterkante auf safe.b + LUFT
+    // Erst sichtbar machen, dann messen: offsetWidth ist bei display:none 0.
     fuss.style.right =Math.round(sa.right +luft)+'px';
     fuss.style.bottom=Math.round(sa.bottom+luft)+'px';
     fuss.style.display='block';
     fuss.setAttribute('aria-hidden','false');
+
+    t.textContent=p.name;
+    t.style.fontSize=(PB_SCHRIFT*k).toFixed(2)+'px';
+    t.style.color=istDunkel(b.grund) ? PB_GRAU.dunkel : PB_GRAU.hell;
+
+    // Linienlaenge folgt der Textbreite: der helle Vorlauf ragt links um
+    // LINIE_UEBERSTAND ueber den Bezeichner hinaus. Der farbige Anteil und
+    // die Luecke behalten ihr beschlossenes Mass.
+    const farbeB  = LINIE.farbe  * f.w;
+    const lueckeB = LINIE.luecke * f.w;
+    const textB   = t.offsetWidth / k;                     // in Exportpixeln
+    const hellB   = Math.max(0, textB + LINIE_UEBERSTAND - lueckeB - farbeB);
+    hell.style.width =(hellB*k).toFixed(2)+'px';
+    hell.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
+    hell.style.background=vorlaufFarbe();
+    farb.style.width =(farbeB*k).toFixed(2)+'px';
+    farb.style.height=(LINIE_STAERKE*k).toFixed(2)+'px';
+    farb.style.marginLeft=(lueckeB*k).toFixed(2)+'px';
+    farb.style.background=p.farbe;
 
   } else {
     bild.removeAttribute('src');
   }
 
   kontrastAnzeigen(b);
+  // Der Stoerer bezieht seinen Standardplatz auf die Fusszeile — die steht
+  // erst jetzt. Deshalb hier nachziehen, nicht in updateText allein, und
+  // die Kollisionsmeldung gleich mit: sie stammte sonst von der alten Lage.
+  stoererStandardSetzen();
+  kollisionMelden();
   renderKI();   // die Kennung bestimmt mit, wohin das KI-Symbol ausweicht
 }
 
@@ -3186,7 +3263,7 @@ function kontrastAnzeigen(b){
   const zahl = w => w.toFixed(1).replace('.',',');
   // Die Fassung (positiv/negativ) gilt nur fuer die Bildvarianten. Bei
   // Fusszeile und "keine" waere die Angabe irrefuehrend.
-  const mitBild = (markeKey==='logo' || markeKey==='bildmarke');
+  const mitBild = (markeKey==='logo' || markeKey==='bildmarke' || markeKey==='fuss');
   const fassungName = b.fassung==='dunkel' ? 'Negativfassung' : 'Positivfassung';
   let h='<div class="mk-zeile"><span class="mk-punkt" style="background:'+b.grund+'"></span>'+
         'Untergrund '+b.grund+(mitBild ? ' &middot; '+fassungName : '')+'</div>';
@@ -3370,7 +3447,7 @@ function pruefeKennungen(){
 // ═══════════════════════════════════════════════════════════════
 // zustandLesen() und zustandAnwenden() sind ab hier die einzige Stelle, an
 // der definiert ist, WAS den Editorzustand ausmacht. Die Modulvariablen
-// (activeColor, lineColor, tbRel, KI …) bleiben die Arbeitskopie, aus der
+// (activeColor, badgeColor, tbRel, KI …) bleiben die Arbeitskopie, aus der
 // die Renderfunktionen lesen — aber serialisiert und wiederhergestellt wird
 // ausschliesslich ueber dieses Paar. Nur dadurch ist der Verlauf trivial.
 let overlayIdx = 0;         // Index der gewaehlten DVV-Farbflaeche
@@ -3388,6 +3465,7 @@ function zustandLesen(){
     format:  aktFormat().key,
     vorlage: aktVorlage,
     foto:    fotoDataUrl,
+    fotoZoom: fotoZoom,
     text: {
       headline: feldWert('tf-headline'), sub: feldWert('tf-sub'),
       autor:    feldWert('tf-author'),   rolle: feldWert('tf-role'),
@@ -3395,12 +3473,13 @@ function zustandLesen(){
       stoererAn: !!(document.getElementById('badge-vis')||{}).checked,
       volltext: feldWert('tf-fulltext-preview')
     },
-    schrift: { hl: schriftRel.hl, sub: schriftRel.sub, breite: +feldWert('sl-tbwidth') },
+    schrift: { hl: schriftRel.hl, sub: schriftRel.sub, breite: +feldWert('sl-tbwidth'),
+               stoerer: +feldWert('sl-stoerer') },
     farbe: {
       flaecheIdx: overlayIdx, flaeche: activeColor, flaecheName: activeColorName,
       deckkraft: +feldWert('sl-opacity'), helligkeit: +feldWert('sl-bright'),
       saettigung: +feldWert('sl-sat'),    kontrast:   +feldWert('sl-contrast'),
-      linie: lineColor, stoerer: badgeColor, schrift: textColor
+      stoerer: badgeColor, schrift: textColor
     },
     marke: { variante: markeKey, programmbereich: pbKey },
     lage: {
@@ -3419,6 +3498,8 @@ function zustandAnwenden(z){
   markiereVorlage(aktVorlage);
 
   fotoDataUrl = z.foto || null;
+  fotoZoom = z.fotoZoom || 100;          // Altbestand ohne Wert -> 100 %
+  feldSetzen('sl-fotozoom', fotoZoom);
   fotoAnzeigen();
 
   feldSetzen('tf-headline', z.text.headline);
@@ -3432,6 +3513,7 @@ function zustandAnwenden(z){
 
   schriftRel = { hl:z.schrift.hl, sub:z.schrift.sub };
   feldSetzen('sl-tbwidth', z.schrift.breite);
+  feldSetzen('sl-stoerer', z.schrift.stoerer || 100);   // Altbestand -> 100 %
 
   overlayIdx = z.farbe.flaecheIdx;
   setOverlayColorDirect(z.farbe.flaecheIdx, z.farbe.flaeche, z.farbe.flaecheName);
@@ -3439,7 +3521,6 @@ function zustandAnwenden(z){
   feldSetzen('sl-bright',   z.farbe.helligkeit);
   feldSetzen('sl-sat',      z.farbe.saettigung);
   feldSetzen('sl-contrast', z.farbe.kontrast);
-  lineColor  = z.farbe.linie;   syncLineSwatches(lineColor);
   badgeColor = z.farbe.stoerer; syncBadgeSwatches(badgeColor);
   textColor  = z.farbe.schrift; syncTextSwatches(textColor);
 
@@ -3469,21 +3550,44 @@ function zustandAnwenden(z){
   aktualisiereZusammenfassungen();
 }
 
+// Bildgroesse des Hintergrundfotos.
+// Skaliert die Fotoebene aus der Mitte heraus; der Rahmen schneidet ab
+// (canvas-frame hat overflow:hidden). 100 % = formatfuellend wie bisher,
+// darueber waechst der Ausschnitt. Kleiner als 100 % gibt es nicht: dann
+// entstuenden leere Raender in der Kernflaeche.
+function updateFotoZoom(){
+  const el=document.getElementById('sl-fotozoom');
+  const z=Math.max(100, Math.min(300, Math.round(parseFloat(el&&el.value)||100)));
+  fotoZoom=z;
+  if(el && +el.value!==z) el.value=z;
+  const anz=document.getElementById('sv-fotozoom');
+  if(anz) anz.textContent=z+'%';
+  const ebene=document.getElementById('cl-foto');
+  if(ebene){
+    ebene.style.transformOrigin='center center';
+    ebene.style.transform = z===100 ? 'none' : 'scale('+(z/100).toFixed(4)+')';
+  }
+  fotoMittelNeu();   // anderer Ausschnitt -> anderer Mittelwert unter der Kennung
+}
+
 // Foto-Anzeige aus dem Zustand herstellen (statt aus dem Ladevorgang)
 function fotoAnzeigen(){
   const foto=document.getElementById('cl-foto');
   const vor =document.getElementById('foto-vorschau');
   const zone=document.getElementById('upload-zone');
   const hint=document.getElementById('no-foto-hint');
+  const skala=document.getElementById('foto-skala-wrap');
   if(fotoDataUrl){
     foto.style.backgroundImage='url('+fotoDataUrl+')';
     document.getElementById('foto-preview-img').src=fotoDataUrl;
     vor.style.display='block'; zone.style.display='none'; hint.style.display='none';
+    if(skala) skala.style.display='block';
   } else {
     foto.style.backgroundImage='';
     vor.style.display='none'; zone.style.display='block'; hint.style.display='block';
+    if(skala) skala.style.display='none';
   }
-  fotoMittelNeu();
+  updateFotoZoom();   // ruft fotoMittelNeu mit
 }
 
 function markiereVorlage(idx){
@@ -3679,7 +3783,7 @@ function aktualisiereZusammenfassungen(){
   const f=aktFormat();
   s('kurz-format',  f.w+' × '+f.h);
   s('kurz-vorlage', VORLAGEN_NAMEN[aktVorlage] || '—');
-  s('kurz-foto',    fotoDataUrl ? 'Foto gesetzt' : 'kein Foto');
+  s('kurz-foto',    fotoDataUrl ? ('Foto gesetzt' + (fotoZoom>100 ? ' \u00b7 '+fotoZoom+'\u00a0%' : '')) : 'kein Foto');
   const hl=(feldWert('tf-headline')||'').trim();
   s('kurz-text',    hl ? (hl.length>22 ? hl.slice(0,22)+'…' : hl) : 'kein Text');
   s('kurz-farbe',   Math.round(feldWert('sl-opacity'))+' % Deckkraft');
@@ -3873,18 +3977,20 @@ function textblockTasten(e){
 // die Handler hier und nicht mehr als oninput im Markup.
 const REGLER=[
   { id:'sl-opacity',    name:'Deckkraft',                live:()=>updateOpacity(feldWert('sl-opacity')) },
+  { id:'sl-fotozoom',   name:'Bildgröße',                live:updateFotoZoom },
   { id:'sl-bright',     name:'Foto-Helligkeit',          live:updatePhotoFilter },
   { id:'sl-sat',        name:'Foto-Sättigung',           live:updatePhotoFilter },
   { id:'sl-contrast',   name:'Foto-Kontrast',            live:updatePhotoFilter },
   { id:'sl-hlsize',     name:'Schriftgröße Headline',    live:updateText },
   { id:'sl-subsize',    name:'Schriftgröße Unterzeile',  live:updateText },
+  { id:'sl-stoerer',    name:'Störergröße',              live:updateText },
   { id:'sl-tbwidth',    name:'Textblock-Breite',         live:updateText },
   { id:'sl-ki-groesse', name:'Symbolhöhe',               live:()=>kiSetGroesse(feldWert('sl-ki-groesse')) },
 ];
 const TEXTFELDER=[
   { id:'tf-headline', name:'Headline' },
   { id:'tf-sub',      name:'Unterzeile' },
-  { id:'tf-author',   name:'Autorin' },
+  { id:'tf-author',   name:'Autor*in' },
   { id:'tf-role',     name:'Titel / Funktion' },
   { id:'tf-badge',    name:'Störertext' },
 ];

@@ -179,6 +179,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .ii-kurs{font-size:10px;color:var(--blau60);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ii-pill{font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;flex-shrink:0;text-transform:uppercase}
 .p-neu{background:#FEF3DA;color:#996B00}.p-ok{background:#EAF3DE;color:#3B6D11}
+/* ── Einreichungs-Register: neu / angenommen / abgelehnt ── */
+.einr-tabs{display:flex;gap:4px;margin-bottom:7px}
+.einr-tab{flex:1;padding:5px 3px;border-radius:7px;border:1.5px solid #e2e7ef;background:#fff;color:var(--blau60);font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.einr-tab:hover{border-color:var(--blau60)}
+.einr-tab.on{background:var(--blau);border-color:var(--blau);color:#fff}
+.einr-tab-n{font-size:9px;font-weight:700;padding:0 4px;border-radius:6px;background:#eef2f7;color:var(--blau60);min-width:14px;text-align:center}
+.einr-tab.on .einr-tab-n{background:rgba(255,255,255,.22);color:#fff}
 .fi,.ft{width:100%;border:1.5px solid #dde2e9;border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--blau);outline:none;transition:border-color .15s;background:#fff}
 .fi:focus,.ft:focus{border-color:var(--blau)}
 .ft{resize:vertical;min-height:60px;line-height:1.5}
@@ -727,6 +734,11 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="sl" style="display:flex;align-items:center;justify-content:space-between">
             Einreichungen
             <span onclick="loadEinreichungen()" style="font-size:9px;color:var(--blau60);cursor:pointer;text-decoration:underline">↺ Aktualisieren</span>
+          </div>
+          <div class="einr-tabs" role="tablist" aria-label="Einreichungen filtern">
+            <button type="button" class="einr-tab on" id="einr-tab-neu" role="tab" aria-selected="true" onclick="setEinrTab('neu')">Neu <span class="einr-tab-n" id="einr-n-neu">0</span></button>
+            <button type="button" class="einr-tab" id="einr-tab-angenommen" role="tab" aria-selected="false" onclick="setEinrTab('angenommen')">Angenommen <span class="einr-tab-n" id="einr-n-angenommen">0</span></button>
+            <button type="button" class="einr-tab" id="einr-tab-abgelehnt" role="tab" aria-selected="false" onclick="setEinrTab('abgelehnt')">Abgelehnt <span class="einr-tab-n" id="einr-n-abgelehnt">0</span></button>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px" id="red-inbox-list">
             <div class="empty" style="padding:16px 0"><div class="empty-icon" style="font-size:28px">⏳</div><div style="font-size:12px">Wird geladen …</div></div>
@@ -1770,6 +1782,44 @@ let einreichungenCache = [];
 // nicht auf einreichungenCache, sonst zeigen die Klick-Indizes daneben.
 let inboxVisible = [];
 
+// ── Register der Einreichungen ────────────────────────────────────────
+// Der schmale Spaltenbereich zeigt immer nur EINEN Status. Sobald eine
+// Einreichung angenommen oder abgelehnt wird, wandert sie in ihr Register
+// und verschwindet aus "Neu" — bei steigender Nutzung die Voraussetzung
+// dafuer, dass die Spalte lesbar bleibt.
+const EINR_TABS = ['neu','angenommen','abgelehnt'];
+let einrTab = 'neu';
+
+// Status kann bei Altbestand fehlen — dann gilt "neu".
+function einrStatus(e){ return EINR_TABS.includes(e.status) ? e.status : 'neu'; }
+
+function einrGefiltert(){
+  return einreichungenCache.filter(e => einrStatus(e) === einrTab);
+}
+
+function einrZaehlerSetzen(){
+  EINR_TABS.forEach(t => {
+    const el = document.getElementById('einr-n-' + t);
+    if (el) el.textContent = einreichungenCache.filter(e => einrStatus(e) === t).length;
+  });
+}
+
+function setEinrTab(tab){
+  if (!EINR_TABS.includes(tab)) tab = 'neu';
+  einrTab = tab;
+  EINR_TABS.forEach(t => {
+    const el = document.getElementById('einr-tab-' + t);
+    if (!el) return;
+    el.classList.toggle('on', t === tab);
+    el.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+  });
+  // Die Aktionsleiste gehoert zur vorherigen Auswahl — beim Wechsel weg.
+  const aktBtn = document.getElementById('inbox-annehmen-btn');
+  if (aktBtn) { aktBtn.style.display = 'none'; aktBtn.innerHTML = ''; aktBtn.dataset.einrId = ''; }
+  einrZaehlerSetzen();
+  renderInbox(einrGefiltert());
+}
+
 async function loadEinreichungen() {
   try {
     const r = await fetch('/api/einreichungen', { credentials:'include' });
@@ -1778,7 +1828,7 @@ async function loadEinreichungen() {
     // Inbox nur rendern, wenn der Redaktions-Screen im DOM ist — die Badges
     // sollen auch fuer Rollen ohne Inbox (PBL) aktualisiert werden.
     if (document.getElementById('red-inbox-list')) {
-      renderInbox(einreichungenCache.filter(e => e.status !== 'abgelehnt'));
+      setEinrTab(einrTab);
     }
     // Badges: offene Einreichungen. Die API liefert rollenabhaengig — Admin und
     // Redakteur sehen alle, eine PBL nur ihre eigenen (server.js).
@@ -1795,7 +1845,15 @@ function renderInbox(einr) {
   const listEl = document.getElementById('red-inbox-list');
   if (!listEl) return;
   if (!einr.length) {
-    listEl.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">📭</div><div class="empty-title">Keine Einreichungen</div><div style="font-size:12px">Sobald eine PBL einen Vorschlag einreicht, erscheint er hier.</div></div>';
+    const LEER = {
+      neu:        { icon:'\u{1F4ED}', titel:'Keine neuen Einreichungen', text:'Sobald eine PBL einen Vorschlag einreicht, erscheint er hier.' },
+      angenommen: { icon:'\u2705',    titel:'Noch nichts angenommen',    text:'Angenommene Einreichungen sammeln sich in diesem Register.' },
+      abgelehnt:  { icon:'\u21A9',    titel:'Noch nichts abgelehnt',     text:'Abgelehnte Einreichungen bleiben hier nachvollziehbar.' }
+    };
+    const L = LEER[einrTab] || LEER.neu;
+    listEl.innerHTML = '<div class="empty" style="padding:24px 0"><div class="empty-icon">' + L.icon +
+      '</div><div class="empty-title">' + L.titel +
+      '</div><div style="font-size:12px">' + L.text + '</div></div>';
     return;
   }
   const STATUS_PILL = {
