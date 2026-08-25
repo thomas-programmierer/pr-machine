@@ -185,8 +185,8 @@ async function addPost(p) {
     `INSERT INTO posts
        (datum, uhrzeit, kanal, anlass, text, tags, status, ziel,
         freigabe, freigegeben_von, paid, url, erstellt, autor, autor_id, bild, pb,
-        ki_kennzeichnung, absenderkennung, programmbereich)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+        ki_kennzeichnung, absenderkennung, programmbereich, studio)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
      RETURNING *`,
     [ p.datum || null, p.uhrzeit || null, p.kanal || null, p.anlass || null,
       p.text || null, p.tags || null, p.status || 'geplant', p.ziel || null,
@@ -196,7 +196,8 @@ async function addPost(p) {
       p.bild || null, p.pb || null,
       p.kiKennzeichnung || p.ki_kennzeichnung || '',
       p.absenderkennung || '',
-      p.programmbereich || '' ]
+      p.programmbereich || '',
+      p.studio || null ]
   );
   return rowToPost(res.rows[0]);
 }
@@ -223,6 +224,15 @@ async function updatePost(id, p) {
       (p.programmbereich !== undefined ? p.programmbereich : null) ]
   );
   return res.rows[0] ? rowToPost(res.rows[0]) : null;
+}
+
+// Der gespeicherte Studio-Zustand eines einzelnen Posts.
+// Rueckgabe: der JSON-String, null wenn der Post keinen Entwurf traegt
+// (Altbestand vor dem 25.08.2026), undefined wenn es den Post nicht gibt.
+async function getPostStudio(id) {
+  var res = await pool.query('SELECT studio FROM posts WHERE id=$1', [id]);
+  if (!res.rows[0]) return undefined;
+  return res.rows[0].studio || null;
 }
 
 async function deletePost(id) {
@@ -310,6 +320,15 @@ async function ensureTables() {
   await pool.query(`
     ALTER TABLE posts ADD COLUMN IF NOT EXISTS programmbereich TEXT
   `);
+  // studio: der vollstaendige Studio-Zustand als JSON (Beschluss 25.08.2026).
+  // Vorher trug ein eingereichter Post nur das fertige PNG — der Entwurf
+  // dahinter existierte nirgends, und "Im Grafik-Studio oeffnen" konnte ihn
+  // deshalb nicht laden. Das Feld steht BEWUSST NICHT in rowToPost: es traegt
+  // das Hintergrundfoto und wuerde jede Postliste unnoetig schwer machen.
+  // Abruf einzeln ueber getPostStudio().
+  await pool.query(`
+    ALTER TABLE posts ADD COLUMN IF NOT EXISTS studio TEXT
+  `);
 }
 
 async function testConnection() {
@@ -322,6 +341,7 @@ module.exports = {
   getEinreichungen, addEinreichung, updateEinreichung, deleteEinreichung,
   setEinreichungStatus,
   getKurse, getKursByCode, getKategorien, upsertKurse,
-  getPosts, addPost, updatePost, deletePost, setPostStatus,
+  getPosts,
+  getPostStudio, addPost, updatePost, deletePost, setPostStatus,
   testConnection, ensureTables
 };

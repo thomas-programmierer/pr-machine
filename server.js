@@ -402,12 +402,22 @@ function loadUsers() {
 function saveUsers(u) { saveJSON(USERS_FILE, { users: u }); }
 function safeUser(u) { const { password:_, ...s } = u; return s; }
 async function readBody(req) {
-  return new Promise((res, rej) => {
-    let b = "", size = 0;
+  return new Promise((res) => {
+    let b = "", size = 0, abgebrochen = false;
     const MAX = 25 * 1024 * 1024;
-    req.on("data", d => { size += d.length; if (size > MAX) { req.destroy(); return; } b += d; });
-    req.on("end", () => { try { res(JSON.parse(b)); } catch { res({}); } });
-    req.on("error", rej);
+    req.on("data", d => {
+      if (abgebrochen) return;
+      size += d.length;
+      // Frueher stand hier nur req.destroy() — das Promise blieb offen, die
+      // Anfrage hing, und der Aufrufer bekam nie eine Antwort. Seit ein Post
+      // seinen vollstaendigen Studio-Zustand samt Hintergrundfoto mitfuehrt
+      // (25.08.2026), ist die Grenze ueberhaupt erst erreichbar. Deshalb wird
+      // jetzt mit einem Marker aufgeloest, den der Aufrufer beantworten kann.
+      if (size > MAX) { abgebrochen = true; req.destroy(); return res({ __zuGross: true }); }
+      b += d;
+    });
+    req.on("end",   () => { if (abgebrochen) return; try { res(JSON.parse(b)); } catch { res({}); } });
+    req.on("error", () => { if (!abgebrochen) res({}); });
   });
 }
 async function readBodyRaw(req) {
@@ -692,9 +702,23 @@ const server = http.createServer(async (req, res) => {
     return jsonRes(res, 200, posts);
   }
 
+  // GET /api/posts/:id/studio — der gespeicherte Entwurf eines Posts.
+  // Eigene Route statt eines Feldes in der Liste: der Zustand traegt das
+  // Hintergrundfoto und wird nur gebraucht, wenn wirklich jemand den Entwurf
+  // im Grafik-Studio oeffnet.
+  if (req.method === "GET" && /^\/api\/posts\/[^/]+\/studio$/.test(url)) {
+    if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
+    const id = url.split("/")[3];
+    const zustand = await db.getPostStudio(id);
+    if (zustand === undefined) return jsonRes(res, 404, { error:"Post nicht gefunden" });
+    return jsonRes(res, 200, { studio: zustand });
+  }
+
   if (req.method === "POST" && url === "/api/posts") {
     if (!sess) return jsonRes(res, 401, { error:"Nicht eingeloggt" });
     const b = await readBody(req);
+    if (b.__zuGross) return jsonRes(res, 413, {
+      error:"Der Entwurf ist zu gro\u00df. Bitte ein kleineres Hintergrundfoto verwenden." });
     const neu = await db.addPost({ ...b, autor: sess.user.name, autorId: sess.user.id });
     return jsonRes(res, 201, { ok:true, post:neu });
   }

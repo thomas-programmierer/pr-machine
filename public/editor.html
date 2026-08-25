@@ -1667,6 +1667,18 @@ function exportFehlerZeigen(text){
                '<svg class="ic ic-14" aria-hidden="true"><use href="#i-fehler"/></svg> Export nicht verwendbar — '+escHtml(text);
   el.style.display='block';
 }
+// Wie exportFehlerZeigen, aber ohne die Ueberschrift "Export nicht
+// verwendbar": beim Laden eines Entwurfs ist nichts am Export verkehrt.
+function studioHinweisZeigen(text){
+  const el=document.getElementById('export-fehler');
+  if(!el){ console.warn('[studio]', text); return; }
+  el.innerHTML='<span class="ef-zu" onclick="exportFehlerVerbergen()" role="button" '+
+               'tabindex="0" aria-label="Meldung schlie\u00dfen" title="Schlie\u00dfen">'+
+               '<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg></span>'+
+               '<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg> '+escHtml(text);
+  el.style.display='block';
+}
+
 function exportFehlerVerbergen(){
   const el=document.getElementById('export-fehler');
   if(el) el.style.display='none';
@@ -1760,6 +1772,34 @@ window.addEventListener('message', function(e) {
   applyRedaktionPayload();
   showStudioBanner(p.anlass, p.kurs, p.fulltext);
 });
+
+// Einen eingereichten Entwurf zurueckholen. Der Zustand haengt am POST, nicht
+// im Browser — deshalb kann ihn auch jemand anderes oeffnen als die Person,
+// die ihn gebaut hat. Genau das braucht das Freigabe-Cockpit.
+// Rueckgabe: 'geladen' | 'kein-entwurf' | 'fehler'
+async function entwurfVomPostLaden(postId){
+  if(!postId) return 'kein-entwurf';
+  let d;
+  try{
+    const r = await fetch('/api/posts/'+encodeURIComponent(postId)+'/studio',
+                          { credentials:'include' });
+    if(!r.ok) return 'fehler';
+    d = await r.json();
+  }catch(e){ console.warn('[studio] Entwurf nicht abrufbar:', e.message); return 'fehler'; }
+  if(!d || !d.studio) return 'kein-entwurf';
+  let z;
+  try{ z = JSON.parse(d.studio); }
+  catch(e){ console.warn('[studio] Entwurf unlesbar:', e.message); return 'fehler'; }
+  // Mindestumfang pruefen, statt zustandAnwenden in einen Fehler laufen zu
+  // lassen: ein halb angewendeter Zustand waere schlimmer als gar keiner.
+  if(!z || !z.text || !z.farbe || !z.schrift || !z.lage || !z.lage.text ||
+     !z.ki || !z.einreichen) return 'fehler';
+  try{
+    verlaufSperre=true;
+    try{ zustandAnwenden(z); } finally { verlaufSperre=false; }
+  }catch(e){ console.warn('[studio] Entwurf nicht anwendbar:', e.message); return 'fehler'; }
+  return 'geladen';
+}
 
 // ── App-Init ──────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
@@ -1858,6 +1898,47 @@ window.addEventListener('load', async () => {
     window.history.replaceState({}, '', '/editor');
   }
 
+  // Aus der Voransicht oder dem Freigabe-Cockpit: den gespeicherten Entwurf
+  // wiederherstellen. Er gewinnt gegen den URL-Payload, weil er das
+  // vollstaendige Motiv traegt und nicht nur dessen Texte.
+  let entwurfGeladen = false;
+  if (inPostId) {
+    const ergebnis = await entwurfVomPostLaden(inPostId);
+    entwurfGeladen = (ergebnis === 'geladen');
+    if (entwurfGeladen) {
+      showToast('Entwurf des Posts geladen','i-haken');
+      setTimeout(() => oeffneAbschnitt(4), 100);
+    } else if (ergebnis === 'kein-entwurf' && qp.get('from')) {
+      studioHinweisZeigen('Zu diesem Post ist kein Entwurf gespeichert \u2014 er wurde vor '+
+        'dem 25.08.2026 eingereicht. Anlass und Texte sind \u00fcbernommen, das Motiv '+
+        'muss neu aufgebaut werden.');
+    } else if (ergebnis === 'fehler') {
+      studioHinweisZeigen('Der gespeicherte Entwurf dieses Posts konnte nicht geladen '+
+        'werden. Anlass und Texte sind \u00fcbernommen.');
+    }
+    window.history.replaceState({}, '', '/editor');
+  }
+
+  // Bild aus der Redaktion abholen. index.html legt es im sessionStorage ab,
+  // weil eine Data-URL nicht in die Adresszeile passt — bis zum 25.08.2026
+  // hat es hier niemand wieder herausgeholt, das Foto ging still verloren.
+  // Nur wenn kein vollstaendiger Entwurf geladen wurde: der bringt sein
+  // eigenes Foto mit.
+  if (!entwurfGeladen) {
+    let uebergebenesBild = null;
+    try{ uebergebenesBild = sessionStorage.getItem('studioBild'); }catch(e){}
+    if (uebergebenesBild) {
+      fotoDataUrl = uebergebenesBild;
+      fotoZoom = 100;
+      feldSetzen('sl-fotozoom', 100);
+      fotoAnzeigen();
+      showToast('Bild der Einreichung \u00fcbernommen','i-kamera');
+    }
+  }
+  // In jedem Fall aufraeumen: ein liegengebliebenes Bild wuerde sonst beim
+  // naechsten Studio-Aufruf in einem fremden Motiv auftauchen.
+  try{ sessionStorage.removeItem('studioBild'); }catch(e){}
+
   // Ausgangspunkt des Verlaufs. Ohne diesen Eintrag gaebe es nichts,
   // wohin der erste Klick auf Rueckgaengig zurueckfuehren koennte.
   zeichneSafeWerte();
@@ -1871,7 +1952,10 @@ window.addEventListener('load', async () => {
 
   // Der frische Stand dient als Vergleich: nur was davon abweicht, ist ein
   // Entwurf, der eine Rueckfrage wert ist.
-  await entwurfAnbieten(entwurfPaket, verlauf[0].daten);
+  // Die Rueckfrage nach dem lokalen Zwischenstand entfaellt, wenn gerade ein
+  // Entwurf vom Post geladen wurde — sonst konkurrieren zwei Staende um
+  // dasselbe Motiv.
+  if (!entwurfGeladen) await entwurfAnbieten(entwurfPaket, verlauf[0].daten);
 });
 
 async function doLogout() {
@@ -2708,6 +2792,10 @@ async function exportUndFreigabe() {
     // Absenderkennung nach Beschluss vom 21.08.2026
     absenderkennung: markeKey,
     programmbereich: markeKey==='fuss' ? pbKey : '',
+    // Der vollstaendige Entwurf (Beschluss 25.08.2026). Ohne ihn traegt der
+    // Post nur das fertige PNG, und wer ihn spaeter im Studio oeffnet,
+    // beginnt bei null — genau der Mangel, der am 25.08.2026 auffiel.
+    studio: JSON.stringify(zustandLesen()),
   };
 
   try {
@@ -4048,9 +4136,29 @@ function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 // ═══════════════════════════════════════════════════════════════
 // STUDIO BANNER — Eingang aus Schritt 4 Redaktion
 // ═══════════════════════════════════════════════════════════════
+// Den uebernommenen Volltext in Abschnitt 04 sichtbar machen.
+// FEHLER, behoben am 25.08.2026: Hier stand ft.closest('.p-section') — diese
+// Klasse gibt es seit dem Umbau des Bedienfelds auf Abschnitte nicht mehr,
+// das Feld liegt heute in einem .ab-block. closest lieferte null, der Zugriff
+// auf .style warf, und die Ausnahme flog mitten aus dem Seitenstart heraus.
+// Alles danach lief nicht mehr — genau deshalb brachte "Im Grafik-Studio
+// oeffnen" aus dem Freigabe-Cockpit nichts mit. Jetzt ueber die ID, wie es
+// applyRedaktionPayload() ohnehin schon macht.
+function volltextAnzeigen(fulltext){
+  if(!fulltext) return;
+  const ft  = document.getElementById('tf-fulltext-preview');
+  const sec = document.getElementById('fulltext-preview-section');
+  if(ft)  ft.value = fulltext;
+  if(sec) sec.style.display = 'block';
+}
+
 function showStudioBanner(anlass, kurs, fulltext) {
-  // Workflow-Banner oben im Canvas-Bereich einblenden
+  // Workflow-Banner oben im Canvas-Bereich einblenden.
+  // Alles hier drin ist Beiwerk. Diese Funktion laeuft mitten im Seitenstart —
+  // wirft sie, bricht der gesamte Init ab. Deshalb greift sie auf kein Element
+  // mehr ungeprueft zu.
   const area = document.querySelector('.canvas-area');
+  if (!area) { volltextAnzeigen(fulltext); injectFreigabeCTA(anlass); return; }
   const banner = document.createElement('div');
   banner.id = 'studio-banner';
   banner.style.cssText = `
@@ -4079,11 +4187,7 @@ function showStudioBanner(anlass, kurs, fulltext) {
   area.appendChild(banner);
   setTimeout(() => { if(banner.parentNode) banner.remove(); }, 8000);
 
-  // Volltext in ein Panel-Element schreiben falls vorhanden
-  if (fulltext) {
-    const ft = document.getElementById('tf-fulltext-preview');
-    if (ft) { ft.value = fulltext; ft.closest('.p-section').style.display='block'; }
-  }
+  volltextAnzeigen(fulltext);
 
   // Freigabe-CTA in Export-Tab einblenden
   injectFreigabeCTA(anlass);
