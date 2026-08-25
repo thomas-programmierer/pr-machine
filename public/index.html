@@ -110,6 +110,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 
 /* ── SCREEN: PBL ── */
 #screen-pbl{flex-direction:column;overflow-y:auto;padding:20px 22px;gap:16px}
+#screen-pblfreigaben{flex-direction:column;overflow-y:auto;padding:20px 22px;gap:16px}
 .pbl-welcome{background:var(--blau);border-radius:12px;padding:20px 22px;color:#fff;display:flex;align-items:center;gap:16px}
 .pbl-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
 .pbl-welcome-text h2{font-size:16px;font-weight:600;margin-bottom:3px}
@@ -668,6 +669,10 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
       📬 Kursvorschläge <span class="nbadge" id="nb-pbl"></span>
     </div>
     <div class="nav-sep"></div>
+    <div class="nav-tab" id="tab-pblfreigaben" onclick="showScreen('pblfreigaben')">
+      ✅ Meine Freigaben <span class="nbadge" id="nb-pblfreigaben"></span>
+    </div>
+    <div class="nav-sep"></div>
     <div class="nav-tab" id="tab-kurse"       onclick="showScreen('kurse'); kurseInit()">
       📚 Kursliste
     </div>
@@ -720,9 +725,23 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
         <div class="section-label" id="status-label" style="display:none">Meine Einreichungen</div>
         <div id="status-liste"></div>
       </div>
-      <!-- ── PBL FREIGABE-BEREICH ── -->
-      <div id="pbl-freigabe-wrap" style="display:none;padding:0 22px 24px">
-        <div class="section-label" style="margin-bottom:12px">✅ Zur Freigabe — Entwürfe der Redaktion</div>
+    </div>
+
+    <!-- ── PBL: MEINE FREIGABEN ── -->
+    <div class="screen" id="screen-pblfreigaben">
+      <div class="pbl-welcome">
+        <div class="pbl-avatar">✅</div>
+        <div class="pbl-welcome-text">
+          <h2>Meine Freigaben</h2>
+          <p>Entwürfe, welche die Redaktion deinem Programmbereich zur Freigabe vorgelegt hat.</p>
+          <div class="pbl-pb-badge" id="pblfrei-pb-badge"></div>
+        </div>
+      </div>
+      <div id="pbl-freigabe-wrap">
+        <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <span>Zur Freigabe — Entwürfe der Redaktion</span>
+          <span onclick="ladePBLFreigaben()" style="font-size:9px;color:var(--blau60);cursor:pointer;text-decoration:underline;text-transform:none;letter-spacing:0;white-space:nowrap">↺ Aktualisieren</span>
+        </div>
         <div id="pbl-freigabe-liste" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
       </div>
     </div>
@@ -1320,6 +1339,10 @@ function initApp() {
   // PBL nie aufruft, obwohl ihr Badge davon abhaengt.
   if (['admin','redakteur','pbl'].includes(currentUser.role)) loadEinreichungen();
 
+  // Der Zaehler an "Meine Freigaben" muss stehen, bevor jemand den Bildschirm
+  // oeffnet — sonst erfaehrt die PBL wieder nichts von wartenden Entwuerfen.
+  if (['admin','pbl'].includes(currentUser.role)) ladePBLFreigaben();
+
   // Header
   const av = document.getElementById('hdr-avatar');
   av.textContent = ROLE_INITIALS(currentUser);
@@ -1338,9 +1361,12 @@ function initApp() {
 
   // Sichtbarkeitsmatrix: Rolle → sichtbare Tab-IDs
   const NAV = {
-    admin:     ['tab-direktion','tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-performance','tab-admin'],
+    admin:     ['tab-direktion','tab-kalender','tab-pbl','tab-pblfreigaben','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-performance','tab-admin'],
     redakteur: ['tab-direktion','tab-kalender','tab-pbl','tab-kurse','tab-redakteur','tab-editor','tab-voransicht','tab-freigabe','tab-performance'],
-    pbl:       ['tab-kalender','tab-pbl','tab-kurse'],
+    // "Meine Freigaben" ist der Weg, auf dem die Programmbereichsleitung von
+    // den ihr vorgelegten Entwuerfen ueberhaupt erfaehrt. Bis zum 25.08.2026
+    // klebte diese Liste unsichtbar am Ende des Kursvorschlag-Bildschirms.
+    pbl:       ['tab-kalender','tab-pbl','tab-pblfreigaben','tab-kurse'],
     direktion: ['tab-direktion','tab-kalender','tab-freigabe','tab-performance'],
   };
   (NAV[role] || []).forEach(id => document.getElementById(id)?.classList.remove('hidden'));
@@ -1362,7 +1388,7 @@ function initApp() {
 
   // Direktnavigation von externen Seiten via ?screen=
   const screenParam = params.get('screen');
-  if (screenParam && ['pbl','redakteur','admin','direktion','kurse'].includes(screenParam)) {
+  if (screenParam && ['pbl','pblfreigaben','redakteur','admin','direktion','kurse'].includes(screenParam)) {
     document.getElementById('tab-' + screenParam)?.classList.remove('hidden');
     showScreen(screenParam);
     // 'admin' und 'pbl' initialisiert showScreen() selbst — hier nur noch das,
@@ -1424,6 +1450,7 @@ function showScreen(name) {
   // ladeKurseDemnaechst() und ladePBLFreigaben() nie, und der Screen bleibt
   // leer — ausser man kam ueber ?screen=pbl, wo initPBL() extra stand.
   if (name === 'pbl')       { initPBL(); loadPBLEinreichungsStatus(); }
+  if (name === 'pblfreigaben') { ladePBLFreigaben(); }
   if (name === 'direktion') { loadDirektion(); }
 }
 
@@ -1595,18 +1622,51 @@ async function ladePBLFreigaben() {
     if (!r.ok) return;
     const posts = await r.json();
     const meineFreigaben = posts.filter(p =>
-      p.status === 'pb_freigabe' && p.pb === currentUser.pb
+      p.status === 'pb_freigabe' && postGehoertZu(p, currentUser)
     );
     renderPBLFreigaben(meineFreigaben);
+    const badge = document.getElementById('nb-pblfreigaben');
+    if (badge) badge.textContent = meineFreigaben.length || '';
+    const pbBadge = document.getElementById('pblfrei-pb-badge');
+    if (pbBadge) pbBadge.textContent = currentUser.pb === 'alle'
+      ? 'Alle Programmbereiche' : currentUser.pb;
   } catch(e) { console.warn('PBL-Freigaben:', e); }
 }
 
+// Gehoert dieser Post zum Programmbereich dieser Person?
+//
+// Bis zum 25.08.2026 stand hier schlicht p.pb === currentUser.pb. Das ging in
+// drei Faellen daneben:
+//   * Die Redaktion baut ein Motiv direkt im Grafik-Studio. Dann bleibt pb
+//     leer und wird in der Datenbank zu null — der Post passte zu niemandem
+//     und verschwand lautlos.
+//   * Das Studio speichert zusaetzlich `programmbereich` in der Form 'PB5',
+//     waehrend `pb` den Klartextnamen traegt. Beide wurden nie abgeglichen.
+//   * 'Arbeit & Beruf' deckt PB6 UND PB7 ab. Ein Zeichenkettenvergleich kann
+//     das nicht wissen.
+// Deshalb jetzt ueber PB_MAP aufgeloest, in beiden Schreibweisen.
+function postGehoertZu(p, user) {
+  if (!user) return false;
+  if (user.pb === 'alle') return true;             // Admin und Redaktion
+  const meine = (PB_MAP[user.pb] || {}).nums || null;
+  if (!meine) return false;
+  // Klartextname, wie er aus einer PBL-Einreichung stammt
+  if (p.pb && p.pb === user.pb) return true;
+  // 'PB5'-Form, wie sie das Grafik-Studio an `programmbereich` schreibt
+  if (p.programmbereich && meine.includes(p.programmbereich)) return true;
+  // Manche Bestaende tragen die 'PB5'-Form auch im Feld pb
+  if (p.pb && meine.includes(p.pb)) return true;
+  return false;
+}
+
 function renderPBLFreigaben(posts) {
-  const wrap = document.getElementById('pbl-freigabe-wrap');
   const liste = document.getElementById('pbl-freigabe-liste');
-  wrap.style.display = '';
+  if (!liste) return;
   if (!posts.length) {
-    liste.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--blau60);font-size:13px">Noch keine Entwürfe zur Freigabe</div>';
+    liste.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 28px;color:var(--blau60);font-size:13px">'+
+      '<div style="font-size:32px;margin-bottom:8px">☕</div>'+
+      '<div style="font-weight:700;color:var(--blau);margin-bottom:4px">Nichts zu tun</div>'+
+      'Sobald die Redaktion einen Entwurf für deinen Programmbereich vorlegt, erscheint er hier.</div>';
     return;
   }
   liste.innerHTML = posts.map(p => {

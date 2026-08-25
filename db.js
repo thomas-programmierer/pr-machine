@@ -246,6 +246,11 @@ async function setPostStatus(id, status, extra) {
   var idx  = 3;
   if (extra && extra.freigegeben_von) { sets.push('freigegeben_von=$' + idx++); vals.push(extra.freigegeben_von); }
   if (extra && extra.freigegebenVon)  { sets.push('freigegeben_von=$' + idx++); vals.push(extra.freigegebenVon); }
+  // Beim Weiterleiten an die Programmbereichsleitung wird der Bereich gesetzt,
+  // falls er am Post fehlt (25.08.2026). Ohne ihn findet die Weiterleitung
+  // keinen Empfaenger und der Entwurf verschwindet lautlos.
+  if (extra && extra.pb)              { sets.push('pb=$' + idx++);              vals.push(extra.pb); }
+  if (extra && extra.programmbereich) { sets.push('programmbereich=$' + idx++); vals.push(extra.programmbereich); }
   var res = await pool.query(
     'UPDATE posts SET ' + sets.join(',') + ' WHERE id=$1 RETURNING *',
     vals

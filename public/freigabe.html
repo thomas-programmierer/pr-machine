@@ -489,9 +489,21 @@ function kartenAktionen(p, kompakt) {
   const undo = kompakt ? 'btn-undo'         : 'btn-modal-reject';
   if (p.status === 'freigabe_ausstehend' && istRedaktion()) {
     const cbId = 'cb-dir-' + p.id;
+    const pbId = 'pb-wahl-' + p.id;
+    // Ohne Programmbereich findet die Weiterleitung an die PBL keinen
+    // Empfaenger. Deshalb wird er hier abgefragt, statt den Entwurf ins
+    // Leere laufen zu lassen (25.08.2026).
+    const pbFehlt = !p.pb && !p.programmbereich;
+    const pbWahl = pbFehlt ? `<select id="${pbId}" onclick="${stop}void(0)"
+        style="width:100%;padding:6px 8px;border-radius:7px;border:1.5px solid var(--gelb);
+               font-size:11px;font-family:inherit;color:var(--blau);background:#FFFBF0">
+        <option value="">Programmbereich wählen …</option>
+        ${PB_NAMEN.map(n => `<option value="${n}">${n}</option>`).join('')}
+      </select>` : '';
     return `<div style="display:flex;flex-direction:column;gap:5px;width:100%">
+      ${pbWahl}
       <div style="display:flex;gap:5px">
-        <button class="${app}" onclick="${stop}zurFreigabe('${p.id}','${cbId}')">✅ Zur Freigabe</button>
+        <button class="${app}" onclick="${stop}zurFreigabe('${p.id}','${cbId}','${pbId}')">✅ Zur Freigabe</button>
         <button class="${rej}" onclick="${stop}ablehnen('${p.id}')">✕ Ablehnen</button>
       </div>
       <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--blau60);cursor:pointer" onclick="${stop}void(0)">
@@ -518,15 +530,34 @@ function kartenAktionen(p, kompakt) {
 }
 
 // ── AKTIONEN ─────────────────────────────────────────────────────────────────
-async function zurFreigabe(id, cbId) {
+// Die Programmbereiche, zu denen es eine Leitung gibt. Doppelt gefuehrt zu
+// PB_MAP in index.html — solange es keine Route gibt, die sie liefert, ist das
+// der ehrlichere Weg als ein stiller Fehlschlag. Aenderungen bitte an beiden
+// Stellen.
+const PB_NAMEN = ['Gesundheit & Bewegung','Fremdsprachen','Kultur & Kreativität',
+                  'Arbeit & Beruf','Deutsch und Integration'];
+
+async function zurFreigabe(id, cbId, pbId) {
   const direktorin = document.getElementById(cbId)?.checked;
   if (direktorin) {
     await setStatus(id, 'redaktion_frei');
     showToast('✅ An die Direktorin weitergeleitet');
-  } else {
-    await setStatus(id, 'pb_freigabe');
-    showToast('✅ Zur Programmbereichsleitung weitergeleitet');
+    return;
   }
+  // Weiterleitung an die PBL nur mit Programmbereich — sonst sieht sie niemand.
+  const post = allePosts.find(p => p.id === id);
+  let pb = post ? (post.pb || '') : '';
+  if (!pb && post && !post.programmbereich) {
+    const sel = pbId ? document.getElementById(pbId) : null;
+    pb = sel ? sel.value : '';
+    if (!pb) {
+      showToast('⚠️ Bitte zuerst den Programmbereich wählen');
+      if (sel) { sel.style.borderColor = 'var(--rot)'; sel.focus(); }
+      return;
+    }
+  }
+  await setStatus(id, 'pb_freigabe', pb ? { pb } : {});
+  showToast('✅ Zur Programmbereichsleitung weitergeleitet' + (pb ? ' · ' + pb : ''));
 }
 async function freigeben(id) {
   await setStatus(id, 'freigegeben', { freigegeben_von: currentUser?.name, freigegeben_am: new Date().toISOString(), direktion_kommentar: '' });
