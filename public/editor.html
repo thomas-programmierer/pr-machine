@@ -1429,8 +1429,31 @@ function kiAbfrage(){
   if(KI.entschieden) return Promise.resolve(true);
   const bg=document.getElementById('ki-modal-bg');
   if(!bg){ KI.entschieden=true; return Promise.resolve(true); }
+  // Der Dialog zeigt den geltenden Stand, nicht einen leeren Schalter.
+  const kimT=document.getElementById('kim-transparent');
+  if(kimT){ kimT.checked = !!KI.transparent; kiModalTransparent(KI.transparent); }
   bg.classList.add('open');
   return new Promise(r=>{ kiModalResolve=r; });
+}
+
+// Die Transparenz gehoert in den Pflichtdialog, nicht nur in Abschnitt 07.
+// Bis zum 25.08.2026 stand sie ausschliesslich dort — und dieser Abschnitt
+// blendet seine Optionen erst ein, wenn ein Typ gesetzt ist. Wer die
+// Entscheidung im Dialog traf, war danach sofort im Export und kam an den
+// Schalter nie heran. Die halbtransparente Fassung nimmt dem Zeichen die
+// Dominanz; sie soll nicht das Erste sein, was am Motiv auffaellt.
+function kiModalTransparent(an){
+  KI.transparent = !!an;
+  // Die drei Beispielbilder im Dialog zeigen die Wirkung sofort.
+  const zusatz = an ? '-50transparent' : '';
+  [['ai','kim-bild-ai'],['ai-generated','kim-bild-gen'],['ai-modified','kim-bild-mod']]
+    .forEach(([typ,id])=>{
+      const el=document.getElementById(id);
+      if(el) el.src='/img/ki/'+typ+'_white'+zusatz+'.svg';
+    });
+  const box=document.getElementById('ki-transparent');
+  if(box) box.checked = KI.transparent;
+  renderKI();
 }
 
 function kiModalWahl(typ){
@@ -4235,7 +4258,7 @@ function showToast(msg, symbol){
       geht mit in die Freigabe. Sie l&auml;sst sich danach jederzeit &auml;ndern.
     </div>
     <div class="kim-opt" onclick="kiModalWahl('ai')">
-      <img src="/img/ki/ai_white.svg" alt="">
+      <img id="kim-bild-ai" src="/img/ki/ai_white.svg" alt="">
       <div>
         <div class="kim-t">AI &mdash; Grundsymbol</div>
         <div class="kim-d">KI war beteiligt, ein Mensch hat redigiert und tr&auml;gt die Verantwortung.
@@ -4243,7 +4266,7 @@ function showToast(msg, symbol){
       </div>
     </div>
     <div class="kim-opt" onclick="kiModalWahl('ai-generated')">
-      <img src="/img/ki/ai-generated_white.svg" alt="">
+      <img id="kim-bild-gen" src="/img/ki/ai-generated_white.svg" alt="">
       <div>
         <div class="kim-t">AI GENERATED</div>
         <div class="kim-d">Vollst&auml;ndig von KI erzeugt, au&szlig;er dem Prompt gab es keine
@@ -4251,7 +4274,7 @@ function showToast(msg, symbol){
       </div>
     </div>
     <div class="kim-opt" onclick="kiModalWahl('ai-modified')">
-      <img src="/img/ki/ai-modified_white.svg" alt="">
+      <img id="kim-bild-mod" src="/img/ki/ai-modified_white.svg" alt="">
       <div>
         <div class="kim-t">AI MODIFIED</div>
         <div class="kim-d">Vorhandener, von Menschen erstellter Inhalt wurde mit KI ver&auml;ndert.</div>
@@ -4266,6 +4289,20 @@ function showToast(msg, symbol){
           Stilkorrektur.</div>
       </div>
     </div>
+    <label id="kim-transparent-zeile"
+           style="display:flex;align-items:flex-start;gap:9px;margin-top:14px;padding:10px 12px;
+                  border:1px solid rgba(255,255,255,.12);border-radius:9px;cursor:pointer">
+      <input type="checkbox" id="kim-transparent" onchange="kiModalTransparent(this.checked)"
+             style="margin-top:2px;cursor:pointer;flex-shrink:0">
+      <span>
+        <span style="font-size:11px;font-weight:700;color:#fff">Fl&auml;che 50&nbsp;% transparent</span>
+        <span style="display:block;font-size:9px;color:rgba(255,255,255,.5);line-height:1.55;margin-top:2px">
+          Die von der EU vorgesehene halbtransparente Fassung. Das Zeichen bleibt lesbar,
+          dr&auml;ngt sich im Motiv aber nicht in den Vordergrund. L&auml;sst sich in
+          Abschnitt&nbsp;07 jederzeit &auml;ndern.
+        </span>
+      </span>
+    </label>
     <div style="text-align:center;margin-top:12px">
       <span onclick="kiModalAbbruch()" style="font-size:9px;color:rgba(255,255,255,.35);cursor:pointer;text-decoration:underline">Abbrechen</span>
     </div>
