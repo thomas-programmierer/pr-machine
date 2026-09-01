@@ -1162,12 +1162,7 @@ const GRUND_FEEDRAND={
 // weiterhin in der Registry, damit vorhandene Links und eingereichte Posts
 // exakt in ihrem alten Mass geladen und wieder ausgegeben werden.
 const FORMATS=[
-  { key:'ig-portrait-34', label:'Portrait 3:4', kurz:'Portrait',
-    w:1080, h:1440, ratio:'3:4',
-    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND,
-    hinweis:'Instagram-Maß. Facebook beschneidet alles über 4:5 — dort gilt 1080 × 1350.' },
-
-  { key:'ig-portrait-45', label:'Portrait 4:5', kurz:'Portrait',
+  { key:'ig-portrait-45', label:'Portrait', kurz:'Portrait',
     w:1080, h:1350, ratio:'4:5',
     safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
 
@@ -1177,6 +1172,18 @@ const FORMATS=[
     gruende:{ oben:'Abstand zur Kante im Feed',
               unten:'Abstand zur Kante im Feed',
               seiten:'135 px — Zuschnitt im Profilraster auf 3:4' } },
+
+  // Am 01.09.2026 kurz anwaehlbar gewesen und noch am selben Tag wieder
+  // zurueckgenommen: Metas Content Manager prueft beim Planen gegen das Band
+  // 4:5 bis 1,91:1. 3:4 ergibt 0,75 und liegt darunter — der Beitrag wird mit
+  // "Bildseitenverhaeltnis nicht zwischen 4:5 bis 1,91:1" abgelehnt. Instagram
+  // zeigt 3:4 zwar in der App und im Profilraster, im FEED ist 4:5 die
+  // groesste zulaessige Hoehe. Bleibt versteckt, damit Entwuerfe aus dem
+  // Vormittag weiter laden.
+  { key:'ig-portrait-34', versteckt:true, label:'Portrait 3:4 (von Meta abgelehnt)', kurz:'Portrait 3:4',
+    w:1080, h:1440, ratio:'3:4',
+    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND,
+    hinweis:'Nicht mehr anwählbar: Meta lehnt 3:4 beim Planen ab (zulässig ist 4:5 bis 1,91:1).' },
 
   { key:'nebenan-169', label:'Landscape 16:9', kurz:'Landscape',
     w:1120, h:630, ratio:'16:9',
@@ -1219,10 +1226,10 @@ const FORMATS=[
 // Alt-Kennungen. Frueher lief das Format als Index (0/1/2), als
 // Seitenverhaeltnis oder als Anzeigename. Alles davon wird weiterhin
 // aufgeloest, damit vorhandene Links und eingereichte Posts nicht brechen.
-// Instagram-Portrait ist 3:4 (1080 x 1440) — mehr Flaeche im Feed. Facebook
-// bleibt bei 4:5 (1080 x 1350), weil der Feed dort alles Hoehere beschneidet.
-// Die beiden Feed-Kanaele teilen sich deshalb nur noch das Quadrat.
-const STANDARDFORMAT='ig-portrait-34';
+// Instagram und Facebook nutzen dasselbe Portrait 1080 x 1350 (4:5). Das ist
+// die groesste Hoehe, die beide Feeds zulassen, und zugleich die untere
+// Grenze des Bandes, gegen das Metas Content Manager beim Planen prueft.
+const STANDARDFORMAT='ig-portrait-45';
 const FORMAT_ALIAS={
   '9:16':'ig-story',  '1:1':'ig-square',   '16:9':'web-169',
   '0':'ig-story',     '1':'ig-square',     '2':'web-169',
@@ -1241,6 +1248,27 @@ function formatIndex(kennung){
   return FORMATS.findIndex(f=>f.key===STANDARDFORMAT);
 }
 function aktFormat(){ return FORMATS[currentFormatIdx]||FORMATS[0]; }
+
+// Metas Content Manager nimmt beim Planen nur Bilder zwischen 4:5 (0,80) und
+// 1,91:1 (1,91) an. Diese Selbstpruefung laeuft einmal beim Laden und meldet
+// sich in der Konsole, falls jemand kuenftig ein Format aufnimmt, das dort
+// abgelehnt wuerde — der Fehler faellt sonst erst beim Redakteur auf.
+// Benannt statt anonym, damit die Pruefung selbst pruefbar ist: eine Wache,
+// die nie ausgeloest hat, ist keine Wache.
+function metaBandPruefen(){
+  const UNTEN=1080/1350, OBEN=1.91, verstoesse=[];
+  FORMATS.filter(f=>!f.versteckt && f.key!=='ig-story').forEach(f=>{
+    const v=f.w/f.h;
+    if(v < UNTEN-0.001 || v > OBEN+0.001){
+      verstoesse.push({key:f.key, verhaeltnis:+v.toFixed(3)});
+      console.warn('[format] '+f.key+' hat '+v.toFixed(3)+
+        ' und liegt ausserhalb von Metas Band 0,800 bis 1,910 — beim Planen '+
+        'im Content Manager wird es abgelehnt.');
+    }
+  });
+  return verstoesse;
+}
+metaBandPruefen();
 
 // ── Anzeige ──
 // Die Box ist so gewaehlt, dass die Story exakt 270 x 480 misst und das
@@ -2995,7 +3023,7 @@ async function resetEditor(){
     // eine alte Handkorrektur in den frischen Entwurf hinein.
     layoutProFormat={};
     aktKanal='instagram';
-    fmtProKanal.instagram='ig-portrait-34';
+    fmtProKanal.instagram='ig-portrait-45';
     fmtProKanal.facebook ='ig-portrait-45';
     fmtProKanal.nebenan  ='nebenan-169';
     expAn.instagram=true; expAn.facebook=true; expAn.nebenan=false;
@@ -4067,14 +4095,14 @@ async function kiEntscheiden(){
 // Jeder Kanal merkt sich sein zuletzt gewaehltes Format; die Formatliste
 // eines Kanals enthaelt nur nicht-versteckte Keys aus FORMATS.
 const KANAELE=[
-  {id:'instagram', name:'Instagram',  ic:'i-instagram', formate:['ig-portrait-34','ig-square','ig-story']},
+  {id:'instagram', name:'Instagram',  ic:'i-instagram', formate:['ig-portrait-45','ig-square','ig-story']},
   {id:'facebook',  name:'Facebook',   ic:'i-facebook',  formate:['ig-portrait-45','ig-square']},
   {id:'nebenan',   name:'nebenan.de', ic:'i-nebenan',   formate:['nebenan-169']}
 ];
 const KANAL_NAME={instagram:'Instagram', facebook:'Facebook', nebenan:'nebenan.de'};
 
 let aktKanal='instagram';
-const fmtProKanal={instagram:'ig-portrait-34', facebook:'ig-portrait-45', nebenan:'nebenan-169'};
+const fmtProKanal={instagram:'ig-portrait-45', facebook:'ig-portrait-45', nebenan:'nebenan-169'};
 // Angekreuzte Kanaele fuer den Export. nebenan.de steht bewusst auf aus:
 // sein Layout ist ein anderes und soll erst angesehen, dann ausgegeben werden.
 const expAn={instagram:true, facebook:true, nebenan:false};
