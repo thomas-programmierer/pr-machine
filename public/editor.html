@@ -1162,7 +1162,12 @@ const GRUND_FEEDRAND={
 // weiterhin in der Registry, damit vorhandene Links und eingereichte Posts
 // exakt in ihrem alten Mass geladen und wieder ausgegeben werden.
 const FORMATS=[
-  { key:'ig-portrait-45', label:'Portrait', kurz:'Portrait',
+  { key:'ig-portrait-34', label:'Portrait 3:4', kurz:'Portrait',
+    w:1080, h:1440, ratio:'3:4',
+    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND,
+    hinweis:'Instagram-Maß. Facebook beschneidet alles über 4:5 — dort gilt 1080 × 1350.' },
+
+  { key:'ig-portrait-45', label:'Portrait 4:5', kurz:'Portrait',
     w:1080, h:1350, ratio:'4:5',
     safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
 
@@ -1180,10 +1185,6 @@ const FORMATS=[
               unten:'60 px — Kennung links, EU-KI-Symbol rechts',
               seiten:'60 px — optisch derselbe Rand wie 100 px bei 1080 Breite' },
     hinweis:'Einziges Format bei nebenan.de. Bei 630 px Höhe ist jeder Rand teuer — 5 % wären nur 31 px und zu wenig für Logo und Kennung.' },
-
-  { key:'ig-portrait-34', versteckt:true, label:'Instagram Feed – Hochformat', kurz:'IG Feed 3:4',
-    w:1080, h:1440, ratio:'3:4',
-    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
 
   { key:'ig-story', label:'Story / Reels', kurz:'Story / Reels',
     w:1080, h:1920, ratio:'9:16',
@@ -1218,8 +1219,10 @@ const FORMATS=[
 // Alt-Kennungen. Frueher lief das Format als Index (0/1/2), als
 // Seitenverhaeltnis oder als Anzeigename. Alles davon wird weiterhin
 // aufgeloest, damit vorhandene Links und eingereichte Posts nicht brechen.
-// Ab dem 01.09.2026 startet das Studio im Portrait, nicht mehr im 3:4-Format.
-const STANDARDFORMAT='ig-portrait-45';
+// Instagram-Portrait ist 3:4 (1080 x 1440) — mehr Flaeche im Feed. Facebook
+// bleibt bei 4:5 (1080 x 1350), weil der Feed dort alles Hoehere beschneidet.
+// Die beiden Feed-Kanaele teilen sich deshalb nur noch das Quadrat.
+const STANDARDFORMAT='ig-portrait-34';
 const FORMAT_ALIAS={
   '9:16':'ig-story',  '1:1':'ig-square',   '16:9':'web-169',
   '0':'ig-story',     '1':'ig-square',     '2':'web-169',
@@ -2992,7 +2995,7 @@ async function resetEditor(){
     // eine alte Handkorrektur in den frischen Entwurf hinein.
     layoutProFormat={};
     aktKanal='instagram';
-    fmtProKanal.instagram='ig-portrait-45';
+    fmtProKanal.instagram='ig-portrait-34';
     fmtProKanal.facebook ='ig-portrait-45';
     fmtProKanal.nebenan  ='nebenan-169';
     expAn.instagram=true; expAn.facebook=true; expAn.nebenan=false;
@@ -4064,14 +4067,14 @@ async function kiEntscheiden(){
 // Jeder Kanal merkt sich sein zuletzt gewaehltes Format; die Formatliste
 // eines Kanals enthaelt nur nicht-versteckte Keys aus FORMATS.
 const KANAELE=[
-  {id:'instagram', name:'Instagram',  ic:'i-instagram', formate:['ig-portrait-45','ig-square','ig-story']},
+  {id:'instagram', name:'Instagram',  ic:'i-instagram', formate:['ig-portrait-34','ig-square','ig-story']},
   {id:'facebook',  name:'Facebook',   ic:'i-facebook',  formate:['ig-portrait-45','ig-square']},
   {id:'nebenan',   name:'nebenan.de', ic:'i-nebenan',   formate:['nebenan-169']}
 ];
 const KANAL_NAME={instagram:'Instagram', facebook:'Facebook', nebenan:'nebenan.de'};
 
 let aktKanal='instagram';
-const fmtProKanal={instagram:'ig-portrait-45', facebook:'ig-portrait-45', nebenan:'nebenan-169'};
+const fmtProKanal={instagram:'ig-portrait-34', facebook:'ig-portrait-45', nebenan:'nebenan-169'};
 // Angekreuzte Kanaele fuer den Export. nebenan.de steht bewusst auf aus:
 // sein Layout ist ein anderes und soll erst angesehen, dann ausgegeben werden.
 const expAn={instagram:true, facebook:true, nebenan:false};
