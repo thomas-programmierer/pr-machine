@@ -195,9 +195,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
 .chip.ig-on{background:#E1306C;border-color:#E1306C;color:#fff}
 .chip.fb-on{background:#1877F2;border-color:#1877F2;color:#fff}
-/* nebenan.de: Grünton nach Augenmaß gesetzt, bitte gegen die echte
-   Markenfarbe prüfen — die Chips folgen sonst den Plattformfarben. */
-.chip.nb-on{background:#0E9E86;border-color:#0E9E86;color:#fff}
+/* nebenan.de: echte Markenfarbe, von nebenan.de selbst als
+   --color-knallgreen-1000 gefuehrt (geprueft am 01.09.2026).
+   Schrift darauf in VHS-Blau, nicht weiss: Weiss ergaebe 1,67:1 und waere
+   unlesbar, VHS-Blau ergibt 8,69:1. So will es das Kontrast-Gesetz --
+   helle Flaeche, dunkle Schrift. */
+.chip.nb-on{background:#B5D622;border-color:#B5D622;color:#00285A}
 .regel{background:#FEF9EC;border:1px solid var(--gelb);border-radius:7px;padding:9px 12px;font-size:11px;color:#6B4800;line-height:1.5}
 .gen-btn{width:100%;padding:11px;border-radius:9px;font-size:13px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s}
 .gen-btn:hover:not(:disabled){background:#001f47}
@@ -211,7 +214,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .pk-head{padding:10px 14px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between}
 .pk-kanal{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
-.c-ig{color:#E1306C}.c-fb{color:#1877F2}.c-nb{color:#0E9E86}
+/* Auf weissem Kartengrund braucht der Kanalname eine abgedunkelte Fassung
+   der Marke: Knallgruen selbst kaeme auf 1,67:1. #6A7E14 sind 59 % davon
+   und erreichen 4,56:1. */
+.c-ig{color:#E1306C}.c-fb{color:#1877F2}.c-nb{color:#6A7E14}
 .pk-acts{display:flex;gap:5px}
 .pk-btn{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;border:1.5px solid #dde2e9;background:#fff;cursor:pointer;color:var(--blau60);transition:all .15s}
 .pk-btn:hover{border-color:var(--blau);color:var(--blau)}

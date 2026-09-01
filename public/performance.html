@@ -180,16 +180,18 @@ async function extLogout() {
   <div class="kpi"><div class="kpi-icon">👁</div><div class="kpi-n" id="kpi-reach">–</div><div class="kpi-label">Ø Reichweite gesamt</div></div>
   <div class="kpi"><div class="kpi-icon">📸</div><div class="kpi-n" id="kpi-ig">–</div><div class="kpi-label">Ø Reichweite Instagram</div></div>
   <div class="kpi"><div class="kpi-icon">👥</div><div class="kpi-n" id="kpi-fb">–</div><div class="kpi-label">Ø Reichweite Facebook</div></div>
+  <div class="kpi"><div class="kpi-icon">🏘️</div><div class="kpi-n" id="kpi-nb">–</div><div class="kpi-label">Ø Reichweite nebenan.de</div></div>
   <div class="kpi"><div class="kpi-icon">❤️</div><div class="kpi-n" id="kpi-engage">–</div><div class="kpi-label">Ø Interaktionen</div></div>
   <div class="kpi"><div class="kpi-icon">🔗</div><div class="kpi-n" id="kpi-clicks">–</div><div class="kpi-label">Klicks gesamt</div></div>
 </div>
 
 <!-- FILTER -->
 <div class="filter-tabs" style="margin-top:16px">
-  <div class="ftab on" onclick="setFilter('alle')">Alle</div>
-  <div class="ftab" onclick="setFilter('ig')">📸 Instagram</div>
-  <div class="ftab" onclick="setFilter('fb')">👥 Facebook</div>
-  <div class="ftab" onclick="setFilter('paid')">💶 Paid</div>
+  <div class="ftab on" data-filter="alle" onclick="setFilter('alle')">Alle</div>
+  <div class="ftab" data-filter="ig"   onclick="setFilter('ig')">📸 Instagram</div>
+  <div class="ftab" data-filter="fb"   onclick="setFilter('fb')">👥 Facebook</div>
+  <div class="ftab" data-filter="nb"   onclick="setFilter('nb')">🏘️ nebenan.de</div>
+  <div class="ftab" data-filter="paid" onclick="setFilter('paid')">💶 Paid</div>
 </div>
 
 <!-- CHARTS -->
@@ -243,6 +245,7 @@ async function extLogout() {
           <select class="mf-select" id="mf-kanal">
             <option value="ig">📸 Instagram</option>
             <option value="fb">👥 Facebook</option>
+            <option value="nb">🏘️ nebenan.de</option>
             <option value="beide">📸👥 Beide</option>
           </select>
         </div>
@@ -307,6 +310,27 @@ async function extLogout() {
           <div>
             <div class="mf-label">Klicks</div>
             <input class="mf-input" id="mf-fb-clicks" type="number" min="0" placeholder="8">
+            <div class="mf-hint">Link-Klicks</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #eef1f6;padding-top:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🏘️ nebenan.de Performance</div>
+        <div class="mf-row3">
+          <div>
+            <div class="mf-label">Reichweite</div>
+            <input class="mf-input" id="mf-nb-reach" type="number" min="0" placeholder="140">
+            <div class="mf-hint">Nachbarn erreicht</div>
+          </div>
+          <div>
+            <div class="mf-label">Interaktionen</div>
+            <input class="mf-input" id="mf-nb-inter" type="number" min="0" placeholder="6">
+            <div class="mf-hint">Danke + Kommentare</div>
+          </div>
+          <div>
+            <div class="mf-label">Klicks</div>
+            <input class="mf-input" id="mf-nb-clicks" type="number" min="0" placeholder="4">
             <div class="mf-hint">Link-Klicks</div>
           </div>
         </div>
@@ -421,13 +445,17 @@ function filterData(all) {
   if (aktFilter === 'alle') return all;
   if (aktFilter === 'ig')   return all.filter(p => p.kanal === 'ig' || p.kanal === 'beide');
   if (aktFilter === 'fb')   return all.filter(p => p.kanal === 'fb' || p.kanal === 'beide');
+  if (aktFilter === 'nb')   return all.filter(p => p.kanal === 'nb');
   if (aktFilter === 'paid') return all.filter(p => p.paid === 'ja');
   return all;
 }
 
 function setFilter(f) {
   aktFilter = f;
-  document.querySelectorAll('.ftab').forEach((t,i) => t.classList.toggle('on', ['alle','ig','fb','paid'][i]===f));
+  // Der aktive Reiter wurde frueher ueber seinen INDEX in einer festen Liste
+  // bestimmt. Sobald ein Reiter dazwischenkam, markierte er den falschen.
+  // Jeder Reiter traegt seinen Filter jetzt selbst.
+  document.querySelectorAll('.ftab').forEach(t => t.classList.toggle('on', t.dataset.filter===f));
   render();
 }
 function setSort(s) {
@@ -444,18 +472,21 @@ function fmt(v) { return v >= 1000 ? (v/1000).toFixed(1)+'k' : v; }
 function updateKPIs(data) {
   const igPosts  = data.filter(p => p.kanal==='ig'||p.kanal==='beide');
   const fbPosts  = data.filter(p => p.kanal==='fb'||p.kanal==='beide');
-  const allReach = data.map(p => n(p.igR)+n(p.fbR)).filter(v=>v>0);
+  const nbPosts  = data.filter(p => p.kanal==='nb');
+  const allReach = data.map(p => n(p.igR)+n(p.fbR)+n(p.nbR)).filter(v=>v>0);
 
   // KPI-Labels dynamisch je Filter
-  const igLabel = aktFilter==='fb' ? '—' : fmt(avg(igPosts.map(p=>n(p.igR)).filter(v=>v>0)));
-  const fbLabel = aktFilter==='ig' ? '—' : fmt(avg(fbPosts.map(p=>n(p.fbR)).filter(v=>v>0)));
+  const igLabel = aktFilter==='fb'||aktFilter==='nb' ? '—' : fmt(avg(igPosts.map(p=>n(p.igR)).filter(v=>v>0)));
+  const fbLabel = aktFilter==='ig'||aktFilter==='nb' ? '—' : fmt(avg(fbPosts.map(p=>n(p.fbR)).filter(v=>v>0)));
+  const nbLabel = aktFilter==='ig'||aktFilter==='fb' ? '—' : fmt(avg(nbPosts.map(p=>n(p.nbR)).filter(v=>v>0)));
 
   document.getElementById('kpi-posts').textContent   = data.length;
   document.getElementById('kpi-reach').textContent   = fmt(avg(allReach));
   document.getElementById('kpi-ig').textContent      = igLabel;
   document.getElementById('kpi-fb').textContent      = fbLabel;
-  document.getElementById('kpi-engage').textContent  = fmt(avg(data.map(p=>n(p.igI)+n(p.fbI)).filter(v=>v>0)));
-  document.getElementById('kpi-clicks').textContent  = fmt(data.reduce((s,p)=>s+n(p.igC)+n(p.fbC),0));
+  document.getElementById('kpi-nb').textContent      = nbLabel;
+  document.getElementById('kpi-engage').textContent  = fmt(avg(data.map(p=>n(p.igI)+n(p.fbI)+n(p.nbI)).filter(v=>v>0)));
+  document.getElementById('kpi-clicks').textContent  = fmt(data.reduce((s,p)=>s+n(p.igC)+n(p.fbC)+n(p.nbC),0));
 }
 
 function renderCharts(data) {
@@ -463,13 +494,15 @@ function renderCharts(data) {
   const monate = {};
   data.forEach(p => {
     const m = p.datum ? p.datum.slice(0,7) : '0000-00';
-    if (!monate[m]) monate[m] = {ig:[], fb:[]};
+    if (!monate[m]) monate[m] = {ig:[], fb:[], nb:[]};
     if (p.kanal==='ig'||p.kanal==='beide') monate[m].ig.push(n(p.igR));
     if (p.kanal==='fb'||p.kanal==='beide') monate[m].fb.push(n(p.fbR));
+    if (p.kanal==='nb')                    monate[m].nb.push(n(p.nbR));
   });
   const labels = Object.keys(monate).sort().filter(l=>l!=='0000-00');
   const igAvg  = labels.map(m => avg(monate[m].ig));
   const fbAvg  = labels.map(m => avg(monate[m].fb));
+  const nbAvg  = labels.map(m => avg(monate[m].nb));
   const monatLabels = labels.map(l => {
     const [,m] = l.split('-');
     return ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][+m-1]||l;
@@ -477,11 +510,14 @@ function renderCharts(data) {
 
   // Datasets je nach aktivem Filter
   const datasets = [];
-  if (aktFilter !== 'fb') {
+  if (aktFilter !== 'fb' && aktFilter !== 'nb') {
     datasets.push({label:'Instagram',data:igAvg,backgroundColor:'rgba(225,48,108,.75)',borderRadius:4});
   }
-  if (aktFilter !== 'ig') {
+  if (aktFilter !== 'ig' && aktFilter !== 'nb') {
     datasets.push({label:'Facebook',data:fbAvg,backgroundColor:'rgba(24,119,242,.6)',borderRadius:4});
+  }
+  if (aktFilter !== 'ig' && aktFilter !== 'fb' && aktFilter !== 'paid') {
+    datasets.push({label:'nebenan.de',data:nbAvg,backgroundColor:'rgba(181,214,34,.85)',borderRadius:4});
   }
   if (aktFilter === 'paid') {
     // Paid: zeige Paid-Reichweite als eigenen Balken
@@ -510,8 +546,10 @@ function renderCharts(data) {
   if (chartKanal) chartKanal.destroy();
   const igPosts = data.filter(p=>p.kanal==='ig'||p.kanal==='beide');
   const fbPosts = data.filter(p=>p.kanal==='fb'||p.kanal==='beide');
+  const nbPosts = data.filter(p=>p.kanal==='nb');
   const igVal   = avg(igPosts.map(p=>n(p.igR)).filter(v=>v>0));
   const fbVal   = avg(fbPosts.map(p=>n(p.fbR)).filter(v=>v>0));
+  const nbVal   = avg(nbPosts.map(p=>n(p.nbR)).filter(v=>v>0));
 
   let donutLabels, donutData, donutColors;
   if (aktFilter === 'ig') {
@@ -522,6 +560,10 @@ function renderCharts(data) {
     donutLabels = ['Facebook'];
     donutData   = [fbVal];
     donutColors = ['rgba(24,119,242,.7)'];
+  } else if (aktFilter === 'nb') {
+    donutLabels = ['nebenan.de'];
+    donutData   = [nbVal];
+    donutColors = ['rgba(181,214,34,.85)'];
   } else if (aktFilter === 'paid') {
     const paidR   = avg(data.map(p=>n(p.paidR)).filter(v=>v>0));
     const organicR= avg(data.map(p=>n(p.igR)+n(p.fbR)-n(p.paidR)).filter(v=>v>0));
@@ -529,9 +571,9 @@ function renderCharts(data) {
     donutData   = [paidR, organicR];
     donutColors = ['rgba(235,100,15,.8)','rgba(175,200,5,.7)'];
   } else {
-    donutLabels = ['Instagram','Facebook'];
-    donutData   = [igVal, fbVal];
-    donutColors = ['rgba(225,48,108,.8)','rgba(24,119,242,.7)'];
+    donutLabels = ['Instagram','Facebook','nebenan.de'];
+    donutData   = [igVal, fbVal, nbVal];
+    donutColors = ['rgba(225,48,108,.8)','rgba(24,119,242,.7)','rgba(181,214,34,.85)'];
   }
 
   chartKanal = new Chart(document.getElementById('chart-kanal'), {
@@ -554,11 +596,11 @@ function renderTabelle(data) {
   document.getElementById('table-count').textContent = `(${data.length})`;
   const sorted = [...data].sort((a,b) => {
     if (aktSort==='datum')       return b.datum.localeCompare(a.datum);
-    if (aktSort==='reichweite')  return (n(b.igR)+n(b.fbR)) - (n(a.igR)+n(a.fbR));
+    if (aktSort==='reichweite')  return (n(b.igR)+n(b.fbR)+n(b.nbR)) - (n(a.igR)+n(a.fbR)+n(a.nbR));
     if (aktSort==='interaktionen') return (n(b.igI)+n(b.fbI)) - (n(a.igI)+n(a.fbI));
     return 0;
   });
-  const maxR = Math.max(...sorted.map(p=>n(p.igR)+n(p.fbR)),1);
+  const maxR = Math.max(...sorted.map(p=>n(p.igR)+n(p.fbR)+n(p.nbR)),1);
 
   if (!sorted.length) {
     document.getElementById('table-body').innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Keine Posts</div></div>`;
@@ -577,7 +619,7 @@ function renderTabelle(data) {
       <th></th>
     </tr></thead>
     <tbody>${sorted.map(p => {
-      const reach = n(p.igR)+n(p.fbR);
+      const reach = n(p.igR)+n(p.fbR)+n(p.nbR);
       const inter = n(p.igI)+n(p.fbI);
       const clicks= n(p.igC)+n(p.fbC);
       const barW  = Math.round(reach/maxR*100);
@@ -627,6 +669,9 @@ function openModal(id) {
     document.getElementById('mf-fb-reach').value  = p.fbR||'';
     document.getElementById('mf-fb-inter').value  = p.fbI||'';
     document.getElementById('mf-fb-clicks').value = p.fbC||'';
+    document.getElementById('mf-nb-reach').value  = p.nbR||'';
+    document.getElementById('mf-nb-inter').value  = p.nbI||'';
+    document.getElementById('mf-nb-clicks').value = p.nbC||'';
     document.getElementById('mf-paid-reach').value  = p.paidR||'';
     document.getElementById('mf-paid-clicks').value = p.paidC||'';
     document.getElementById('mf-budget').value      = p.budget||'';
@@ -636,7 +681,8 @@ function openModal(id) {
     document.getElementById('mf-anlass').value  = '';
     document.getElementById('mf-ziel').value    = 'Reichweite';
     document.getElementById('mf-paid').value    = 'nein';
-    ['mf-ig-reach','mf-ig-inter','mf-ig-clicks','mf-fb-reach','mf-fb-inter','mf-fb-clicks','mf-paid-reach','mf-paid-clicks','mf-budget']
+    ['mf-ig-reach','mf-ig-inter','mf-ig-clicks','mf-fb-reach','mf-fb-inter','mf-fb-clicks',
+     'mf-nb-reach','mf-nb-inter','mf-nb-clicks','mf-paid-reach','mf-paid-clicks','mf-budget']
       .forEach(id => document.getElementById(id).value = '');
   }
   document.getElementById('modal-overlay').classList.add('open');
@@ -659,6 +705,9 @@ async function savePost() {
     fbR:    n(document.getElementById('mf-fb-reach').value),
     fbI:    n(document.getElementById('mf-fb-inter').value),
     fbC:    n(document.getElementById('mf-fb-clicks').value),
+    nbR:    n(document.getElementById('mf-nb-reach').value),
+    nbI:    n(document.getElementById('mf-nb-inter').value),
+    nbC:    n(document.getElementById('mf-nb-clicks').value),
     paidR:  n(document.getElementById('mf-paid-reach').value),
     paidC:  n(document.getElementById('mf-paid-clicks').value),
     budget: n(document.getElementById('mf-budget').value),

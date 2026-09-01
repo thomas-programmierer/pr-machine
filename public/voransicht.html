@@ -254,7 +254,10 @@ function renderPosts() {
     const datum = p.erstellt ? new Date(p.erstellt).toLocaleString('de-DE',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
     const bildsrc    = p.bild || p.preview || '';
     const hasPreview = bildsrc.startsWith('data:image');
-    const kanal = p.kanal === 'ig' ? '📸 Instagram' : p.kanal === 'fb' ? '👥 Facebook' : p.kanal === 'beide' ? '📸👥 Beide' : (p.kanal||'');
+    // Kanalkuerzel in Klartext. Steht dort bereits ein Klartext -- die
+    // Redaktion reicht ihn als "Instagram & Facebook" ein --, bleibt er stehen.
+    const KANALNAMEN = { ig:'📸 Instagram', fb:'👥 Facebook', nb:'🏘️ nebenan.de', beide:'📸👥 Beide' };
+    const kanal = KANALNAMEN[p.kanal] || (p.kanal || '');
 
     // Action-Buttons
     let actions = '';

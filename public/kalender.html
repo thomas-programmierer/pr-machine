@@ -12,6 +12,9 @@
   --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
   --grau:#f4f5f7;
   --ig:#E1306C;--fb:#1877F2;
+  /* nebenan.de: Markenfarbe "Knallgruen", von nebenan.de selbst gefuehrt.
+     Schrift darauf in VHS-Blau — weiss ergaebe nur 1,67:1. */
+  --nb:#B5D622;--nb-dunkel:#6A7E14;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);min-height:100vh;display:flex;flex-direction:column}
 
@@ -132,6 +135,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .woche-post-pill:hover{background:var(--blau20)}
 .woche-post-pill.pill-ig{border-color:#E1306C;color:#E1306C;background:#fce4ee}
 .woche-post-pill.pill-fb{border-color:#1877F2;color:#1877F2;background:#e8f0fe}
+.woche-post-pill.pill-nb{border-color:var(--nb-dunkel);color:var(--nb-dunkel);background:#f4f9de}
 .woche-post-pill.pill-beide{border-color:var(--orange);color:var(--orange);background:#FEF3DA}
 .woche-slot.feiertag-slot{background:#fff8ee}
 
@@ -153,6 +157,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .tag-post-card.card-ig{background:#E1306C}
 .tag-post-card.card-ig:hover{background:#c01050}
 .tag-post-card.card-fb{background:#1877F2}
+.tag-post-card.card-nb{background:var(--nb);color:#00285A}
 .tag-post-card.card-fb:hover{background:#0d5cc7}
 .tag-post-card.card-beide{background:var(--orange)}
 .tag-post-time{font-size:10px;font-weight:700;color:rgba(255,255,255,.8);font-family:monospace;min-width:36px}
@@ -427,6 +432,7 @@ async function doChangePw() {
 <div class="legende">
   <div class="leg-item"><div class="leg-dot" style="background:#E1306C"></div>Instagram</div>
   <div class="leg-item"><div class="leg-dot" style="background:#1877F2"></div>Facebook</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#B5D622"></div>nebenan.de</div>
   <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Beide</div>
   <div class="leg-item" style="margin-left:12px">
     <div class="leg-dot" style="background:#E6F1FB;border:1px solid #185FA5"></div>Geplant
@@ -465,6 +471,7 @@ async function doChangePw() {
           <select class="pf-select" id="pf-kanal">
             <option value="ig">📸 Instagram</option>
             <option value="fb">👥 Facebook</option>
+            <option value="nb">🏘️ nebenan.de</option>
             <option value="beide">📸👥 Beide</option>
           </select>
         </div>
@@ -1233,7 +1240,7 @@ function renderWoche(wocheMo, allePosts) {
         html += `<div style="font-size:8px;color:var(--orange);background:#FEF3DA;border-radius:3px;padding:1px 4px;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎯 ${esc(hook)}</div>`;
       }
       tagPosts.forEach(p => {
-        const pillCls = p.kanal === 'ig' ? 'pill-ig' : p.kanal === 'fb' ? 'pill-fb' : 'pill-beide';
+        const pillCls = {ig:'pill-ig', fb:'pill-fb', nb:'pill-nb'}[p.kanal] || 'pill-beide';
         html += `<div class="woche-post-pill ${pillCls}" onclick="event.stopPropagation();openDetail('${p.id}')" title="${esc(p.anlass||'')}">
           ${KANAL_ICONS[p.kanal]} ${esc((p.anlass||p.text||'').slice(0,22))}
         </div>`;
@@ -1308,7 +1315,7 @@ function renderTag(datum, allePosts) {
       html += `<div class="tag-empty-slot">— leer</div>`;
     } else {
       stdPosts.forEach(p => {
-        const cls = p.kanal === 'ig' ? 'card-ig' : p.kanal === 'fb' ? 'card-fb' : 'card-beide';
+        const cls = {ig:'card-ig', fb:'card-fb', nb:'card-nb'}[p.kanal] || 'card-beide';
         html += `<div class="tag-post-card ${cls}" onclick="event.stopPropagation();openDetail('${p.id}')">
           <span class="tag-post-time">${esc(p.uhrzeit||std+':00')}</span>
           <span style="font-size:14px">${KANAL_ICONS[p.kanal]}</span>
