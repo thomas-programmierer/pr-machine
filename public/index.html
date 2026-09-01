@@ -195,6 +195,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 .chip.on{background:var(--blau);border-color:var(--blau);color:#fff}
 .chip.ig-on{background:#E1306C;border-color:#E1306C;color:#fff}
 .chip.fb-on{background:#1877F2;border-color:#1877F2;color:#fff}
+/* nebenan.de: Grünton nach Augenmaß gesetzt, bitte gegen die echte
+   Markenfarbe prüfen — die Chips folgen sonst den Plattformfarben. */
+.chip.nb-on{background:#0E9E86;border-color:#0E9E86;color:#fff}
 .regel{background:#FEF9EC;border:1px solid var(--gelb);border-radius:7px;padding:9px 12px;font-size:11px;color:#6B4800;line-height:1.5}
 .gen-btn{width:100%;padding:11px;border-radius:9px;font-size:13px;font-weight:700;background:var(--blau);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s}
 .gen-btn:hover:not(:disabled){background:#001f47}
@@ -208,7 +211,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--grau);color:var(--blau);m
 @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .pk-head{padding:10px 14px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between}
 .pk-kanal{font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
-.c-ig{color:#E1306C}.c-fb{color:#1877F2}
+.c-ig{color:#E1306C}.c-fb{color:#1877F2}.c-nb{color:#0E9E86}
 .pk-acts{display:flex;gap:5px}
 .pk-btn{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;border:1.5px solid #dde2e9;background:#fff;cursor:pointer;color:var(--blau60);transition:all .15s}
 .pk-btn:hover{border-color:var(--blau);color:var(--blau)}
@@ -796,6 +799,7 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
           <div class="chip-row">
             <div class="chip ig-on" id="c-ig" onclick="toggleK('ig')">📸 Instagram</div>
             <div class="chip fb-on" id="c-fb" onclick="toggleK('fb')">👥 Facebook</div>
+            <div class="chip" id="c-nb" onclick="toggleK('nb')">🏘️ nebenan.de</div>
           </div>
         </div>
 
@@ -1127,7 +1131,19 @@ input[type=range]{width:100%;accent-color:var(--gelb);height:4px;cursor:pointer}
 // ══════════════════════════════════════════════════════════════════════════════
 let currentUser = null;
 let ton = 'inspirierend';
-let igOn = true, fbOn = true;
+let igOn = true, fbOn = true, nbOn = false;
+// nebenan.de startet aus: der Kanal braucht eine andere Ansprache und soll
+// bewusst gewählt werden, nicht versehentlich mitlaufen.
+
+// Kanalregister der Redaktion. Muss zu den Kanälen des Grafik-Studios
+// passen — beides bedient dieselben drei Plattformen.
+const RED_KANAELE = [
+  { id:'ig', name:'Instagram',  label:'📸 Instagram',  grenze:300  },
+  { id:'fb', name:'Facebook',   label:'👥 Facebook',   grenze:500  },
+  { id:'nb', name:'nebenan.de', label:'🏘️ nebenan.de', grenze:1200 }
+];
+function kanalAn(id){ return id==='ig' ? igOn : id==='fb' ? fbOn : nbOn; }
+function gewaehlteKanaele(){ return RED_KANAELE.filter(k=>kanalAn(k.id)); }
 let modus = 'r7'; // 'r7' = Regel 7 Aufhänger | 'direkt' = Direkter Kursaufruf
 let currentAnlassId = null;
 const submitted = {};
@@ -1558,7 +1574,7 @@ async function einreichenOhneGrafik(btn) {
   const post = {
     anlass, kurs,
     text:    p.fulltext || '',
-    kanal:   (igOn ? 'Instagram' : '') + (fbOn ? (igOn ? ' & ' : '') + 'Facebook' : ''),
+    kanal:   gewaehlteKanaele().map(k=>k.name).join(' & '),
     datum:   '',
     status:  'freigabe_ausstehend',
     format:  'Text',
@@ -2081,12 +2097,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 function toggleK(k) {
-  if(k==='ig'){igOn=!igOn;document.getElementById('c-ig').className='chip'+(igOn?' ig-on':'');}
-  else{fbOn=!fbOn;document.getElementById('c-fb').className='chip'+(fbOn?' fb-on':'');}
+  if(k==='ig') igOn=!igOn;
+  else if(k==='fb') fbOn=!fbOn;
+  else if(k==='nb') nbOn=!nbOn;
+  else return;
+  const el=document.getElementById('c-'+k);
+  if(el) el.className='chip'+(kanalAn(k) ? ' '+k+'-on' : '');
 }
 
 async function generate() {
-  if (!igOn && !fbOn) { showToast('Bitte mindestens einen Kanal wählen'); return; }
+  if (!gewaehlteKanaele().length) { showToast('Bitte mindestens einen Kanal wählen'); return; }
   const btn = document.getElementById('gen-btn');
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Claude schreibt…';
@@ -2095,9 +2115,11 @@ async function generate() {
   const kurs   = document.getElementById('i-kurs').value;
   const idee   = document.getElementById('i-idee').value;
   const right  = document.getElementById('red-right');
-  const kanaele = [igOn&&'Instagram',fbOn&&'Facebook'].filter(Boolean).join(' und ');
+  const gew = gewaehlteKanaele();
+  const kanaele = gew.length<2 ? (gew[0]?.name||'')
+                : gew.slice(0,-1).map(k=>k.name).join(', ')+' und '+gew[gew.length-1].name;
 
-  right.innerHTML = (igOn?skelCard('📸 Instagram','c-ig'):'') + (fbOn?skelCard('👥 Facebook','c-fb'):'');
+  right.innerHTML = gew.map(k=>skelCard(k.label,'c-'+k.id)).join('');
 
   // Optionen lesen
   const mitLinktree  = document.getElementById('toggle-linktree')?.checked;
@@ -2116,8 +2138,32 @@ async function generate() {
 
   // LinkTree-Anweisung
   const linktreeAnweisung = mitLinktree
-    ? `LINKTREE: Füge am Ende des Posts einen Verweis auf den LinkTree ein. Instagram: „Alle Infos + Anmeldung: Link in der Bio (${linktreeUrl})" — oder kürzer für IG. Facebook: URL direkt nennen.`
+    ? `LINKTREE: Füge am Ende des Posts einen Verweis auf den LinkTree ein. Instagram: „Alle Infos + Anmeldung: Link in der Bio (${linktreeUrl})" — oder kürzer für IG. Facebook und nebenan.de: die vollständige URL direkt nennen, dort gibt es keine Bio.`
     : 'LINK WEGLASSEN: Keinen Link und keine URL im Post nennen.';
+
+  // ── Kanalregeln ──────────────────────────────────────────────
+  // Jeder Kanal hat eine eigene Ansprache. nebenan.de ist ausdrücklich
+  // KEINE dritte Fassung des Facebook-Posts: dort schreibt man Nachbarn an,
+  // nicht Follower (Festlegung 01.09.2026).
+  const KANALREGELN = {
+    ig: 'INSTAGRAM: Du-Form. Kurze Sätze, Zeilenumbrüche für Rhythmus, höchstens 3 Emojis. '
+      + 'Hashtags am Ende in einer Zeile nach „HASHTAGS:".',
+    fb: 'FACEBOOK: Sie-Form. Etwas ausführlicher als Instagram, ganze Sätze, sparsam mit Emojis. '
+      + 'Wenige, gezielte Hashtags am Ende nach „HASHTAGS:".',
+    nb: 'NEBENAN.DE: Sie-Form, nachbarschaftlich und warm — hier werden Nachbarinnen und Nachbarn '
+      + 'angesprochen, keine Follower. Ortsbezug herstellen („bei uns in Spandau", „fast vor Ihrer '
+      + 'Haustür"), aber KEINE Adressen, Straßennamen oder Ortsteile erfinden, die nicht in der '
+      + 'Quelle stehen. KEINE Hashtags — die haben dort keine Funktion und wirken wie ein '
+      + 'Fremdkörper; gib für diesen Kanal auch keine HASHTAGS-Zeile aus. Höchstens ein Emoji. '
+      + 'Kein Verkaufston, sondern ein Hinweis unter Nachbarn. Der Text darf länger sein als auf '
+      + 'Instagram, es gibt keinen Zeichendruck.'
+  };
+  const MARKER = { ig:'INSTAGRAM', fb:'FACEBOOK', nb:'NEBENAN' };
+  const regeln = gew.map(k => KANALREGELN[k.id]).join('\n');
+  const formatBlock = gew.map(k =>
+      `=== ${MARKER[k.id]} ===\n[Kurze Headline/Slogan — max 50 Zeichen]\n\n[Post-Text]`
+      + (k.id === 'nb' ? '' : '\nHASHTAGS: [tags]')
+    ).join('\n');
 
   // Kursbeschreibung als KI-Quelle (aus Kursprogramm übernommen)
   const kursBeschr = (window._kursBeschreibung || '').trim();
@@ -2132,7 +2178,7 @@ async function generate() {
       body: JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:1200,
-        system:`Du bist Redakteur der Volkshochschule Berlin-Spandau.\nTON: ${ton}\n${modusAnweisung}\n${kursinfoAnweisung}\n${linktreeAnweisung}\n${quelleAnweisung}\nDu-Form IG, Sie-Form FB. Kurze Sätze. Zeilenumbrüche für Rhythmus. Max 3 Emojis auf IG.\n\nWICHTIG: Beginne jeden Post IMMER mit einer kurzen, prägnanten Überschrift/Slogan (max. 50 Zeichen, eine Zeile, ohne Punkt am Ende). Das ist die Grafik-Headline. Dann eine Leerzeile, dann der eigentliche Post-Text.\n\nFormat: === INSTAGRAM ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]\\n=== FACEBOOK ===\\n[Kurze Headline/Slogan — max 50 Zeichen]\\n\\n[Post-Text]\\nHASHTAGS: [tags]`,
+        system:`Du bist Redakteur der Volkshochschule Berlin-Spandau.\nTON: ${ton}\n${modusAnweisung}\n${kursinfoAnweisung}\n${linktreeAnweisung}\n${quelleAnweisung}\n\nKANALREGELN — jeder Kanal bekommt einen eigenen, für ihn geschriebenen Text. Formuliere NICHT denselben Post dreimal um:\n${regeln}\n\nWICHTIG: Beginne jeden Post IMMER mit einer kurzen, prägnanten Überschrift/Slogan (max. 50 Zeichen, eine Zeile, ohne Punkt am Ende). Das ist die Grafik-Headline. Dann eine Leerzeile, dann der eigentliche Post-Text.\n\nGib GENAU diese Abschnitte aus, keine weiteren:\n${formatBlock}`,
         messages:[{role:'user',content:`Kanäle: ${kanaele}\nAnlass: ${anlass}\nKurs: ${kurs}\nIdee: ${idee}${kursBeschr ? '\n\nKURSBESCHREIBUNG (einzige Quelle):\n"""\n' + kursBeschr + '\n"""' : ''}\n\nNur die Posts, kein Kommentar.`}]
       })
     });
@@ -2140,13 +2186,13 @@ async function generate() {
     const data = await r.json();
     const text = data.content?.[0]?.text||'';
     right.innerHTML = '<div style="font-size:10px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;padding:0 2px">📝 Text des Posts — zum Kopieren &amp; Posten</div>';
-    parseAndRender(text, right, igOn, fbOn);
+    parseAndRender(text, right);
 
     // ── Übergabe ans Grafik-Studio ─────────────────────────────
     // Besten Text extrahieren (IG bevorzugt, ohne Hashtags)
-    const igMatch = text.match(/===\s*INSTAGRAM\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
-    const fbMatch = text.match(/===\s*FACEBOOK\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
-    let rawBest = igMatch ? igMatch[1] : (fbMatch ? fbMatch[1] : text);
+    // Reihenfolge: Instagram, sonst Facebook, sonst nebenan.de, sonst alles.
+    const teileFuerStudio = teilePosts(text);
+    let rawBest = teileFuerStudio.ig || teileFuerStudio.fb || teileFuerStudio.nb || text;
     // Hashtag-Block und LinkTree-Zeilen abschneiden
     const hashCut = rawBest.search(/HASHTAGS?:/i);
     if (hashCut > -1) rawBest = rawBest.slice(0, hashCut);
@@ -2180,8 +2226,13 @@ async function generate() {
     const autoHlSize = headline.length > 60 ? 14 : headline.length > 40 ? 16 : headline.length > 25 ? 18 : 22;
 
     const selEinrId = document.getElementById('inbox-annehmen-btn')?.dataset?.einrId;
-    const selEinr = einreichungenCache.find(e => String(e.id) === String(selEinrId));
-    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: selEinr?.bild || einreichungenCache.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null, pb: selEinr?.pb || '', autor: currentUser?.name || '', autorId: currentUser?.id || '' };
+    // Absicherung: schlaegt der Abruf der Einreichungen fehl, ist der Cache
+    // keine Liste. Ohne diese Klammer riss der Zugriff die gesamte Ausgabe
+    // mit -- die fertig erzeugten Posts wurden von der Fehlermeldung
+    // ueberschrieben, obwohl mit ihnen alles in Ordnung war.
+    const einr = Array.isArray(einreichungenCache) ? einreichungenCache : [];
+    const selEinr = einr.find(e => String(e.id) === String(selEinrId));
+    window._lastStudioPayload = { hl: headline, sub, anlass: anlasstxt, kurs: kursTxt, fulltext: fullClean, hlsize: autoHlSize, bild: selEinr?.bild || einr.find(e => e.anlass === anlasstxt || e.kurs === kursTxt)?.bild || null, pb: selEinr?.pb || '', autor: currentUser?.name || '', autorId: currentUser?.id || '' };
 
     // Headline-Vorschau entfällt — wird direkt im Grafik-Studio sichtbar
 
@@ -2202,12 +2253,40 @@ async function generate() {
   btn.disabled=false; btn.innerHTML='✨ Posts generieren';
 }
 
-function parseAndRender(text, el, ig, fb) {
-  const igM = text.match(/===\s*INSTAGRAM\s*===([\s\S]*?)(?:===\s*FACEBOOK\s*===|$)/i);
-  const fbM = text.match(/===\s*FACEBOOK\s*===([\s\S]*?)(?:===\s*INSTAGRAM\s*===|$)/i);
-  if (ig && igM) { const {body,tags}=splitTags(igM[1].trim()); el.innerHTML+=buildCard('ig',body,tags||'#vhsspandau #spandau','Reichweite'); }
-  if (fb && fbM) { const {body,tags}=splitTags(fbM[1].trim()); el.innerHTML+=buildCard('fb',body,tags||'#vhsspandau','Engagement'); }
-  if (!igM&&!fbM) { const {body,tags}=splitTags(text.trim()); if(ig)el.innerHTML+=buildCard('ig',body,tags,'Reichweite'); }
+// Zerlegt die Antwort an den === MARKER === und gibt je Kanal den Rohtext
+// zurueck. Ein Durchlauf statt eines Ausdrucks je Kanalpaar.
+function teilePosts(text){
+  const marker={INSTAGRAM:'ig', FACEBOOK:'fb', NEBENAN:'nb', 'NEBENAN.DE':'nb'};
+  const teile={};
+  const re=/===\s*([A-ZÄÖÜ.]+)\s*===/gi;
+  const treffer=[];
+  let m;
+  while((m=re.exec(text))!==null)
+    treffer.push({ id:marker[m[1].toUpperCase()], start:m.index, ab:m.index+m[0].length });
+  for(let i=0;i<treffer.length;i++){
+    // Ende ist der ANFANG des naechsten Markers, nicht dessen Ende.
+    const bis = i+1<treffer.length ? treffer[i+1].start : text.length;
+    if(treffer[i].id) teile[treffer[i].id]=text.slice(treffer[i].ab, bis).trim();
+  }
+  return teile;
+}
+const ZIEL={ig:'Reichweite', fb:'Engagement', nb:'Nachbarschaft'};
+const STANDARDTAGS={ig:'#vhsspandau #spandau', fb:'#vhsspandau', nb:''};
+function parseAndRender(text, el) {
+  const teile=teilePosts(text);
+  const gew=gewaehlteKanaele();
+  let etwas=false;
+  gew.forEach(k=>{
+    if(!teile[k.id]) return;
+    const {body,tags}=splitTags(teile[k.id]);
+    // nebenan.de bekommt bewusst keine Ersatz-Hashtags untergeschoben.
+    el.innerHTML+=buildCard(k.id, body, k.id==='nb' ? '' : (tags||STANDARDTAGS[k.id]), ZIEL[k.id]);
+    etwas=true;
+  });
+  if(!etwas && gew.length){
+    const {body,tags}=splitTags(text.trim());
+    el.innerHTML+=buildCard(gew[0].id, body, gew[0].id==='nb' ? '' : tags, ZIEL[gew[0].id]);
+  }
   el.querySelectorAll('.post-text').forEach(pt=>{
     const cid=pt.closest('.pk-body').querySelector('.char-info').id;
     countChars(pt,cid); pt.addEventListener('input',()=>countChars(pt,cid));
@@ -2221,10 +2300,17 @@ function splitTags(raw){
 function buildCard(k,body,tags,ziel){
   const uid=k+Date.now()+Math.random().toString(36).slice(2,4);
   const tid='pt'+uid,hid='ph'+uid,cid='cc'+uid;
-  return `<div class="post-karte"><div class="pk-head"><div class="pk-kanal c-${k}">${k==='ig'?'📸 Instagram':'👥 Facebook'}</div><div class="pk-acts"><button class="pk-btn" data-tid="${tid}" data-hid="${hid}" onclick="copyPost(this)">Kopieren</button></div></div><div class="pk-body"><div class="post-text" id="${tid}" contenteditable="true">${esc(body)}</div><div class="char-info" id="${cid}"></div></div><div class="pk-foot"><div class="pk-tags" id="${hid}">${esc(tags)}</div><div class="pk-ziel">Ziel: ${ziel}</div></div></div>`;
+  const bez=(RED_KANAELE.find(x=>x.id===k)||{}).label||k;
+  return `<div class="post-karte"><div class="pk-head"><div class="pk-kanal c-${k}">${bez}</div><div class="pk-acts"><button class="pk-btn" data-tid="${tid}" data-hid="${hid}" onclick="copyPost(this)">Kopieren</button></div></div><div class="pk-body"><div class="post-text" id="${tid}" contenteditable="true">${esc(body)}</div><div class="char-info" id="${cid}"></div></div><div class="pk-foot"><div class="pk-tags" id="${hid}">${esc(tags)}</div><div class="pk-ziel">Ziel: ${ziel}</div></div></div>`;
 }
 function skelCard(label,cls){return`<div class="post-karte"><div class="pk-head"><div class="pk-kanal ${cls}">${label}</div></div><div class="pk-body" style="padding:14px"><div class="sk" style="width:100%"></div><div class="sk" style="width:82%"></div><div class="sk" style="width:91%"></div><div class="sk" style="width:68%"></div></div></div>`;}
-function countChars(el,cid){const n=el.textContent.length;const isIG=!!el.closest('.post-karte').querySelector('.c-ig');document.getElementById(cid).textContent=n+' Zeichen';document.getElementById(cid).className='char-info'+(n>(isIG?300:500)?' char-warn':'');}
+function countChars(el,cid){
+  const n=el.textContent.length;
+  const karte=el.closest('.post-karte');
+  const k=RED_KANAELE.find(x=>karte.querySelector('.c-'+x.id)) || RED_KANAELE[1];
+  document.getElementById(cid).textContent=n+' Zeichen';
+  document.getElementById(cid).className='char-info'+(n>k.grenze?' char-warn':'');
+}
 function copyPost(btn){const t=document.getElementById(btn.dataset.tid).textContent;const h=document.getElementById(btn.dataset.hid).textContent;navigator.clipboard.writeText(t+'\n\n'+h).then(()=>{btn.textContent='✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Kopieren';btn.classList.remove('copied')},2000)});}
 
 // ══════════════════════════════════════════════════════════════════════════════
