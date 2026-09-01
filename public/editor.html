@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Grafik-Studio — VHS Spandau</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="/fonts/schriften.css" rel="stylesheet"><!-- DM Sans + DM Mono lokal, kein fremder Host (Abnahme F1, 01.09.2026) -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -56,7 +56,63 @@ body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:1
 /* Formatkacheln: siehe Abschnitt FORMATKACHELN weiter unten */
 
 /* ── CANVAS ── */
-.canvas-area{background:#0d1117;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.canvas-area{background:#0d1117;display:flex;flex-direction:column;align-items:stretch;position:relative;overflow:hidden}
+/* Die Bearbeitungsflaeche liegt unter den beiden Leisten und zentriert das
+   Motiv in dem, was uebrig bleibt. */
+.canvas-mitte{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  overflow:auto;padding:16px;min-height:0}
+
+/* ══ KANAL-TABS (Beschluss 01.09.2026) ══
+   Der Kanal steht ueber der Voransicht, nicht im Bedienfeld. Jeder Tab
+   merkt sich sein zuletzt gewaehltes Format. */
+.kanal-leiste{display:flex;gap:4px;padding:9px 16px 0;background:#0a1e3d;
+  border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.kn-tab{display:flex;align-items:center;gap:7px;padding:9px 16px 8px;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.5);
+  cursor:pointer;border-bottom:3px solid transparent;border-radius:6px 6px 0 0;white-space:nowrap;
+  transition:color .15s,background .15s}
+.kn-tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+.kn-tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--gelb);background:rgba(255,255,255,.06)}
+.kn-tab .ic{width:16px;height:16px;flex-shrink:0}
+.kn-zahl{font-size:8px;font-weight:700;background:rgba(255,255,255,.15);color:rgba(255,255,255,.6);
+  border-radius:9px;padding:1px 6px}
+.kn-tab[aria-selected="true"] .kn-zahl{background:var(--gelb);color:var(--blau)}
+
+/* ══ FORMAT-UMSCHALTER ueber der Buehne ══ */
+.fmt-leiste{display:flex;align-items:center;gap:9px;padding:10px 16px;background:#0a1e3d;
+  border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.fmt-leiste-lbl{font-size:8px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.7px}
+.seg{display:inline-flex;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+.seg button{display:flex;align-items:center;gap:7px;padding:6px 11px;border:none;background:transparent;
+  border-radius:6px;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;
+  color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s;white-space:nowrap}
+.seg button:hover{color:#fff;background:rgba(255,255,255,.07)}
+.seg button[aria-checked="true"]{background:var(--gelb);color:var(--blau)}
+.seg .smini{display:block;background:currentColor;opacity:.6;border-radius:1px;flex-shrink:0}
+.seg .sdim{font-size:8.5px;font-weight:500;opacity:.72;font-variant-numeric:tabular-nums}
+.fmt-fest{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;
+  background:rgba(100,185,230,.12);border:1px solid rgba(100,185,230,.35);
+  font-size:10.5px;font-weight:600;color:var(--hellblau)}
+.fmt-fest .sdim{font-size:8.5px;font-weight:500;color:rgba(255,255,255,.55)}
+
+/* ══ EXPORT — Kanaele ankreuzen ══ */
+.exp-kn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);margin-bottom:6px;
+  transition:border-color .15s,background .15s}
+.exp-kn:hover{border-color:rgba(255,255,255,.25)}
+.exp-kn.an{border-color:var(--gelb);background:rgba(250,185,15,.09)}
+.exp-kn input{width:15px;height:15px;accent-color:var(--gelb);cursor:pointer;flex-shrink:0}
+.exp-kn .ic{width:15px;height:15px;flex-shrink:0;color:rgba(255,255,255,.55)}
+.exp-kn.an .ic{color:var(--gelb)}
+.exp-kn-txt{flex:1;min-width:0}
+.exp-kn-name{display:block;font-size:10.5px;font-weight:600;color:rgba(255,255,255,.9)}
+.exp-kn-sub{display:block;font-size:8.5px;color:rgba(255,255,255,.45);margin-top:1px;font-variant-numeric:tabular-nums}
+.dateiliste{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:6px;padding:8px 9px}
+.dz{display:flex;align-items:flex-start;gap:6px;font-size:8.5px;color:rgba(255,255,255,.6);
+  font-variant-numeric:tabular-nums;padding:2px 0;line-height:1.45;word-break:break-all}
+.dz .ic{width:11px;height:11px;flex-shrink:0;margin-top:2px;color:var(--gruen)}
+.dz.leer{color:rgba(255,255,255,.3);font-style:italic}
+.dz .dop{color:var(--blau60)}
 .canvas-toolbar{display:flex;gap:5px;align-items:center;background:rgba(0,0,0,.55);
   padding:5px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
   margin-bottom:12px;white-space:nowrap;flex-shrink:0}
@@ -328,27 +384,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
   color:rgba(255,255,255,.62);cursor:pointer;margin-top:6px}
 .haekchen input{accent-color:var(--gelb);cursor:pointer}
 
-/* ══ FORMATKACHELN, nach Plattform gruppiert ══ */
-.fmt-gruppe{margin-bottom:12px}
-.fmt-gruppe:last-child{margin-bottom:0}
-.fmt-gruppe-titel{font-size:8px;font-weight:700;color:var(--blau60);text-transform:uppercase;
-  letter-spacing:.7px;margin-bottom:5px}
-.fmt-liste{display:flex;flex-direction:column;gap:4px}
-.fmt-kachel{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;
-  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);cursor:pointer;
-  transition:border-color .15s,background .15s;text-align:left;width:100%;
-  font-family:inherit;color:inherit}
-.fmt-kachel:hover{border-color:rgba(250,185,15,.5)}
-.fmt-kachel[aria-checked="true"]{border-color:var(--gelb);background:rgba(250,185,15,.09)}
-/* Miniatur im ECHTEN Seitenverhaeltnis: feste Hoehe, Breite folgt daraus */
-.fmt-mini{height:20px;border-radius:2px;background:rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.28);flex-shrink:0}
-.fmt-kachel[aria-checked="true"] .fmt-mini{background:rgba(250,185,15,.35);border-color:var(--gelb)}
-.fmt-text{display:flex;flex-direction:column;gap:1px;min-width:0}
-.fmt-name{font-size:10px;font-weight:600;color:rgba(255,255,255,.85);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fmt-dim{font-size:8px;color:rgba(255,255,255,.42);font-variant-numeric:tabular-nums}
-
 /* ══ VOREINSTELLUNGS-KNOEPFE ══ */
 .voreinst{display:flex;gap:4px;flex-wrap:wrap}
 .vor-btn{padding:4px 9px;border-radius:5px;font-size:9px;font-weight:700;
@@ -407,6 +442,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
   <symbol id="i-redaktion" viewBox="0 0 16 16"><path d="M9 1.8H4.5A1.5 1.5 0 0 0 3 3.3v9.4a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5V5.8z"/><path d="M9 1.8v4h4M5.4 8.6h5.2M5.4 11h3.4"/></symbol>
   <symbol id="i-export" viewBox="0 0 16 16"><path d="M14.2 1.8 7.3 8.7"/><path d="M14.2 1.8 9.8 14.2 7.3 8.7 1.8 6.2z"/></symbol>
   <symbol id="i-download" viewBox="0 0 16 16"><path d="M8 1.8v8.6M4.7 7.1 8 10.4l3.3-3.3M2.4 13.6h11.2"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 16 16"><rect x="1.6" y="1.6" width="12.8" height="12.8" rx="3.4"/><circle cx="8" cy="8" r="2.9"/><circle cx="11.7" cy="4.3" r=".85" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-facebook" viewBox="0 0 16 16"><path d="M10.1 2.1H8.5A2.4 2.4 0 0 0 6.1 4.5v1.8H4.1v2.6h2v5h2.6v-5h2l.6-2.6h-2.6V4.9a.7.7 0 0 1 .7-.7h1.7z"/></symbol>
+  <symbol id="i-nebenan" viewBox="0 0 16 16"><path d="M2 7 8 2.1 14 7"/><path d="M3.4 6.3V13.9h3.3v-3.7h2.6v3.7h3.3V6.3"/></symbol>
   <symbol id="i-reset" viewBox="0 0 16 16"><path d="M2.6 6.7A5.7 5.7 0 1 1 2.3 9"/><path d="M2 3.1v3.7h3.7"/></symbol>
   <symbol id="i-safezone" viewBox="0 0 16 16"><rect x="1.8" y="1.8" width="12.4" height="12.4" rx="1.4"/><path d="M4.7 1.8v12.4M11.3 1.8v12.4M1.8 4.7h12.4M1.8 11.3h12.4" stroke-dasharray="2 1.7"/></symbol>
   <symbol id="i-schliessen" viewBox="0 0 16 16"><path d="M4.2 4.2 11.8 11.8M11.8 4.2 4.2 11.8"/></symbol>
@@ -494,10 +532,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
       </summary>
       <div class="ab-inhalt">
         <div class="ab-block">
-          <!-- Wird aus FORMATS erzeugt (baueFormatKacheln). Im Markup steht
-               bewusst keine Groessenangabe — sonst gaebe es wieder zwei
-               Wahrheiten, die auseinanderlaufen koennen. -->
-          <div id="format-gruppen"></div>
+          <!-- Die Formatwahl ist am 01.09.2026 in die Leiste ueber der
+               Voransicht gewandert. Hier steht bewusst KEINE zweite
+               Bedienung mehr — eine Wahrheit, ein Ort. -->
+          <p class="ab-hinweis" id="format-verweis">—</p>
         </div>
 
         <div class="ab-block">
@@ -912,14 +950,17 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
           <input class="txt-field" id="exp-datum" type="date" style="font-size:10px">
         </div>
 
-        <!-- Plattformwahl steht ueber den Knoepfen und prueft gegen das Format -->
+        <!-- Kanaele ankreuzen (Beschluss 01.09.2026). Eine Datei je Kanal,
+             auch wenn zwei Kanaele dasselbe Mass haben — gerendert wird
+             trotzdem nur einmal je Mass. exp-kanal bleibt als abgeleiteter
+             Wert bestehen, weil Freigabe, Redaktionsplan und Voransicht ihn
+             als Klartext lesen. -->
         <div class="ab-block">
-          <label class="p-label" for="exp-kanal">Plattform</label>
-          <select class="txt-field" id="exp-kanal" style="font-size:10px">
-            <option value="Instagram">Instagram</option>
-            <option value="Facebook">Facebook</option>
-            <option value="Instagram &amp; Facebook">Instagram und Facebook</option>
-          </select>
+          <div class="p-label">Kan&auml;le &mdash; was wird gebraucht?</div>
+          <div id="exp-kanaele"></div>
+          <input type="hidden" id="exp-kanal" value="Instagram">
+          <div class="p-label" style="margin-top:10px">Dateien, die entstehen</div>
+          <div class="dateiliste" id="dateiliste"></div>
           <p class="kanal-warnung" id="kanal-warnung" style="display:none"></p>
         </div>
 
@@ -928,9 +969,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
             <svg class="ic ic-14" aria-hidden="true"><use href="#i-export"/></svg>
             PNG erstellen und zur Freigabe
           </button>
-          <button class="exp-btn" onclick="exportPNG()" title="PNG nur herunterladen, ohne Einreichen">
+          <button class="exp-btn" id="btn-export-alle" onclick="exportAlle()"
+                  title="PNG f&uuml;r alle angekreuzten Kan&auml;le herunterladen, ohne Einreichen">
             <svg class="ic ic-14" aria-hidden="true"><use href="#i-download"/></svg>
-            Nur lokal speichern
+            <span id="btn-export-alle-txt">Nur lokal speichern</span>
           </button>
           <div id="freigabe-cta-status" style="font-size:9px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center"></div>
         </div>
@@ -948,6 +990,17 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 
   <!-- ══ ARBEITSFLAECHE ══ -->
   <div class="canvas-area">
+
+    <!-- Kanal und Format stehen ueber der Voransicht (Beschluss 01.09.2026).
+         Beide werden aus KANAELE und FORMATS erzeugt — im Markup steht
+         bewusst keine Groessenangabe, sonst gaebe es zwei Wahrheiten. -->
+    <div class="kanal-leiste" id="kanal-leiste" role="tablist" aria-label="Kanal"></div>
+    <div class="fmt-leiste">
+      <span class="fmt-leiste-lbl">Format</span>
+      <div id="fmt-schalter"></div>
+    </div>
+
+    <div class="canvas-mitte">
     <div class="canvas-outer" id="canvas-outer">
 
       <div class="canvas-toolbar">
@@ -1026,6 +1079,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     <div id="safe-status" class="kein-export"></div>
     <div id="export-fehler" class="kein-export"></div>
     <div id="entwurf-hinweis" class="kein-export"></div>
+    </div><!-- /canvas-mitte -->
   </div>
 
 </div>
@@ -1104,21 +1158,32 @@ const GRUND_FEEDRAND={
   seiten:'Abstand zur Kante im Feed'
 };
 
+// versteckt:true — nicht mehr anwaehlbar (Beschluss 01.09.2026), aber
+// weiterhin in der Registry, damit vorhandene Links und eingereichte Posts
+// exakt in ihrem alten Mass geladen und wieder ausgegeben werden.
 const FORMATS=[
-  { key:'ig-portrait-34', label:'Instagram Feed – Hochformat', kurz:'IG Feed 3:4',
-    w:1080, h:1440, ratio:'3:4',
-    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
-
-  { key:'ig-portrait-45', label:'Instagram Feed – 4:5', kurz:'IG Feed 4:5',
+  { key:'ig-portrait-45', label:'Portrait', kurz:'Portrait',
     w:1080, h:1350, ratio:'4:5',
     safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
 
-  { key:'ig-square', label:'Instagram Feed – Quadrat', kurz:'IG Feed 1:1',
+  { key:'ig-square', label:'Quadrat', kurz:'Quadrat',
     w:1080, h:1080, ratio:'1:1',
     safe:{top:100,right:135,bottom:100,left:135}, zonen:[],
     gruende:{ oben:'Abstand zur Kante im Feed',
               unten:'Abstand zur Kante im Feed',
               seiten:'135 px — Zuschnitt im Profilraster auf 3:4' } },
+
+  { key:'nebenan-169', label:'Landscape 16:9', kurz:'Landscape',
+    w:1120, h:630, ratio:'16:9',
+    safe:{top:60,right:60,bottom:60,left:60}, zonen:[],
+    gruende:{ oben:'60 px — Platz für das Logo, höhenschonend gerechnet',
+              unten:'60 px — Kennung links, EU-KI-Symbol rechts',
+              seiten:'60 px — optisch derselbe Rand wie 100 px bei 1080 Breite' },
+    hinweis:'Einziges Format bei nebenan.de. Bei 630 px Höhe ist jeder Rand teuer — 5 % wären nur 31 px und zu wenig für Logo und Kennung.' },
+
+  { key:'ig-portrait-34', versteckt:true, label:'Instagram Feed – Hochformat', kurz:'IG Feed 3:4',
+    w:1080, h:1440, ratio:'3:4',
+    safe:{top:100,right:100,bottom:100,left:100}, zonen:[], gruende:GRUND_FEEDRAND },
 
   { key:'ig-story', label:'Story / Reels', kurz:'Story / Reels',
     w:1080, h:1920, ratio:'9:16',
@@ -1130,22 +1195,22 @@ const FORMATS=[
               seiten:'Beschnitt auf schmalen Geräten' },
     hinweis:'Untere Zone nach Reels-Maß (35 %). Reine Story braucht nur 250 px.' },
 
-  { key:'fb-feed', label:'Facebook Feed – Bild', kurz:'FB Feed',
+  { key:'fb-feed', versteckt:true, label:'Facebook Feed – Bild', kurz:'FB Feed',
     w:1200, h:1200, ratio:'1:1',
     safe:randProzent(1200,1200,.05), zonen:[], gruende:GRUND_5PROZENT },
 
-  { key:'fb-link', label:'Facebook Link-Vorschau', kurz:'FB Link',
+  { key:'fb-link', versteckt:true, label:'Facebook Link-Vorschau', kurz:'FB Link',
     w:1200, h:630, ratio:'1,91:1',
     safe:randProzent(1200,630,.05), zonen:[], gruende:GRUND_5PROZENT },
 
-  { key:'fb-event', label:'Facebook Veranstaltung', kurz:'FB Event',
+  { key:'fb-event', versteckt:true, label:'Facebook Veranstaltung', kurz:'FB Event',
     w:1920, h:1005, ratio:'1,91:1',
     safe:randProzent(1920,1005,.05,120), zonen:[],
     gruende:{ oben:'5 % Sicherheitsrand gegen Beschnitt',
               unten:'5 % plus 120 px — Titel- und Datumsleiste',
               seiten:'5 % Sicherheitsrand gegen Beschnitt' } },
 
-  { key:'web-169', label:'Quer / Web / Präsentation', kurz:'Quer 16:9',
+  { key:'web-169', versteckt:true, label:'Quer / Web / Präsentation', kurz:'Quer 16:9',
     w:1920, h:1080, ratio:'16:9',
     safe:randProzent(1920,1080,.05), zonen:[], gruende:GRUND_5PROZENT },
 ];
@@ -1153,6 +1218,8 @@ const FORMATS=[
 // Alt-Kennungen. Frueher lief das Format als Index (0/1/2), als
 // Seitenverhaeltnis oder als Anzeigename. Alles davon wird weiterhin
 // aufgeloest, damit vorhandene Links und eingereichte Posts nicht brechen.
+// Ab dem 01.09.2026 startet das Studio im Portrait, nicht mehr im 3:4-Format.
+const STANDARDFORMAT='ig-portrait-45';
 const FORMAT_ALIAS={
   '9:16':'ig-story',  '1:1':'ig-square',   '16:9':'web-169',
   '0':'ig-story',     '1':'ig-square',     '2':'web-169',
@@ -1161,13 +1228,14 @@ const FORMAT_ALIAS={
   'Querformat':'web-169', 'quer':'web-169'
 };
 function formatIndex(kennung){
-  if(kennung===null || kennung===undefined || kennung==='') return 0;
+  if(kennung===null || kennung===undefined || kennung==='')
+    return FORMATS.findIndex(f=>f.key===STANDARDFORMAT);
   const k=String(kennung).trim();
   let i=FORMATS.findIndex(f=>f.key===k);          if(i>=0) return i;
   i=FORMATS.findIndex(f=>f.label===k);            if(i>=0) return i;
   const ziel=FORMAT_ALIAS[k];
   if(ziel){ i=FORMATS.findIndex(f=>f.key===ziel); if(i>=0) return i; }
-  return 0;
+  return FORMATS.findIndex(f=>f.key===STANDARDFORMAT);
 }
 function aktFormat(){ return FORMATS[currentFormatIdx]||FORMATS[0]; }
 
@@ -1176,7 +1244,21 @@ function aktFormat(){ return FORMATS[currentFormatIdx]||FORMATS[0]; }
 // Standardformat 3:4 exakt 360 x 480 — beide also Hoehe 480, die Hoehe, in
 // der die Vorlagen entworfen wurden. Ein frisch geladener Entwurf sieht
 // dadurch aus wie bisher.
-const ANZEIGE_BOX={w:560,h:480};
+let ANZEIGE_BOX={w:560,h:480};
+// Die Box war fest verdrahtet. Auf kleinen Fenstern schnitt die Buehne das
+// Motiv dadurch ab, seit Kanal- und Formatleiste darueber Platz brauchen.
+// Sie schrumpft jetzt mit, waechst aber nie ueber die Entwurfsmasse hinaus —
+// die ZIELaufloesung kommt weiterhin ausschliesslich aus FORMATS.
+function boxAnpassen(){
+  const m=document.querySelector('.canvas-mitte');
+  if(!m) return false;
+  const r=m.getBoundingClientRect();
+  if(!r.width || !r.height) return false;
+  const neu={ w:Math.max(200,Math.min(560, Math.round(r.width-40))),
+              h:Math.max(200,Math.min(480, Math.round(r.height-72))) };
+  if(neu.w===ANZEIGE_BOX.w && neu.h===ANZEIGE_BOX.h) return false;
+  ANZEIGE_BOX=neu; return true;
+}
 function anzeigeMasse(f){
   const s=Math.min(ANZEIGE_BOX.w/f.w, ANZEIGE_BOX.h/f.h);
   return { w:Math.round(f.w*s), h:Math.round(f.h*s) };
@@ -1885,7 +1967,8 @@ window.addEventListener('load', async () => {
   } catch(e) { if (!isInIframe) sitzungBeendet(); return; }
 
   document.getElementById('exp-datum').value = new Date().toISOString().split('T')[0];
-  baueFormatKacheln();
+  baueKanalTabs();
+  baueExportKanaele();
   baueMarkenwahl();
   markenVorladen();
   verdrahteBedienelemente();
@@ -1897,7 +1980,7 @@ window.addEventListener('load', async () => {
   // ?format= nimmt Key, Anzeigename und die Alt-Kennungen 9:16 / 1:1 / 16:9.
   verlaufSperre=true;
   try{
-    setFormat(qp.get('format') || FORMATS[0].key);
+    setFormat(qp.get('format') || STANDARDFORMAT);
     loadTemplate(0);
     kiSyncPanel();   // Logo und KI-Kennzeichnung angleichen
   } finally { verlaufSperre=false; }
@@ -2586,14 +2669,33 @@ function syncTextSwatches(col){
 // Nimmt Key, Anzeigename, Alt-Kennung oder Index entgegen (siehe formatIndex).
 // ausKlick=true schreibt einen Verlaufseintrag.
 function setFormat(kennung, ausKlick){
+  // Vor dem Wechsel die Lage des BISHERIGEN Formats sichern, danach die des
+  // neuen laden. Ist fuer das neue noch nichts hinterlegt, bleibt die
+  // aktuelle Lage stehen und wird relativ umgerechnet — das ist der Reflow.
+  const alt = FORMATS[currentFormatIdx] ? FORMATS[currentFormatIdx].key : null;
   currentFormatIdx=formatIndex(kennung);
-  const f=aktFormat(), d=anzeigeMasse(f);
+  const f=aktFormat();
+  if(!layoutSperre && alt && alt!==f.key){ layoutMerken(alt); layoutLaden(f.key); }
 
-  document.querySelectorAll('.fmt-kachel').forEach(b=>{
-    const an = b.id==='fmt-'+f.key;
-    b.classList.toggle('on', an);
-    b.setAttribute('aria-checked', an ? 'true' : 'false');
-  });
+  // Kanal nachziehen. Quadrat und Portrait gehoeren zu Instagram UND
+  // Facebook — deshalb zuerst pruefen, ob der AKTUELLE Kanal das Format
+  // anbietet. Nur wenn nicht, wird der Kanal gewechselt. Sonst warf ein
+  // Formatwechsel im Facebook-Reiter den Benutzer zurueck zu Instagram.
+  const kAkt=KANAELE.find(x=>x.id===aktKanal);
+  if(kAkt && kAkt.formate.indexOf(f.key)>=0){
+    fmtProKanal[aktKanal]=f.key;
+  }else{
+    const kn=kanalVonFormat(f.key);
+    if(kn){ aktKanal=kn; fmtProKanal[kn]=f.key; }
+    // kein Treffer = Altformat: der Kanal bleibt, wie er war
+  }
+  baueKanalTabs();
+  baueFormatSchalter();
+  baueExportKanaele();
+  zeichneDateiliste();
+
+  boxAnpassen();
+  const d=anzeigeMasse(f);
 
   const frame=document.getElementById('canvas-frame');
   frame.style.width  = d.w+'px';
@@ -2620,8 +2722,12 @@ function setFormat(kennung, ausKlick){
   zeichneLegende();
   zeichneSafeWerte();
   kollisionMelden();
-  pruefeKanal();
   aktualisiereZusammenfassungen();
+  const verweis=document.getElementById('format-verweis');
+  if(verweis) verweis.textContent=
+    'Kanal und Format stehen über der Voransicht: '+
+    (KANAL_NAME[aktKanal]||'—')+' · '+f.label+' ('+f.w+' × '+f.h+' px). '+
+    'Hand-Korrekturen an Textblock, Störer und Schriftgröße werden je Format gemerkt.';
   if(ausKlick) pushZustand('Format ' + f.kurz);
 }
 
@@ -2882,7 +2988,16 @@ async function resetEditor(){
     fotoDataUrl=null; fotoZoom=100; feldSetzen('sl-fotozoom',100); fotoAnzeigen();
     KI.typ=''; KI.entschieden=false;
     exportFehlerVerbergen();
-    setFormat(FORMATS[0].key);
+    // Auch das Layout-Gedaechtnis je Format geht auf Anfang, sonst zieht
+    // eine alte Handkorrektur in den frischen Entwurf hinein.
+    layoutProFormat={};
+    aktKanal='instagram';
+    fmtProKanal.instagram='ig-portrait-45';
+    fmtProKanal.facebook ='ig-portrait-45';
+    fmtProKanal.nebenan  ='nebenan-169';
+    expAn.instagram=true; expAn.facebook=true; expAn.nebenan=false;
+    kanalTextSetzen();
+    setFormat(STANDARDFORMAT);
     loadTemplate(0);
     kiSyncPanel();
   } finally { verlaufSperre=false; }
@@ -3601,7 +3716,11 @@ function zustandLesen(){
     ki: { typ:KI.typ, groesse:KI.groesse, pos:KI.pos, variante:KI.variante,
           transparent:KI.transparent, hinweis:KI.hinweis, entschieden:KI.entschieden },
     einreichen: { anlass: feldWert('exp-anlass'), kanal: feldWert('exp-kanal'),
-                  datum: feldWert('exp-datum') }
+                  datum: feldWert('exp-datum') },
+    // Lage und Schriftgroessen je Format (Beschluss 01.09.2026). Ohne dieses
+    // Feld verlaere ein eingereichter Post die Feinarbeit aller Formate
+    // ausser dem zuletzt angezeigten.
+    layouts: layoutStand()
   };
 }
 
@@ -3648,17 +3767,24 @@ function zustandAnwenden(z){
   KI.hinweis=z.ki.hinweis; KI.entschieden=z.ki.entschieden;
 
   feldSetzen('exp-anlass', z.einreichen.anlass);
-  feldSetzen('exp-kanal',  z.einreichen.kanal);
   feldSetzen('exp-datum',  z.einreichen.datum);
+  kanaeleAusText(z.einreichen.kanal);
+
+  // Die Layouts kommen aus dem Zustand, nicht aus dem laufenden Betrieb.
+  // layoutSperre haelt setFormat davon ab, die gerade gesetzte Lage sofort
+  // wieder durch ein gemerktes Layout zu ersetzen.
+  layoutProFormat = z.layouts ? JSON.parse(JSON.stringify(z.layouts)) : {};
 
   // Format zuletzt: setFormat loest Schriftgroessen und Lage neu auf und
   // zeichnet alles nach.
-  setFormat(z.format);
+  layoutSperre=true;
+  try{ setFormat(z.format); } finally { layoutSperre=false; }
   updateOpacity(z.farbe.deckkraft);
   updatePhotoFilter();
   renderMarke();
   kiSyncPanel();
-  pruefeKanal();
+  baueExportKanaele();
+  zeichneDateiliste();
   aktualisiereZusammenfassungen();
 }
 
@@ -3932,32 +4058,104 @@ async function kiEntscheiden(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FORMATKACHELN, nach Plattform gruppiert
+// KANAL-TABS UND FORMAT-UMSCHALTER (Beschluss 01.09.2026)
 // ═══════════════════════════════════════════════════════════════
-const PLATTFORMEN=[
-  { titel:'Instagram',          keys:['ig-portrait-34','ig-portrait-45','ig-square','ig-story'] },
-  { titel:'Facebook',           keys:['fb-feed','fb-link','fb-event'] },
-  { titel:'Web und Bildschirm', keys:['web-169'] },
+// Der Kanal steht ueber der Voransicht, das Format als Umschalter darunter.
+// Jeder Kanal merkt sich sein zuletzt gewaehltes Format; die Formatliste
+// eines Kanals enthaelt nur nicht-versteckte Keys aus FORMATS.
+const KANAELE=[
+  {id:'instagram', name:'Instagram',  ic:'i-instagram', formate:['ig-portrait-45','ig-square','ig-story']},
+  {id:'facebook',  name:'Facebook',   ic:'i-facebook',  formate:['ig-portrait-45','ig-square']},
+  {id:'nebenan',   name:'nebenan.de', ic:'i-nebenan',   formate:['nebenan-169']}
 ];
-function baueFormatKacheln(){
-  const box=document.getElementById('format-gruppen');
+const KANAL_NAME={instagram:'Instagram', facebook:'Facebook', nebenan:'nebenan.de'};
+
+let aktKanal='instagram';
+const fmtProKanal={instagram:'ig-portrait-45', facebook:'ig-portrait-45', nebenan:'nebenan-169'};
+// Angekreuzte Kanaele fuer den Export. nebenan.de steht bewusst auf aus:
+// sein Layout ist ein anderes und soll erst angesehen, dann ausgegeben werden.
+const expAn={instagram:true, facebook:true, nebenan:false};
+
+function kanalVonFormat(key){
+  const k=KANAELE.find(x=>x.formate.indexOf(key)>=0);
+  return k ? k.id : null;
+}
+
+function baueKanalTabs(){
+  const box=document.getElementById('kanal-leiste');
   if(!box) return;
-  box.innerHTML=PLATTFORMEN.map(g=>{
-    const kacheln=g.keys.map(k=>{
-      const f=FORMATS[formatIndex(k)];
-      // Miniatur im ECHTEN Seitenverhaeltnis: 20 px hoch, Breite folgt daraus
-      const mb=Math.max(5, Math.round(20*f.w/f.h));
-      return '<button type="button" class="fmt-kachel" id="fmt-'+f.key+'" role="radio" '+
-             'aria-checked="false" onclick="setFormat(\''+f.key+'\',true)" '+
-             'title="'+f.label+' — '+f.w+' × '+f.h+' px">'+
-             '<span class="fmt-mini" style="width:'+mb+'px"></span>'+
-             '<span class="fmt-text"><span class="fmt-name">'+f.kurz+'</span>'+
-             '<span class="fmt-dim">'+f.w+' × '+f.h+'</span></span></button>';
-    }).join('');
-    return '<div class="fmt-gruppe"><div class="fmt-gruppe-titel">'+g.titel+'</div>'+
-           '<div class="fmt-liste" role="radiogroup" aria-label="Format '+g.titel+'">'+
-           kacheln+'</div></div>';
-  }).join('');
+  box.innerHTML=KANAELE.map(k=>
+    '<button type="button" class="kn-tab" role="tab" id="kn-'+k.id+'" '+
+    'aria-selected="'+(k.id===aktKanal)+'" onclick="setKanal(\''+k.id+'\')" '+
+    'title="'+escHtml(k.name)+'">'+
+    '<svg class="ic" aria-hidden="true"><use href="#'+k.ic+'"/></svg>'+escHtml(k.name)+
+    '<span class="kn-zahl">'+k.formate.length+'</span></button>').join('');
+}
+
+function baueFormatSchalter(){
+  const box=document.getElementById('fmt-schalter');
+  if(!box) return;
+  const f=aktFormat();
+  // Altformat aus einem frueher eingereichten Post: anzeigen, aber nicht
+  // zum Wechseln anbieten.
+  if(f.versteckt){
+    box.innerHTML='<span class="fmt-fest">'+escHtml(f.label)+
+      ' <span class="sdim">'+f.w+' × '+f.h+' px · Altformat, nicht mehr anwählbar</span></span>';
+    return;
+  }
+  const k=KANAELE.find(x=>x.id===aktKanal) || KANAELE[0];
+  if(k.formate.length===1){
+    const fo=FORMATS[formatIndex(k.formate[0])];
+    box.innerHTML='<span class="fmt-fest">'+escHtml(fo.label)+
+      ' <span class="sdim">'+fo.w+' × '+fo.h+' px · einziges Format bei '+escHtml(k.name)+'</span></span>';
+    return;
+  }
+  box.innerHTML='<div class="seg" role="radiogroup" aria-label="Format">'+k.formate.map(fk=>{
+    const fo=FORMATS[formatIndex(fk)];
+    const mh=15, mw=Math.max(5, Math.round(mh*fo.w/fo.h));
+    return '<button type="button" role="radio" aria-checked="'+(fo.key===f.key)+'" '+
+      'onclick="setFormat(\''+fo.key+'\',true)" title="'+escHtml(fo.label)+' — '+fo.w+' × '+fo.h+' px">'+
+      '<span class="smini" style="width:'+mw+'px;height:'+mh+'px"></span>'+escHtml(fo.kurz)+
+      ' <span class="sdim">'+fo.w+'×'+fo.h+'</span></button>';
+  }).join('')+'</div>';
+}
+
+function setKanal(id){
+  if(!KANAELE.some(k=>k.id===id)) return;
+  aktKanal=id;
+  setFormat(fmtProKanal[id], true);
+}
+
+// ── Layout je Format (Beschluss 01.09.2026) ──
+// Text, Foto, Farben und Programmbereich bleiben gemeinsam. Eigen je Format
+// ist allein die Geometrie: Lage von Textblock und Stoerer, Schriftgroessen.
+// Beim ersten Besuch eines Formats wird die aktuelle Lage uebernommen
+// (Reflow), ab der ersten Handkorrektur fuehrt das Format seine eigene.
+let layoutProFormat={};
+let layoutSperre=false;
+function layoutMerken(key){
+  if(!key) return;
+  layoutProFormat[key]={
+    tb:{x:tbRel.x, y:tbRel.y},
+    badge: badgeRel ? {x:badgeRel.x, y:badgeRel.y} : null,
+    schrift:{hl:schriftRel.hl, sub:schriftRel.sub}
+  };
+}
+function layoutLaden(key){
+  const L=layoutProFormat[key];
+  if(!L) return false;
+  tbRel={x:L.tb.x, y:L.tb.y};
+  badgeRel=L.badge ? {x:L.badge.x, y:L.badge.y} : null;
+  schriftRel={hl:L.schrift.hl, sub:L.schrift.sub};
+  return true;
+}
+function layoutStand(){
+  const alle=JSON.parse(JSON.stringify(layoutProFormat));
+  const k=aktFormat().key;
+  alle[k]={ tb:{x:tbRel.x,y:tbRel.y},
+            badge: badgeRel ? {x:badgeRel.x,y:badgeRel.y} : null,
+            schrift:{hl:schriftRel.hl, sub:schriftRel.sub} };
+  return alle;
 }
 
 // Die Werteliste zeigt die Zonen des AKTUELLEN Formats aus der Registry.
@@ -3988,28 +4186,144 @@ function zeichneSafeWerte(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PLATTFORM gegen Format pruefen
+// EXPORTKANAELE — ankreuzen statt auswaehlen
 // ═══════════════════════════════════════════════════════════════
-// Warnt, blockiert nicht: es gibt Gruende, ein Storyformat auf Facebook zu
-// stellen. Aber still durchlaufen soll es nicht.
-const KANAL_FORMATE={
-  'Instagram':            ['ig-portrait-34','ig-portrait-45','ig-square','ig-story'],
-  'Facebook':             ['fb-feed','fb-link','fb-event','web-169'],
-  'Instagram & Facebook': ['ig-portrait-34','ig-portrait-45','ig-square']
-};
-function pruefeKanal(){
-  const el=document.getElementById('kanal-warnung');
-  if(!el) return true;
-  const kanal=feldWert('exp-kanal');
-  const erlaubt=KANAL_FORMATE[kanal];
-  const f=aktFormat();
-  if(!erlaubt || erlaubt.indexOf(f.key)>=0){ el.style.display='none'; return true; }
-  const vorschlag=erlaubt.map(k=>FORMATS[formatIndex(k)].kurz).join(', ');
-  el.innerHTML='<svg class="ic ic-14" aria-hidden="true"><use href="#i-warnung"/></svg>'+
-    '<span><b>'+escHtml(f.label)+'</b> ist für '+escHtml(kanal)+' unüblich. '+
-    'Üblich wäre hier: '+escHtml(vorschlag)+'. Der Export läuft trotzdem.</span>';
-  el.style.display='flex';
-  return false;
+// Die frueh Auswahlliste "Plattform" und ihre Warnung sind am 01.09.2026
+// entfallen: seit der Kanal ueber der Voransicht steht, kann ein Format gar
+// nicht mehr zum falschen Kanal gehoeren. exp-kanal bleibt als abgeleiteter
+// Klartext bestehen, weil Freigabe, Redaktionsplan und Voransicht ihn lesen.
+function pruefeKanal(){ return true; }
+
+function baueExportKanaele(){
+  const box=document.getElementById('exp-kanaele');
+  if(!box) return;
+  box.innerHTML=KANAELE.map(k=>{
+    const fo=FORMATS[formatIndex(fmtProKanal[k.id])];
+    return '<label class="exp-kn'+(expAn[k.id]?' an':'')+'">'+
+      '<input type="checkbox" '+(expAn[k.id]?'checked':'')+
+      ' onchange="expUm(\''+k.id+'\',this.checked)" aria-label="'+escHtml(k.name)+'">'+
+      '<svg class="ic" aria-hidden="true"><use href="#'+k.ic+'"/></svg>'+
+      '<span class="exp-kn-txt"><span class="exp-kn-name">'+escHtml(k.name)+'</span>'+
+      '<span class="exp-kn-sub">'+escHtml(fo.label)+' · '+fo.w+' × '+fo.h+' px</span></span></label>';
+  }).join('');
+}
+function expUm(id,an){
+  expAn[id]=an;
+  kanalTextSetzen();
+  baueExportKanaele();
+  zeichneDateiliste();
+  aktualisiereZusammenfassungen();
+}
+// Abgeleiteter Klartext fuer exp-kanal
+function kanalTextSetzen(){
+  const namen=KANAELE.filter(k=>expAn[k.id]).map(k=>KANAL_NAME[k.id]);
+  // "Instagram & Facebook" bei zweien, "Instagram, Facebook & nebenan.de"
+  // bei dreien — der Wert steht so in Freigabe und Redaktionsplan.
+  const txt = namen.length<2 ? (namen[0]||'')
+            : namen.slice(0,-1).join(', ')+' & '+namen[namen.length-1];
+  const el=document.getElementById('exp-kanal');
+  if(el) el.value=txt;
+}
+// Rueckweg: aus dem gespeicherten Klartext die Haken wieder setzen
+function kanaeleAusText(txt){
+  const t=String(txt||'');
+  let treffer=false;
+  KANAELE.forEach(k=>{
+    const an = t.indexOf(KANAL_NAME[k.id])>=0;
+    expAn[k.id]=an; if(an) treffer=true;
+  });
+  if(!treffer) expAn.instagram=true;   // Altbestand ohne erkennbaren Kanal
+  kanalTextSetzen();
+}
+
+function dateiName(kid){
+  const fo=FORMATS[formatIndex(fmtProKanal[kid])];
+  return 'vhs-spandau_'+kid+'_'+fo.w+'x'+fo.h+'.png';
+}
+function zeichneDateiliste(){
+  const box=document.getElementById('dateiliste');
+  if(!box) return;
+  const gew=KANAELE.filter(k=>expAn[k.id]);
+  const btn=document.getElementById('btn-export-alle');
+  const txt=document.getElementById('btn-export-alle-txt');
+  if(!gew.length){
+    box.innerHTML='<div class="dz leer">Kein Kanal angekreuzt</div>';
+    if(btn) btn.disabled=true;
+    if(txt) txt.textContent='Nur lokal speichern';
+    return;
+  }
+  const masse={};
+  gew.forEach(k=>{ const fk=fmtProKanal[k.id]; masse[fk]=(masse[fk]||0)+1; });
+  box.innerHTML=gew.map(k=>{
+    const fk=fmtProKanal[k.id];
+    const dop = masse[fk]>1 ? ' <span class="dop">gleiches Maß — einmal gerendert</span>' : '';
+    return '<div class="dz"><svg class="ic" aria-hidden="true"><use href="#i-haken"/></svg>'+
+           '<span>'+dateiName(k.id)+dop+'</span></div>';
+  }).join('');
+  if(btn) btn.disabled=false;
+  if(txt) txt.textContent=gew.length+' '+(gew.length===1?'Datei':'Dateien')+' lokal speichern';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MEHRFACH-EXPORT — eine Datei je angekreuztem Kanal
+// ═══════════════════════════════════════════════════════════════
+// Gerendert wird nur einmal je MASS: teilen sich zwei Kanaele ein Format,
+// entstehen zwei Dateien aus einem Rendervorgang. Die Kennungspruefung
+// laeuft je Format, nicht einmal fuer alle — eine Lage, die im Portrait
+// sitzt, kann bei 1120 x 630 danebenliegen.
+async function exportAlle(){
+  const gew=KANAELE.filter(k=>expAn[k.id]);
+  if(!gew.length){ showToast('Kein Kanal angekreuzt','i-warnung'); return; }
+  if(!await kiAbfrage()) return;
+  exportFehlerVerbergen();
+
+  const btn=document.getElementById('btn-export-alle');
+  const txt=document.getElementById('btn-export-alle-txt');
+  if(btn) btn.disabled=true;
+  const merkFormat=aktFormat().key, merkKanal=aktKanal;
+  const cache={};
+  let fertig=0;
+
+  try{
+    for(const k of gew){
+      const fk=fmtProKanal[k.id];
+      if(!cache[fk]){
+        if(txt) txt.textContent='Rendere '+FORMATS[formatIndex(fk)].kurz+' …';
+        aktKanal=k.id;
+        setFormat(fk);
+        await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+        const maengel=pruefeKennungen();
+        if(maengel.length)
+          throw new Error(FORMATS[formatIndex(fk)].label+' — '+maengel.join(' '));
+        const frame=document.getElementById('canvas-frame');
+        const vor=exportVorbereiten();
+        try{
+          const lw=await baueExportLeinwand(frame, aktFormat(), vor.geo);
+          const blob=await leinwandAlsBlob(lw);
+          await pruefeExport(blob, aktFormat());
+          console.log('[export] '+fk+' geprüft: '+aktFormat().w+' × '+aktFormat().h+
+                      ' px, '+Math.round(blob.size/1024)+' kB');
+          cache[fk]=blob;
+        } finally { vor.zurueck(); }
+      }
+      const url=URL.createObjectURL(cache[fk]);
+      const a=document.createElement('a');
+      a.download=dateiName(k.id); a.href=url; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 5000);
+      fertig++;
+      await new Promise(r=>setTimeout(r,250));
+    }
+    showToast(fertig+' PNG gespeichert — Maße gegengemessen','i-haken');
+  }catch(err){
+    console.error('[export]', err);
+    exportFehlerZeigen(err.message||'unbekannter Fehler');
+    showToast('Export abgebrochen','i-fehler');
+  }finally{
+    aktKanal=merkKanal;
+    setFormat(merkFormat);
+    if(btn) btn.disabled=false;
+    zeichneDateiliste();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -4143,9 +4457,15 @@ function verdrahteBedienelemente(){
     if(!el) return;
     el.addEventListener('change', ()=>{ aktualisiereZusammenfassungen(); pushZustand('Angaben zum Post'); });
   });
-  const kanal=document.getElementById('exp-kanal');
-  if(kanal) kanal.addEventListener('change', ()=>{
-    pruefeKanal(); aktualisiereZusammenfassungen(); pushZustand('Plattform');
+  // Die Kanaele sind Kreuze, keine Auswahlliste — sie verdrahten sich in
+  // baueExportKanaele() selbst ueber expUm().
+  kanalTextSetzen();
+  // Buehne neu vermessen, wenn sich das Fenster aendert: die Anzeigebox
+  // folgt der verfuegbaren Flaeche.
+  let boxTakt=null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(boxTakt);
+    boxTakt=setTimeout(()=>{ if(boxAnpassen()) setFormat(aktFormat().key); }, 140);
   });
   const tb=document.getElementById('text-block');
   if(tb) tb.addEventListener('keydown', textblockTasten);

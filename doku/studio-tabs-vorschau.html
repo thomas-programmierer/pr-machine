@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanal-Tabs — Vorschau zur Freigabe | Grafik-Studio VHS Spandau</title>
+<link href="/fonts/schriften.css" rel="stylesheet"><!-- DM Sans + DM Mono lokal, kein fremder Host (Abnahme F1, 01.09.2026) -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blau:#00285A;--blau60:#69829B;--blau20:#CDD7DC;--blau10:#E6EBF0;
+  --gelb:#FAB90F;--rot:#E1000F;--gruen:#AFC805;--hellblau:#64B9E6;--orange:#EB640F;
+  --lila:#7D5AA5;--panel:#1a2744;--border:rgba(255,255,255,.09);
+}
+body{font-family:'DM Sans',sans-serif;background:#111827;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+
+.topbar{background:var(--blau);height:52px;display:flex;align-items:center;padding:0 16px;gap:12px;border-bottom:2px solid var(--gelb);flex-shrink:0}
+.tb-title{font-size:13px;font-weight:700}
+.tb-tag{font-size:10px;color:rgba(255,255,255,.6);background:rgba(250,185,15,.18);border:1px solid rgba(250,185,15,.4);padding:2px 8px;border-radius:4px}
+.tb-right{margin-left:auto;font-size:11px;color:rgba(255,255,255,.45)}
+
+.wrap{flex:1;display:grid;grid-template-columns:1fr 320px;overflow:hidden;min-height:0}
+.buehne{display:flex;flex-direction:column;overflow:hidden;background:#0d1117}
+
+/* ══ KANAL-TABS ══ */
+.kanal-tabs{display:flex;gap:4px;padding:10px 18px 0;background:#0a1e3d;border-bottom:1px solid var(--border);flex-shrink:0}
+.kt{display:flex;align-items:center;gap:8px;padding:10px 18px 9px;border:none;background:transparent;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);
+    cursor:pointer;border-bottom:3px solid transparent;border-radius:6px 6px 0 0;transition:all .15s}
+.kt:hover{color:#fff;background:rgba(255,255,255,.05)}
+.kt[aria-selected="true"]{color:#fff;border-bottom-color:var(--gelb);background:rgba(255,255,255,.06)}
+.kt svg{width:17px;height:17px;flex-shrink:0}
+.kt-zahl{font-size:9px;font-weight:700;background:var(--gelb);color:var(--blau);border-radius:9px;padding:1px 6px}
+.kt[aria-selected="false"] .kt-zahl{background:rgba(255,255,255,.15);color:rgba(255,255,255,.6)}
+
+/* ══ FORMAT-UMSCHALTER ══ */
+.fmt-leiste{display:flex;align-items:center;gap:8px;padding:11px 18px;background:#0a1e3d;
+            border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.fmt-lbl{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-right:2px}
+.seg{display:inline-flex;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+.seg button{display:flex;align-items:center;gap:7px;padding:6px 12px;border:none;background:transparent;border-radius:6px;
+            font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s}
+.seg button:hover{color:#fff;background:rgba(255,255,255,.07)}
+.seg button[aria-checked="true"]{background:var(--gelb);color:var(--blau)}
+.seg .mini{display:block;background:currentColor;opacity:.65;border-radius:1px;flex-shrink:0}
+.seg .dim{font-size:9px;font-weight:500;opacity:.7;letter-spacing:.2px}
+.fmt-fest{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:8px;
+          background:rgba(100,185,230,.12);border:1px solid rgba(100,185,230,.35);
+          font-size:11px;font-weight:600;color:var(--hellblau)}
+.fmt-fest .dim{font-size:9px;font-weight:500;color:rgba(255,255,255,.55)}
+.sz-btn{margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;cursor:pointer;
+        border:1px solid var(--border);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);
+        font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;transition:all .15s}
+.sz-btn:hover{color:#fff;border-color:rgba(255,255,255,.25)}
+.sz-btn svg{width:13px;height:13px;flex-shrink:0}
+.fmt-fest svg{width:14px;height:14px;flex-shrink:0}
+.sz-btn[aria-pressed="true"]{background:rgba(250,185,15,.16);border-color:var(--gelb);color:var(--gelb)}
+
+/* ══ BÜHNE ══ */
+.canvas-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:auto;padding:24px}
+.canvas-frame{position:relative;overflow:hidden;background:#00285A;border-radius:3px;
+              box-shadow:0 18px 60px rgba(0,0,0,.65);transition:width .28s cubic-bezier(.4,0,.2,1),height .28s cubic-bezier(.4,0,.2,1)}
+.cl-foto{position:absolute;inset:0;background-size:cover;background-position:center;
+         background-image:linear-gradient(135deg,#2b4a6f 0%,#16304d 45%,#0e2138 100%)}
+.cl-color{position:absolute;inset:0;background:#00285A;opacity:.72}
+#marke-logo{position:absolute;display:block;height:auto}
+#text-block{position:absolute;cursor:move;outline:1px dashed rgba(250,185,15,.0);outline-offset:6px;transition:outline-color .15s}
+#text-block:hover,#text-block.aktiv{outline-color:rgba(250,185,15,.85)}
+#tb-hl{font-weight:700;color:#fff;line-height:1.24;letter-spacing:-.01em}
+#tb-sub{font-weight:400;color:rgba(255,255,255,.82);line-height:1.45;margin-top:.5em}
+#badge{position:absolute;cursor:move;outline:1px dashed rgba(250,185,15,0);outline-offset:4px;transition:outline-color .15s}
+#badge:hover,#badge.aktiv{outline-color:rgba(250,185,15,.85)}
+#badge-inner{border-radius:50%;display:flex;align-items:center;justify-content:center;
+             font-weight:700;color:#fff;text-align:center;line-height:1.15}
+#fuss{position:absolute}
+/* inline-block ist Pflicht: als Block fuellt der Bezeichner den Rahmen der
+   Fusszeile aus, sein offsetWidth waechst dann bei jedem Neuzeichnen mit der
+   Linie mit — die helle Vorlauflinie lief dadurch immer weiter nach rechts. */
+#fuss-text{display:inline-block;color:#C8CDD3;font-weight:500;letter-spacing:.02em;white-space:nowrap}
+.fuss-linie{display:flex;margin-top:.42em}
+#linie-hell{background:rgba(255,255,255,.42);display:block}
+#linie-farbe{background:var(--gelb);display:block}
+#ki-symbol{position:absolute;display:block;height:auto;opacity:1}
+#sz-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+#sz-svg.an{display:block}
+.masse{flex-shrink:0;padding:9px 18px;background:#0a1220;border-top:1px solid var(--border);
+       font-size:10px;color:rgba(255,255,255,.45);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.masse b{color:rgba(255,255,255,.8);font-weight:600}
+.masse .warn{color:var(--gelb)}
+
+/* ══ PANEL ══ */
+.panel{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto}
+.ps{padding:14px 15px;border-bottom:1px solid var(--border)}
+.ps-t{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.hinweis{font-size:10.5px;line-height:1.6;color:rgba(255,255,255,.55)}
+.hinweis b{color:rgba(255,255,255,.85);font-weight:600}
+.feld{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:6px;
+      padding:8px 10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;margin-bottom:8px}
+.feld:focus{outline:none;border-color:var(--gelb)}
+.p-lbl{font-size:9px;font-weight:700;color:var(--blau60);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;display:block}
+.sz-item{display:flex;gap:8px;align-items:flex-start;font-size:10px;line-height:1.55;color:rgba(255,255,255,.55);margin-bottom:6px}
+.sz-dot{width:7px;height:7px;border-radius:2px;background:var(--gelb);flex-shrink:0;margin-top:4px}
+.sz-item b{color:rgba(255,255,255,.85);font-weight:600}
+
+.exp-row{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:8px;cursor:pointer;
+         border:1px solid var(--border);background:rgba(255,255,255,.03);margin-bottom:7px;transition:all .15s}
+.exp-row:hover{border-color:rgba(255,255,255,.22)}
+.exp-row.an{border-color:var(--gelb);background:rgba(250,185,15,.1)}
+.exp-row input{width:16px;height:16px;accent-color:var(--gelb);cursor:pointer;flex-shrink:0}
+.exp-row svg{width:16px;height:16px;flex-shrink:0;color:rgba(255,255,255,.6)}
+.exp-row.an svg{color:var(--gelb)}
+.exp-row>span:last-child{flex:1;min-width:0}
+.exp-name{display:block;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.9)}
+.exp-sub{display:block;font-size:9px;color:rgba(255,255,255,.45);margin-top:2px}
+.dateiliste{background:rgba(0,0,0,.32);border:1px solid var(--border);border-radius:7px;padding:9px 10px;margin-top:4px}
+.dz{display:flex;align-items:center;gap:7px;font-size:9.5px;color:rgba(255,255,255,.62);
+    font-variant-numeric:tabular-nums;padding:3px 0;word-break:break-all;line-height:1.4}
+.dz svg{width:12px;height:12px;flex-shrink:0;color:var(--gruen)}
+.dz.leer{color:rgba(255,255,255,.3);font-style:italic}
+.dz .dop{color:var(--blau60);font-size:9px}
+.exp-btn{width:100%;padding:11px;border:none;border-radius:8px;background:var(--gelb);color:var(--blau);
+         font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;
+         display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.exp-btn:hover:not(:disabled){background:#e0a70e}
+.exp-btn:disabled{opacity:.45;cursor:not-allowed}
+.pb-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.pb-sw{aspect-ratio:1;border-radius:5px;border:2px solid transparent;cursor:pointer;transition:all .15s}
+.pb-sw:hover{transform:scale(1.12)}
+.pb-sw.an{border-color:#fff;transform:scale(1.12)}
+.pb-name{font-size:10px;color:rgba(255,255,255,.6);margin-top:7px}
+@media (max-width:1100px){
+  .wrap{grid-template-columns:1fr;grid-template-rows:1fr auto;overflow-y:auto}
+  .panel{border-left:none;border-top:1px solid var(--border)}
+  .canvas-area{min-height:380px}
+}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--blau);
+       border:1px solid var(--gelb);border-radius:9px;padding:11px 18px;font-size:12px;font-weight:600;
+       box-shadow:0 10px 40px rgba(0,0,0,.6);transition:transform .28s;z-index:99}
+.toast.an{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+  <symbol id="i-ig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-fb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M15 3h-2.5A3.5 3.5 0 0 0 9 6.5V9H6v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-nb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.6V20h5v-5.5h4V20h5V9.6"/></symbol>
+  <symbol id="i-haken" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></symbol>
+  <symbol id="i-safe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1" stroke-dasharray="2 2.5"/></symbol>
+</svg>
+
+<div class="topbar">
+  <span class="tb-title">Grafik-Studio &middot; Kanal-Tabs</span>
+  <span class="tb-tag">Entwurf zur Freigabe &mdash; noch nicht in editor.html</span>
+  <span class="tb-right">Volkshochschule Spandau</span>
+</div>
+
+<div class="wrap">
+
+  <div class="buehne">
+
+    <div class="kanal-tabs" id="kanal-tabs" role="tablist" aria-label="Kanal"></div>
+
+    <div class="fmt-leiste">
+      <span class="fmt-lbl">Format</span>
+      <div id="fmt-schalter"></div>
+      <button class="sz-btn" id="sz-btn" aria-pressed="true" onclick="szUm()">
+        <svg><use href="#i-safe"/></svg> Sicherheitszonen
+      </button>
+    </div>
+
+    <div class="canvas-area">
+      <div class="canvas-frame" id="frame">
+        <div class="cl-foto" id="cl-foto"></div>
+        <div class="cl-color" id="cl-color"></div>
+        <img id="marke-logo" src="/img/vhs-logo-spandau-negativ.svg" alt="Volkshochschule Spandau" crossorigin="anonymous">
+        <div id="text-block"><div id="tb-hl"></div><div id="tb-sub"></div></div>
+        <div id="badge"><div id="badge-inner">NEU</div></div>
+        <div id="fuss">
+          <div id="fuss-text">Kultur &amp; Gestalten</div>
+          <div class="fuss-linie"><span id="linie-hell"></span><span id="linie-farbe"></span></div>
+        </div>
+        <img id="ki-symbol" src="/img/ki/ai-modified_white-50transparent.svg" alt="KI-modifiziert" crossorigin="anonymous">
+        <svg id="sz-svg" class="an" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+    <div class="masse" id="masse"></div>
+  </div>
+
+  <div class="panel">
+
+    <div class="ps">
+      <div class="ps-t">Was diese Seite zeigt</div>
+      <p class="hinweis">Vier Entscheidungen vom 01.09.2026, gerendert: <b>Kanal-Tabs</b> &uuml;ber der Voransicht,
+      <b>Reflow</b> beim Formatwechsel, <b>Layout je Format gemerkt</b> und <b>Mehrfach-Export</b> mit einer Datei je Kanal.
+      Der Export unten ist echt &mdash; die PNG kommen in exakter Zielaufl&ouml;sung.</p>
+    </div>
+
+    <div class="ps">
+      <div class="ps-t">Sicherheitszonen &mdash; aktuelles Format</div>
+      <div id="sz-legende"></div>
+    </div>
+
+    <div class="ps">
+      <div class="ps-t">Motiv</div>
+      <label class="p-lbl" for="f-hl">Schlagzeile</label>
+      <input class="feld" id="f-hl" value="N&auml;hen lernen im Herbst" oninput="zeichne()">
+      <label class="p-lbl" for="f-sub">Unterzeile</label>
+      <input class="feld" id="f-sub" value="Neue Kurse ab 14. Oktober" oninput="zeichne()">
+      <label class="p-lbl" for="f-badge">St&ouml;rer</label>
+      <input class="feld" id="f-badge" value="NEU" oninput="zeichne()">
+      <label class="p-lbl" for="f-foto">Hintergrundfoto</label>
+      <input class="feld" id="f-foto" type="file" accept="image/*" onchange="fotoLaden(this)" style="padding:6px">
+    </div>
+
+    <div class="ps">
+      <div class="ps-t">Programmbereich</div>
+      <div class="pb-grid" id="pb-grid"></div>
+      <div class="pb-name" id="pb-name"></div>
+    </div>
+
+    <div class="ps">
+      <div class="ps-t">Export &mdash; was wird gebraucht?</div>
+      <div id="exp-kanaele"></div>
+      <div class="p-lbl" style="margin-top:11px">Dateien, die entstehen</div>
+      <div class="dateiliste" id="dateiliste"></div>
+      <button class="exp-btn" id="exp-btn" onclick="exportieren()">
+        <svg style="width:15px;height:15px" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-download"/></svg>
+        <span id="exp-btn-txt">Exportieren</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/vendor/html-to-image-1.11.13.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FORMAT-REGISTRY — Entwurf nach den Entscheidungen vom 01.09.2026
+   w/h sind EXPORTPIXEL, die Anzeige wird daraus abgeleitet.
+   Aufgeraeumt auf vier Formate: die 1200er Facebook-Masse, FB Link,
+   FB Event und Quer 16:9 sind nicht mehr anwaehlbar.
+   ═══════════════════════════════════════════════════════════════ */
+const FORMATE={
+  quadrat:{ label:'Quadrat', kurz:'Quadrat', w:1080, h:1080,
+    safe:{t:100,r:135,b:100,l:135},
+    gruende:{oben:'Abstand zur Kante im Feed', unten:'Abstand zur Kante im Feed',
+             seiten:'135 px — Zuschnitt im Profilraster auf 3:4'} },
+  portrait:{ label:'Portrait', kurz:'Portrait', w:1080, h:1350,
+    safe:{t:100,r:100,b:100,l:100},
+    gruende:{oben:'Abstand zur Kante im Feed', unten:'Abstand zur Kante im Feed',
+             seiten:'Abstand zur Kante im Feed'} },
+  story:{ label:'Story / Reels', kurz:'Story', w:1080, h:1920,
+    safe:{t:270,r:65,b:672,l:65},
+    zonen:[{x:860,y:1152,w:220,h:768,name:'Aktionsleiste',grund:'Gefällt mir, Kommentar, Senden, Menü'}],
+    gruende:{oben:'Profilbild, Name und Zeitstempel überlagern',
+             unten:'Reels-Bedienleiste und Antwortfeld',
+             seiten:'Beschnitt auf schmalen Geräten'} },
+  nebenan:{ label:'Landscape 16:9', kurz:'Landscape', w:1120, h:630,
+    safe:{t:60,r:60,b:60,l:60},
+    gruende:{oben:'60 px — Platz für das Logo, höhenschonend gerechnet',
+             unten:'60 px — Kennung links, EU-KI-Symbol rechts',
+             seiten:'60 px — optisch derselbe Rand wie 100 px bei 1080 Breite'} }
+};
+
+const KANAELE=[
+  {id:'instagram', name:'Instagram',  ic:'i-ig', formate:['quadrat','portrait','story']},
+  {id:'facebook',  name:'Facebook',   ic:'i-fb', formate:['quadrat','portrait']},
+  {id:'nebenan',   name:'nebenan.de', ic:'i-nb', formate:['nebenan']}
+];
+
+const PB=[
+  {nr:1,name:'Politik & Gesellschaft',farbe:'#EB640F'},
+  {nr:2,name:'Kultur & Gestalten',    farbe:'#E1000F'},
+  {nr:3,name:'Gesundheit',            farbe:'#AFC805'},
+  {nr:4,name:'Deutsch & Integration', farbe:'#7D5AA5'},
+  {nr:5,name:'Fremdsprachen',         farbe:'#7D5AA5'},
+  {nr:6,name:'Beruf & IT',            farbe:'#64B9E6'},
+  {nr:7,name:'Grundbildung',          farbe:'#FAB90F'}
+];
+
+/* Standardlayout je Format. Alles relativ zur Rahmenkante (0..1), damit ein
+   Formatwechsel rechnen kann statt zu raten. */
+const STANDARD={
+  quadrat: {tb:{x:135/1080,y:.44}, badge:{x:.70,y:.11}},
+  portrait:{tb:{x:100/1080,y:.50}, badge:{x:.68,y:.10}},
+  story:   {tb:{x: 65/1080,y:.42}, badge:{x:.62,y:.18}},
+  nebenan: {tb:{x: 60/1120,y:.28}, badge:{x:.75,y:.13}}
+};
+
+/* ── Zustand ── */
+let aktKanal='instagram';
+const fmtProKanal={instagram:'portrait', facebook:'portrait', nebenan:'nebenan'};
+let anzeigeFmt='portrait';
+let pbIdx=1;
+let szAn=true;
+let fotoUrl=null;
+const expAn={instagram:true, facebook:true, nebenan:true};
+
+/* Layout je Format — die Hand-Korrekturen bleiben pro Tab erhalten. */
+const layouts={};
+function layout(fk){
+  if(!layouts[fk]) layouts[fk]=JSON.parse(JSON.stringify(STANDARD[fk]));
+  return layouts[fk];
+}
+
+const $=id=>document.getElementById(id);
+const frame=$('frame');
+// Die Anzeigebox folgt der Buehne. Fest verdrahtete 600 x 496 haben das Motiv
+// auf schmalen Fenstern abgeschnitten — die Zielgroesse kommt weiterhin
+// ausschliesslich aus FORMATE, nur die Vorschaugroesse passt sich an.
+function anzeigeBox(){
+  const a=document.querySelector('.canvas-area');
+  const b=a?a.getBoundingClientRect():{width:648,height:544};
+  return { w:Math.max(180,Math.min(600,b.width-48)),
+           h:Math.max(180,Math.min(496,b.height-48)) };
+}
+let dispW=0, dispH=0, sc=1;
+
+/* Exportpixel bei 1080 px Bildbreite → Anzeigepixel */
+function u(v){ return v*dispW/1080; }
+function f(){ return FORMATE[anzeigeFmt]; }
+
+/* ═══ TABS UND FORMATSCHALTER ═══ */
+function baueTabs(){
+  $('kanal-tabs').innerHTML=KANAELE.map(k=>
+    '<button class="kt" role="tab" id="kt-'+k.id+'" aria-selected="'+(k.id===aktKanal)+'" '+
+    'onclick="setKanal(\''+k.id+'\')"><svg><use href="#'+k.ic+'"/></svg>'+k.name+
+    '<span class="kt-zahl">'+k.formate.length+'</span></button>').join('');
+}
+function baueFormatSchalter(){
+  const k=KANAELE.find(x=>x.id===aktKanal);
+  const box=$('fmt-schalter');
+  if(k.formate.length===1){
+    const fo=FORMATE[k.formate[0]];
+    box.innerHTML='<span class="fmt-fest"><svg style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-safe"/></svg>'+
+      fo.label+' <span class="dim">'+fo.w+' × '+fo.h+' px · einziges Format bei nebenan.de</span></span>';
+    return;
+  }
+  box.innerHTML='<div class="seg" role="radiogroup" aria-label="Format">'+k.formate.map(fk=>{
+    const fo=FORMATE[fk];
+    const mh=15, mw=Math.max(5,Math.round(mh*fo.w/fo.h));
+    return '<button role="radio" aria-checked="'+(fk===anzeigeFmt)+'" onclick="setFormat(\''+fk+'\')">'+
+      '<span class="mini" style="width:'+mw+'px;height:'+mh+'px"></span>'+
+      fo.kurz+' <span class="dim">'+fo.w+'×'+fo.h+'</span></button>';
+  }).join('')+'</div>';
+}
+function setKanal(id){
+  aktKanal=id;
+  anzeigeFmt=fmtProKanal[id];
+  baueTabs(); baueFormatSchalter(); zeichne();
+}
+function setFormat(fk){
+  fmtProKanal[aktKanal]=fk;
+  anzeigeFmt=fk;
+  baueFormatSchalter(); zeichne();
+}
+function szUm(){ szAn=!szAn; $('sz-btn').setAttribute('aria-pressed',szAn); zeichne(); }
+
+/* ═══ ZEICHNEN ═══ */
+function zeichne(){
+  const fo=f();
+  const box=anzeigeBox();
+  sc=Math.min(box.w/fo.w, box.h/fo.h);
+  dispW=Math.round(fo.w*sc); dispH=Math.round(fo.h*sc);
+  frame.style.width=dispW+'px'; frame.style.height=dispH+'px';
+
+  const s={t:fo.safe.t*sc, r:fo.safe.r*sc, b:fo.safe.b*sc, l:fo.safe.l*sc};
+  const farbe=PB[pbIdx].farbe;
+
+  if(fotoUrl) $('cl-foto').style.backgroundImage='url('+fotoUrl+')';
+
+  /* Logo — Kopfbereich, innerhalb der Kernflaeche */
+  const lo=$('marke-logo');
+  lo.style.left=s.l+'px'; lo.style.top=s.t+'px'; lo.style.width=u(300)+'px';
+
+  /* Fusszeile: Bezeichner klein grau ueber zweiteiliger Linie */
+  const fu=$('fuss');
+  fu.style.left=s.l+'px'; fu.style.bottom=s.b+'px';
+  const ft=$('fuss-text');
+  ft.textContent=PB[pbIdx].name;
+  ft.style.fontSize=u(24)+'px';
+  $('linie-hell').style.height=u(5)+'px';
+  $('linie-farbe').style.height=u(5)+'px';
+  $('linie-farbe').style.background=farbe;
+  $('linie-farbe').style.width=(dispW*0.122)+'px';
+  requestAnimationFrame(()=>{ $('linie-hell').style.width=(ft.offsetWidth+u(30))+'px'; });
+
+  /* EU-KI-Symbol unten rechts, halbtransparente Fassung */
+  const ki=$('ki-symbol');
+  ki.style.right=s.r+'px'; ki.style.bottom=s.b+'px'; ki.style.width=u(150)+'px';
+
+  /* Textblock */
+  const L=layout(anzeigeFmt);
+  const tb=$('text-block');
+  tb.style.left=(L.tb.x*dispW)+'px'; tb.style.top=(L.tb.y*dispH)+'px';
+  tb.style.width=(dispW-L.tb.x*dispW-s.r)+'px';
+  $('tb-hl').style.fontSize=u(62)+'px';
+  $('tb-sub').style.fontSize=u(38)+'px';
+  $('tb-hl').textContent=$('f-hl').value;
+  $('tb-sub').textContent=$('f-sub').value;
+
+  /* Stoerer */
+  const bd=$('badge');
+  bd.style.left=(L.badge.x*dispW)+'px'; bd.style.top=(L.badge.y*dispH)+'px';
+  const bi=$('badge-inner');
+  bi.style.width=u(200)+'px'; bi.style.height=u(200)+'px';
+  bi.style.fontSize=u(30)+'px'; bi.style.background=farbe;
+  bi.style.color=['#AFC805','#FAB90F','#64B9E6'].includes(farbe)?'#00285A':'#fff';
+  bi.textContent=$('f-badge').value;
+
+  zeichneSafeZonen(s);
+  zeichneLegende();
+  zeichneMasse();
+  zeichneDateiliste();
+}
+
+function zeichneSafeZonen(s){
+  const svg=$('sz-svg'), fo=f();
+  svg.classList.toggle('an',szAn);
+  if(!szAn){ svg.innerHTML=''; return; }
+  const W=dispW,H=dispH;
+  const aussen='M0 0H'+W+'V'+H+'H0Z';
+  const kern='M'+s.l+' '+s.t+'H'+(W-s.r)+'V'+(H-s.b)+'H'+s.l+'Z';
+  let h='<path d="'+aussen+' '+kern+'" fill-rule="evenodd" fill="rgba(0,0,0,.42)"/>'+
+        '<rect x="'+s.l+'" y="'+s.t+'" width="'+(W-s.l-s.r)+'" height="'+(H-s.t-s.b)+
+        '" fill="none" stroke="#FAB90F" stroke-width="1" stroke-dasharray="5 4" opacity=".9"/>';
+  (fo.zonen||[]).forEach(z=>{
+    h+='<rect x="'+(z.x*sc)+'" y="'+(z.y*sc)+'" width="'+(z.w*sc)+'" height="'+(z.h*sc)+
+       '" fill="rgba(225,0,15,.2)" stroke="#E1000F" stroke-width="1" stroke-dasharray="4 3"/>';
+  });
+  svg.innerHTML=h;
+}
+
+function zeichneLegende(){
+  const fo=f();
+  const z=(m,g)=>'<div class="sz-item"><span class="sz-dot"></span><span><b>'+m+'</b> — '+g+'</span></div>';
+  let h=z('oben '+fo.safe.t+' px',fo.gruende.oben)+z('unten '+fo.safe.b+' px',fo.gruende.unten);
+  h+=z(fo.safe.l===fo.safe.r?('seitlich '+fo.safe.l+' px'):('links '+fo.safe.l+' / rechts '+fo.safe.r+' px'),fo.gruende.seiten);
+  (fo.zonen||[]).forEach(x=>{ h+=z(x.name,x.grund); });
+  h+='<div class="sz-item" style="margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:9px">'+
+     '<span class="sz-dot" style="background:#64B9E6"></span><span>Kernfläche <b>'+
+     (fo.w-fo.safe.l-fo.safe.r)+' × '+(fo.h-fo.safe.t-fo.safe.b)+' px</b> — hier sitzen Logo, Kennung und EU-Symbol</span></div>';
+  $('sz-legende').innerHTML=h;
+}
+
+function zeichneMasse(){
+  const fo=f(), k=KANAELE.find(x=>x.id===aktKanal);
+  const eigen=layouts[anzeigeFmt] && JSON.stringify(layouts[anzeigeFmt])!==JSON.stringify(STANDARD[anzeigeFmt]);
+  $('masse').innerHTML='<span><b>'+k.name+'</b> · '+fo.label+'</span>'+
+    '<span>Export <b>'+fo.w+' × '+fo.h+' px</b></span>'+
+    '<span>Anzeige '+dispW+' × '+dispH+' px ('+Math.round(sc*100)+' %)</span>'+
+    '<span class="'+(eigen?'warn':'')+'">'+(eigen?'Layout dieses Formats von Hand angepasst — bleibt beim Tabwechsel erhalten':'Standardlayout — Textblock und Störer sind ziehbar')+'</span>';
+}
+
+/* ═══ PROGRAMMBEREICH ═══ */
+function bauePB(){
+  $('pb-grid').innerHTML=PB.map((p,i)=>
+    '<button class="pb-sw'+(i===pbIdx?' an':'')+'" style="background:'+p.farbe+'" '+
+    'title="PB '+p.nr+' — '+p.name+'" onclick="setPB('+i+')" aria-label="PB '+p.nr+'"></button>').join('');
+  $('pb-name').textContent='PB '+PB[pbIdx].nr+' — '+PB[pbIdx].name+' · '+PB[pbIdx].farbe;
+}
+function setPB(i){ pbIdx=i; bauePB(); zeichne(); }
+
+/* ═══ EXPORTAUSWAHL ═══ */
+function baueExportKanaele(){
+  $('exp-kanaele').innerHTML=KANAELE.map(k=>
+    '<label class="exp-row'+(expAn[k.id]?' an':'')+'"><input type="checkbox" '+
+    (expAn[k.id]?'checked':'')+' onchange="expUm(\''+k.id+'\',this.checked)">'+
+    '<svg fill="none" stroke="currentColor" stroke-width="2"><use href="#'+k.ic+'"/></svg>'+
+    '<span><span class="exp-name">'+k.name+'</span>'+
+    '<span class="exp-sub">'+FORMATE[fmtProKanal[k.id]].label+' · '+
+    FORMATE[fmtProKanal[k.id]].w+' × '+FORMATE[fmtProKanal[k.id]].h+' px</span></span></label>').join('');
+}
+function expUm(id,an){ expAn[id]=an; baueExportKanaele(); zeichneDateiliste(); }
+
+function dateiName(kid){
+  const fo=FORMATE[fmtProKanal[kid]];
+  return 'vhs-spandau_'+kid+'_'+fo.w+'x'+fo.h+'.png';
+}
+function zeichneDateiliste(){
+  baueExportKanaele();
+  const gewaehlt=KANAELE.filter(k=>expAn[k.id]);
+  const box=$('dateiliste');
+  if(!gewaehlt.length){
+    box.innerHTML='<div class="dz leer">Kein Kanal angekreuzt</div>';
+    $('exp-btn').disabled=true; $('exp-btn-txt').textContent='Exportieren';
+    return;
+  }
+  const masse={};
+  gewaehlt.forEach(k=>{ const fk=fmtProKanal[k.id]; masse[fk]=(masse[fk]||0)+1; });
+  const rendervorgaenge=Object.keys(masse).length;
+  box.innerHTML=gewaehlt.map(k=>{
+    const fk=fmtProKanal[k.id];
+    const dop=masse[fk]>1?'<span class="dop">gleiches Maß — einmal gerendert</span>':'';
+    return '<div class="dz"><svg fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><use href="#i-haken"/></svg>'+
+           dateiName(k.id)+' '+dop+'</div>';
+  }).join('');
+  $('exp-btn').disabled=false;
+  $('exp-btn-txt').textContent=gewaehlt.length+' '+(gewaehlt.length===1?'Datei':'Dateien')+
+    ' exportieren ('+rendervorgaenge+'× rendern)';
+}
+
+/* ═══ ZIEHEN ═══ */
+function ziehbar(el,key){
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('aktiv');
+    const r=frame.getBoundingClientRect();
+    const sx=e.clientX-el.offsetLeft, sy=e.clientY-el.offsetTop;
+    const bewege=ev=>{
+      const L=layout(anzeigeFmt);
+      L[key].x=Math.max(0,Math.min(.95,(ev.clientX-sx)/r.width));
+      L[key].y=Math.max(0,Math.min(.95,(ev.clientY-sy)/r.height));
+      zeichne();
+    };
+    const ende=()=>{
+      el.classList.remove('aktiv');
+      el.removeEventListener('pointermove',bewege);
+      el.removeEventListener('pointerup',ende);
+    };
+    el.addEventListener('pointermove',bewege);
+    el.addEventListener('pointerup',ende);
+  });
+}
+
+function fotoLaden(inp){
+  const d=inp.files&&inp.files[0]; if(!d) return;
+  const r=new FileReader();
+  r.onload=()=>{ fotoUrl=r.result; zeichne(); };
+  r.readAsDataURL(d);
+}
+
+function toast(t){
+  const el=$('toast'); el.textContent=t; el.classList.add('an');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('an'),3200);
+}
+
+/* SVG als Data-URL einbetten — sonst faellt es beim Rendern weg. */
+async function svgEinbetten(el){
+  try{
+    const t=await (await fetch(el.getAttribute('src'))).text();
+    el.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(t);
+  }catch(e){ console.warn('SVG nicht ladbar:',el.id,e); }
+}
+
+/* ═══ EXPORT ═══
+   Eine Datei je angekreuztem Kanal. Gerendert wird nur einmal je Maß:
+   Instagram und Facebook im selben Format teilen sich den Rendervorgang. */
+async function exportieren(){
+  const gewaehlt=KANAELE.filter(k=>expAn[k.id]);
+  if(!gewaehlt.length) return;
+  const btn=$('exp-btn'); btn.disabled=true;
+  const merkFmt=anzeigeFmt, merkSZ=szAn;
+  szAn=false;
+  const cache={};
+  try{
+    await document.fonts.ready;
+    for(const k of gewaehlt){
+      const fk=fmtProKanal[k.id];
+      if(!cache[fk]){
+        $('exp-btn-txt').textContent='Rendere '+FORMATE[fk].label+' …';
+        cache[fk]=await rendereFormat(fk);
+      }
+      const url=URL.createObjectURL(cache[fk]);
+      const a=document.createElement('a');
+      a.download=dateiName(k.id); a.href=url; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      await new Promise(r=>setTimeout(r,220));
+    }
+    toast(gewaehlt.length+' PNG gespeichert — Maße gegengemessen');
+  }catch(err){
+    console.error(err);
+    toast('Export fehlgeschlagen: '+(err.message||err));
+  }finally{
+    anzeigeFmt=merkFmt; szAn=merkSZ;
+    $('sz-btn').setAttribute('aria-pressed',szAn);
+    baueFormatSchalter(); zeichne();
+    btn.disabled=false; zeichneDateiliste();
+  }
+}
+
+async function rendereFormat(fk){
+  anzeigeFmt=fk; zeichne();
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+  await new Promise(r=>setTimeout(r,180));
+  const fo=FORMATE[fk];
+  const roh=await htmlToImage.toCanvas(frame,{
+    pixelRatio: fo.w/frame.offsetWidth,
+    backgroundColor:null,
+    cacheBust:false
+  });
+  /* Endgroesse erzwingen: was die Registry sagt, gilt. */
+  const c=document.createElement('canvas');
+  c.width=fo.w; c.height=fo.h;
+  const ctx=c.getContext('2d');
+  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+  ctx.drawImage(roh,0,0,roh.width,roh.height,0,0,fo.w,fo.h);
+  const blob=await new Promise((ok,fehler)=>c.toBlob(b=>b?ok(b):fehler(new Error('toBlob leer')),'image/png'));
+  /* Gegenprobe am fertigen Blob, nicht am Wunschwert */
+  if(typeof createImageBitmap==='function'){
+    const bm=await createImageBitmap(blob);
+    const ist={w:bm.width,h:bm.height}; if(bm.close) bm.close();
+    if(ist.w!==fo.w||ist.h!==fo.h)
+      throw new Error('PNG misst '+ist.w+' × '+ist.h+' statt '+fo.w+' × '+fo.h+' px');
+    console.log('[export] '+fk+' geprüft: '+ist.w+' × '+ist.h+' px, '+Math.round(blob.size/1024)+' kB');
+  }
+  return blob;
+}
+
+/* ═══ START ═══ */
+(async function(){
+  baueTabs(); baueFormatSchalter(); bauePB(); zeichne();
+  ziehbar($('text-block'),'tb');
+  ziehbar($('badge'),'badge');
+  await Promise.all([svgEinbetten($('marke-logo')), svgEinbetten($('ki-symbol'))]);
+  zeichne();
+  let t=null;
+  window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(zeichne,120); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Chart.js 4.4.1 — MIT-Lizenz
+Herkunft: npm-Paket chart.js@4.4.1, bezogen am 01.09.2026.
+Datei: chart.umd-4.4.1.js (UMD-Build aus dist/chart.umd.js)
+Eingebaut fuer performance.html, vorher von cdnjs.cloudflare.com geladen
+(Abnahme F3).
+Vollstaendiger Lizenztext: https://github.com/chartjs/Chart.js/blob/master/LICENSE.md

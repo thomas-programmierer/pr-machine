@@ -1,0 +1,18 @@
+Schriften in diesem Verzeichnis
+═══════════════════════════════
+
+DM Sans   — SIL Open Font License 1.1
+DM Mono   — SIL Open Font License 1.1
+
+Herkunft: npm-Pakete @fontsource/dm-sans 5.3.0 und @fontsource/dm-mono 5.3.0,
+bezogen am 01.09.2026. Enthalten sind ausschliesslich die tatsaechlich
+genutzten Schnitte in den Subsets latin und latin-ext:
+
+  DM Sans  400 / 500 / 600 / 700 normal, 400 kursiv
+  DM Mono  400 / 500 normal
+
+Die SIL OFL erlaubt Weitergabe und Einbettung, verlangt aber, dass die
+Lizenz mitgeliefert wird und die Schriften nicht einzeln verkauft werden.
+Vollstaendiger Lizenztext: https://openfontlicense.org/
+
+Warum lokal statt von fonts.googleapis.com: siehe Kopf von schriften.css.
